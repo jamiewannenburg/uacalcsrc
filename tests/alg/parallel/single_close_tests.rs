@@ -36,7 +36,7 @@ fn test_new() {
             }
             
             let elts_found = Arc::new(AtomicUsize::new(0));
-            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found).unwrap();
+            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found, None).unwrap();
             
             serde_json::json!({
                 "status": "created",
@@ -69,7 +69,7 @@ fn test_get_increment() {
             
             let map = Arc::new(Mutex::new(HashMap::new()));
             let elts_found = Arc::new(AtomicUsize::new(0));
-            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found).unwrap();
+            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found, None).unwrap();
             
             serde_json::json!({
                 "increment": sc.get_increment()
@@ -99,7 +99,7 @@ fn test_get_computation_size() {
             
             let map = Arc::new(Mutex::new(HashMap::new()));
             let elts_found = Arc::new(AtomicUsize::new(0));
-            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found).unwrap();
+            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found, None).unwrap();
             
             serde_json::json!({
                 "computation_size": sc.get_computation_size()
@@ -129,7 +129,7 @@ fn test_is_too_small() {
             
             let map = Arc::new(Mutex::new(HashMap::new()));
             let elts_found = Arc::new(AtomicUsize::new(0));
-            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found).unwrap();
+            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found, None).unwrap();
             
             serde_json::json!({
                 "too_small": sc.is_too_small()
@@ -159,7 +159,7 @@ fn test_compute_size() {
             
             let map = Arc::new(Mutex::new(HashMap::new()));
             let elts_found = Arc::new(AtomicUsize::new(0));
-            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found).unwrap();
+            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found, None).unwrap();
             
             serde_json::json!({
                 "computation_size": sc.get_computation_size()
@@ -195,7 +195,7 @@ fn test_test() {
             }
             
             let elts_found = Arc::new(AtomicUsize::new(0));
-            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found).unwrap();
+            let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found, None).unwrap();
             
             serde_json::json!({
                 "status": "test_passed",

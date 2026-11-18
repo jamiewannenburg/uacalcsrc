@@ -8,6 +8,9 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use crate::resource::{
+    charge_kept_closure_element, checkpoint, SharedBudget, SharedBudgetGuard, UaError,
+};
 use crate::util::{IntArray, ArrayIncrementor, SequenceGenerator};
 use crate::util::int_array::IntArrayTrait;
 use crate::alg::op::Operation;
@@ -76,6 +79,9 @@ pub struct SingleClose {
     
     /// Results from parallel workers
     results: Vec<CloseResult>,
+
+    /// Shared per-computation budget for parallel workers (phase 3 limits).
+    shared_budget: Option<Arc<SharedBudget>>,
 }
 
 impl SingleClose {
@@ -115,6 +121,7 @@ impl SingleClose {
         min: usize,
         max: usize,
         elts_found: Arc<AtomicUsize>,
+        shared_budget: Option<Arc<SharedBudget>>,
     ) -> Result<Self, String> {
         let computation_size = Self::compute_size(&univ_list, &*op, min, max)?;
         let increment = Self::calculate_increment(computation_size, max - min);
@@ -132,6 +139,7 @@ impl SingleClose {
             too_small,
             arrays: Vec::new(),
             results: Vec::new(),
+            shared_budget,
         };
         
         single_close.set_initial_arrays()?;
@@ -235,7 +243,7 @@ impl SingleClose {
         &mut self,
         report: Option<Arc<dyn ProgressReport>>,
         timing: Option<Arc<Mutex<CloserTiming>>>,
-    ) -> Result<Vec<CloseResult>, String> {
+    ) -> Result<Vec<CloseResult>, UaError> {
         self.results.clear();
         
         // For small computations or single increment, use serial execution
@@ -266,6 +274,7 @@ impl SingleClose {
                 let timing_clone = timing.clone();
                 let elts_found_clone = Arc::clone(&elts_found);
                 let worker_array = self.arrays[i].clone();
+                let budget_clone = self.shared_budget.clone();
                 
                 let handle = std::thread::spawn(move || {
                     Self::do_one_step_serial_worker(
@@ -280,6 +289,7 @@ impl SingleClose {
                         report_clone,
                         timing_clone,
                         elts_found_clone,
+                        budget_clone,
                     )
                 });
                 handles.push(handle);
@@ -299,6 +309,7 @@ impl SingleClose {
                 report.clone(),
                 timing.clone(),
                 Arc::clone(&elts_found),
+                self.shared_budget.clone(),
             )?;
             self.results.push(last_result);
             
@@ -307,7 +318,7 @@ impl SingleClose {
                 match handle.join() {
                     Ok(Ok(result)) => self.results.push(result),
                     Ok(Err(e)) => return Err(e),
-                    Err(_) => return Err("Thread panicked".to_string()),
+                    Err(_) => return Err(UaError::message("Thread panicked")),
                 }
             }
         }
@@ -334,7 +345,11 @@ impl SingleClose {
         report: Option<Arc<dyn ProgressReport>>,
         timing: Option<Arc<Mutex<CloserTiming>>>,
         elts_found: Arc<AtomicUsize>,
-    ) -> Result<CloseResult, String> {
+        shared_budget: Option<Arc<SharedBudget>>,
+    ) -> Result<CloseResult, UaError> {
+        let _budget_guard = shared_budget
+            .as_ref()
+            .map(|b| SharedBudgetGuard::attach(Arc::clone(b)));
         let mut new_elts = Vec::new();
         let arity = op.arity() as usize;
         let max_i32 = max as i32;
@@ -344,19 +359,26 @@ impl SingleClose {
         let mut first = true;
         
         loop {
+            checkpoint()?;
             // Build arguments for operation (before incrementing)
             let mut args = Vec::with_capacity(arity);
             for &idx in &arg_indices {
                 let idx_usize = idx as usize;
                 if idx_usize >= univ_list.len() {
-                    return Err(format!("Index {} out of bounds for universe list of size {}", idx, univ_list.len()));
+                    return Err(UaError::message(format!(
+                        "Index {} out of bounds for universe list of size {}",
+                        idx,
+                        univ_list.len()
+                    )));
                 }
                 args.push(univ_list[idx_usize].as_slice());
             }
             
             // Apply operation
-            let result_array = op.value_at_arrays(&args)?;
-            let v = IntArray::from_array(result_array)?;
+            let result_array = op
+                .value_at_arrays(&args)
+                .map_err(UaError::message)?;
+            let v = IntArray::from_array(result_array).map_err(UaError::message)?;
             
             // Update timing if present
             if let Some(ref t) = timing {
@@ -380,7 +402,10 @@ impl SingleClose {
                     if let Some(term) = map_guard.get(&univ_list[idx_usize]) {
                         children.push(term.clone_box());
                     } else {
-                        return Err(format!("No term found for element at index {}", idx));
+                        return Err(UaError::message(format!(
+                            "No term found for element at index {}",
+                            idx
+                        )));
                     }
                 }
                 
@@ -392,6 +417,7 @@ impl SingleClose {
                 // Try to insert into map
                 let mut map_guard = map.lock().unwrap();
                 if !map_guard.contains_key(&v) {
+                    charge_kept_closure_element(v.as_slice().len(), true)?;
                     map_guard.insert(v.clone(), term);
                     drop(map_guard); // Release lock before updating counters
                     
@@ -444,7 +470,7 @@ impl SingleClose {
         worker_id: usize,
         report: Option<Arc<dyn ProgressReport>>,
         timing: Option<Arc<Mutex<CloserTiming>>>,
-    ) -> Result<CloseResult, String> {
+    ) -> Result<CloseResult, UaError> {
         Self::do_one_step_serial_worker(
             Arc::new(self.univ_list.clone()),
             Arc::clone(&self.map),
@@ -457,6 +483,7 @@ impl SingleClose {
             report,
             timing,
             Arc::clone(&self.elts_found),
+            self.shared_budget.clone(),
         )
     }
     
@@ -523,7 +550,7 @@ mod tests {
         let map = Arc::new(Mutex::new(HashMap::new()));
         let elts_found = Arc::new(AtomicUsize::new(0));
         
-        let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found);
+        let sc = SingleClose::new(univ_list, map, arc_op, 0, 1, elts_found, None);
         assert!(sc.is_ok());
         
         let sc = sc.unwrap();

@@ -208,6 +208,7 @@ pub fn make_int_operation_from_dyn(op: &dyn Operation) -> Result<Box<dyn Operati
     } else {
         let mut table = crate::resource::alloc_i32_table(set_size as usize, arity as u32)?;
         for i in 0..table.len() {
+            crate::resource::checkpoint()?;
             let args = horner::horner_inv_same_size(i as i32, set_size, arity as usize);
             table[i] = op.int_value_at(&args).map_err(crate::resource::UaError::from)?;
         }
@@ -407,6 +408,15 @@ pub fn make_int_operation(
     value_table: Vec<i32>,
 ) -> Result<Box<dyn Operation>, crate::resource::UaError> {
     crate::resource::try_charge((value_table.len() as u64).saturating_mul(4))?;
+    make_int_operation_precharged(symbol, alg_size, value_table)
+}
+
+/// Like [`make_int_operation`] when the table bytes were already charged (e.g. via [`alloc_i32_table`]).
+pub fn make_int_operation_precharged(
+    symbol: OperationSymbol,
+    alg_size: i32,
+    value_table: Vec<i32>,
+) -> Result<Box<dyn Operation>, crate::resource::UaError> {
     let op = IntOperation::new(symbol, alg_size, value_table).map_err(UaError::Message)?;
     Ok(Box::new(op))
 }

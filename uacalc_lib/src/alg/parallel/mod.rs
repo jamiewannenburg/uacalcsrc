@@ -177,6 +177,7 @@ impl PySingleClose {
             min,
             max,
             Arc::new(AtomicUsize::new(n)),
+            None,
         )
         .map_err(PyValueError::new_err)?;
         Ok(PySingleClose { inner: Some(inner) })
@@ -201,7 +202,7 @@ impl PySingleClose {
             .ok_or_else(|| PyValueError::new_err("SingleClose is not initialized"))?;
         let results = inner
             .do_one_step(None, None)
-            .map_err(PyValueError::new_err)?;
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
         Ok(results
             .into_iter()
             .map(|chunk| {

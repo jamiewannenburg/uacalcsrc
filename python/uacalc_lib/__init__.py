@@ -9,64 +9,108 @@ copied to this directory. The type stubs in __init__.pyi provide type informatio
 for IDEs and type checkers.
 """
 
+from __future__ import annotations
+
+import importlib.util
+import sys
+from pathlib import Path
+
 # For maturin's mixed rust/python pattern with PyO3:
 # When we have an __init__.py, Python imports this file instead of the native extension.
 # We need to explicitly load the native extension and expose its contents.
 
-import sys
-import importlib.util
-from pathlib import Path
-
-# Get the directory containing this __init__.py
-_package_dir = Path(__file__).parent
-
-# Try to find and load the native extension
-# Maturin installs it with a platform-specific name (e.g., uacalc_lib.cp310-win_amd64.pyd)
+_package_dir = Path(__file__).resolve().parent
 _native_loaded = False
 
-# Search for native extension files in the package directory
-_extensions = list(_package_dir.glob('uacalc_lib.*.pyd')) + list(_package_dir.glob('uacalc_lib.*.so')) + list(_package_dir.glob('uacalc_lib.*.dylib'))
 
-for ext_file in sorted(_extensions):
+def _abi_tag() -> str:
+    vi = sys.version_info
+    return f"cp{vi.major}{vi.minor}"
+
+
+def _find_repo_root(start: Path) -> Path | None:
+    for directory in (start, *start.parents):
+        if (directory / "pyproject.toml").is_file() and (directory / "uacalc_lib" / "Cargo.toml").is_file():
+            return directory
+    return None
+
+
+def _extension_candidates() -> list[Path]:
+    """Return native modules to try, newest first.
+
+  - Always consider extensions co-located with this ``__init__.py`` (wheel / editable install).
+  - Also consider ``python/uacalc_lib`` under a repo root only when this package lives inside
+    that checkout (local ``maturin develop``). Installed site-packages trees do not walk up to
+    an unrelated checkout, so CI and normal ``pip install`` never load a stray repo ``.pyd``.
+    Set ``UACALC_LIB_DEVELOP=1`` to force the repo ``python/uacalc_lib`` directory when needed.
+    """
+    import os
+
+    tag = _abi_tag()
+    patterns = (
+        f"uacalc_lib.{tag}-*.pyd",
+        f"uacalc_lib.{tag}-*.so",
+        f"uacalc_lib.{tag}-*.dylib",
+        "uacalc_lib.*.pyd",
+        "uacalc_lib.*.so",
+        "uacalc_lib.*.dylib",
+    )
+    roots = [_package_dir]
+    repo = _find_repo_root(_package_dir)
+    if repo is not None:
+        dev_native = repo / "python" / "uacalc_lib"
+        if dev_native.is_dir() and dev_native.resolve() != _package_dir.resolve():
+            roots.append(dev_native)
+    elif os.environ.get("UACALC_LIB_DEVELOP") == "1":
+        forced = Path(os.environ.get("UACALC_LIB_REPO", ".")).resolve() / "python" / "uacalc_lib"
+        if forced.is_dir():
+            roots.append(forced)
+
+    seen: set[Path] = set()
+    matches: list[Path] = []
+    for root in roots:
+        for pattern in patterns:
+            for path in root.glob(pattern):
+                key = path.resolve()
+                if key in seen:
+                    continue
+                seen.add(key)
+                matches.append(path)
+    matches.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return matches
+
+
+for ext_file in _extension_candidates():
     try:
-        # Load the native extension module directly
-        spec = importlib.util.spec_from_file_location('uacalc_lib', ext_file)
+        spec = importlib.util.spec_from_file_location("uacalc_lib", ext_file)
         if spec and spec.loader:
             _native = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(_native)
-            # Replace this module's contents with the native extension's contents
-            # This makes all submodules (alg, lat, terms, etc.) available
             for name in dir(_native):
-                if not name.startswith('_') or name in ('__file__', '__name__', '__package__', '__doc__'):
+                if not name.startswith("_") or name in (
+                    "__file__",
+                    "__name__",
+                    "__package__",
+                    "__doc__",
+                ):
                     setattr(sys.modules[__name__], name, getattr(_native, name))
             _native_loaded = True
             break
     except Exception:
-        # Continue trying other files
         continue
 
-# If native extension wasn't found locally, try importing it as if it were installed
-# This handles the case where the package is installed via pip/maturin
 if not _native_loaded:
     try:
-        # Remove this module from sys.modules temporarily to allow importing the native extension
         _temp_module = sys.modules.pop(__name__, None)
         try:
-            # Try to import the native extension directly
-            # Python's import system should find it if it's installed
             import importlib
-            _native = importlib.import_module('uacalc_lib')
-            # If we got a different module (not this __init__.py), use it
-            if _native.__file__ != __file__:
+
+            _native = importlib.import_module("uacalc_lib")
+            if getattr(_native, "__file__", None) != __file__:
                 sys.modules[__name__] = _native
                 _native_loaded = True
         finally:
-            # Restore this module if import failed
             if not _native_loaded and _temp_module is not None:
                 sys.modules[__name__] = _temp_module
     except Exception:
         pass
-
-# If native extension still wasn't found, the package will exist but won't have submodules
-# This allows type checkers to work even if the extension isn't built yet
-

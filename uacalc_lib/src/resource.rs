@@ -15,6 +15,33 @@ fn install_signal_hook() {
 }
 
 /// Map [`UaError`] to the appropriate Python exception (PyO3 0.21).
+/// Map Rust limit errors surfaced as strings (legacy call sites) to Python exceptions.
+pub fn limit_string_to_py(msg: &str, py: Python<'_>) -> PyErr {
+    if msg.contains("memory limit") {
+        ua_to_py(
+            UaError::Memory {
+                used: 0,
+                limit: 0,
+            },
+            py,
+        )
+    } else if msg.contains("element limit") {
+        ua_to_py(
+            UaError::ElementLimit {
+                count: 0,
+                limit: 0,
+            },
+            py,
+        )
+    } else if msg.contains("computation interrupted") {
+        ua_to_py(UaError::Interrupted, py)
+    } else if msg.contains("time limit") {
+        ua_to_py(UaError::TimeLimit, py)
+    } else {
+        PyValueError::new_err(msg.to_string())
+    }
+}
+
 pub fn ua_to_py(err: UaError, py: Python<'_>) -> PyErr {
     match err {
         UaError::Memory { used, limit } => {
