@@ -42,3 +42,9 @@ Limits apply when a **top-level** `ComputationScope` starts (e.g. `Closer.sg_clo
 - Term interpretation tables (except op-table materialization)
 - Polymorphisms search
 - **`sg_close_parallel`** (phase 2–3)
+
+## Python GIL and cross-thread `cancel()` (phase 3)
+
+`cancel()` sets a **global** flag that Rust checkpoints honor on any thread. On the Python bindings, however, **`Closer.sg_close_power` / `sg_close` (and other real closure paths) run while holding the CPython GIL**, so another Python thread cannot call `cancel()` until that call returns. Cooperative stop from another thread during a **normal** closure therefore does not work today; only **Ctrl-C** (main thread) is polled via the signal hook inside checkpoints.
+
+Phase 1 tests use the private **`_stress_sg_close_power`** helper, which releases the GIL with `allow_threads` so cross-thread cancel can be exercised. **Phase 3:** release the GIL around the Rust body of `sg_close*` / other long-running exported methods so `cancel()` from a worker thread matches Rust behaviour.

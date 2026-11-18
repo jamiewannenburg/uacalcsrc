@@ -461,16 +461,16 @@ fn py_term_map(
     Ok(rust_map)
 }
 
-/// Run many `sg_close_power` passes under one computation scope (resource-limit tests).
+/// Test-only: many `sg_close_power` passes under one computation scope.
 #[pyfunction]
-#[pyo3(name = "stress_sg_close_power")]
-fn py_stress_sg_close_power(py: Python<'_>, closer: &mut PyCloser, repeats: usize) -> PyResult<()> {
+#[pyo3(name = "_stress_sg_close_power")]
+fn _stress_sg_close_power(py: Python<'_>, closer: &mut PyCloser, repeats: usize) -> PyResult<()> {
     py.allow_threads(|| closer.inner.sg_close_power_stress(repeats))
         .map_err(|e| ua_to_py(e, py))
 }
 
 pub fn register_closer(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyCloser>()?;
-    m.add_function(wrap_pyfunction!(py_stress_sg_close_power, m)?)?;
+    m.add_function(wrap_pyfunction!(_stress_sg_close_power, m)?)?;
     Ok(())
 }

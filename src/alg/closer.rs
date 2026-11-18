@@ -788,12 +788,18 @@ where
     /// Run [`sg_close_power_compute`] `repeats` times under one [`ComputationScope`].
     pub fn sg_close_power_stress(&mut self, repeats: usize) -> Result<(), UaError> {
         let _scope = ComputationScope::enter();
-        checkpoint_entry()?;
-        for _ in 0..repeats {
+        let prev_suppress = self.suppress_output;
+        self.suppress_output = true;
+        let run = (|| {
             checkpoint_entry()?;
-            self.sg_close_power_compute(0)?;
-        }
-        Ok(())
+            for _ in 0..repeats {
+                checkpoint_entry()?;
+                self.sg_close_power_compute(0)?;
+            }
+            Ok(())
+        })();
+        self.suppress_output = prev_suppress;
+        run
     }
 
     /// Implementation of closure computation.

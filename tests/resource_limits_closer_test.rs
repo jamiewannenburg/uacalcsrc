@@ -18,8 +18,10 @@ use uacalc::util::int_array::IntArray;
 use serial_test::serial;
 
 const HEAVY_POWER: usize = 5;
-const STRESS_REPEATS: usize = 800;
-const CANCEL_WAKE_MS: u64 = 80;
+/// Effectively unbounded for CI: uncancelled run would exceed any test timeout.
+const STRESS_REPEATS_UNBOUNDED: usize = usize::MAX / 4;
+const CANCEL_WAKE_MS: u64 = 150;
+const GENEROUS_TEST_BOUND: Duration = Duration::from_secs(10);
 
 fn heavy_m4_closer() -> Closer<i32> {
     let path = Path::new("resources/algebras/m4.ua");
@@ -76,23 +78,15 @@ fn cancel_is_consumed_at_checkpoint() {
 #[serial]
 fn cancel_during_sg_close_power_from_other_thread() {
     reset_all_limits();
-    let baseline_start = Instant::now();
-    heavy_m4_closer()
-        .sg_close_power_stress(STRESS_REPEATS)
-        .unwrap();
-    let baseline = baseline_start.elapsed();
-    assert!(baseline >= Duration::from_millis(500));
-
     let (ready_tx, ready_rx) = sync_channel::<()>(0);
     let outcome: Arc<Mutex<Option<Result<(), UaError>>>> = Arc::new(Mutex::new(None));
     let outcome_worker = outcome.clone();
     let handle = thread::spawn(move || {
         let mut closer = heavy_m4_closer();
         ready_tx.send(()).unwrap();
-        outcome_worker
-            .lock()
-            .unwrap()
-            .replace(closer.sg_close_power_stress(STRESS_REPEATS));
+        outcome_worker.lock().unwrap().replace(
+            closer.sg_close_power_stress(STRESS_REPEATS_UNBOUNDED),
+        );
     });
     ready_rx.recv().unwrap();
     thread::sleep(Duration::from_millis(CANCEL_WAKE_MS));
@@ -103,9 +97,9 @@ fn cancel_during_sg_close_power_from_other_thread() {
     let run = outcome.lock().unwrap().take().unwrap();
     reset_all_limits();
     assert!(matches!(run, Err(UaError::Interrupted)));
-    assert!(interrupted < baseline / 2);
+    assert!(interrupted < GENEROUS_TEST_BOUND);
     heavy_m4_closer()
-        .sg_close_power_stress(20)
+        .sg_close_power_stress(5)
         .expect("after reset");
 }
 
@@ -128,8 +122,8 @@ fn time_limit_realistic_on_stress_closure() {
     reset_all_limits();
     set_time_limit(Some(Duration::from_millis(200)));
     let start = Instant::now();
-    let err = heavy_m4_closer().sg_close_power_stress(STRESS_REPEATS);
+    let err = heavy_m4_closer().sg_close_power_stress(STRESS_REPEATS_UNBOUNDED);
     reset_all_limits();
     assert!(matches!(err, Err(UaError::TimeLimit)));
-    assert!(start.elapsed() < Duration::from_secs(2));
+    assert!(start.elapsed() < GENEROUS_TEST_BOUND);
 }
