@@ -9,5 +9,6 @@ pub mod group;
 pub mod io;
 pub mod lat;
 pub mod progress;
+pub mod resource;
 pub mod terms;
 pub mod util;

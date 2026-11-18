@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 
+pub mod resource;
 pub mod alg;
 pub mod element;
 pub mod eq;
@@ -14,6 +15,8 @@ pub mod util;
 /// A Python module implemented in Rust.
 #[pymodule]
 fn uacalc_lib(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    resource::register(_py, m)?;
+
     // Algebra module
     let alg_module = PyModule::new_bound(_py, "alg")?;
     alg::register_alg_module(_py, &alg_module)?;

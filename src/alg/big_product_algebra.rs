@@ -673,7 +673,7 @@ where
         }
 
         // Compute closure
-        closer.sg_close()
+        closer.sg_close().map_err(|e| e.to_string())
     }
 
     /// Get the projection algebra for the k-th factor.

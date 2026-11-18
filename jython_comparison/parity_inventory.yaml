@@ -2,9 +2,9 @@
 # Generator version: 3
 # Do not edit by hand; run the script to refresh.
 meta:
-  generated_at_utc: "2026-10-21T14:54:38.452126+00:00"
+  generated_at_utc: "2026-11-18T09:48:55.741304+00:00"
   generator_version: 3
-  repo_root: /home/jamie/Documents/uacalcsrc
+  repo_root: "C:/Users/u28409265/Documents/uacalcsrc"
   java_org_uacalc_files_scanned: 146
   java_org_uacalc_classes_and_units: 172
   public_surface_members: 1111
@@ -28,6 +28,7 @@ meta:
     - group
     - io
     - lat
+    - resource
     - terms
     - util
   python_org_uacalc_packages_with_init:

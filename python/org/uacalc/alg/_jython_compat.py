@@ -14,6 +14,8 @@ from org.uacalc._exceptions import (
     IndexOutOfBoundsException,
     NoSuchElementException,
     NullPointerException,
+    OutOfMemoryError,
+    RuntimeException,
     UnsupportedOperationException,
     translate_illegal_argument,
 )
@@ -985,10 +987,10 @@ def _install(alg_module_globals: dict) -> None:
                 if getattr(Closer, "doParallel", False):
                     fn = getattr(self._inner, "sg_close_parallel", None)
                     if callable(fn):
-                        self._ans = _lib_call(fn)
+                        self._ans = _lib_call_closer(fn)
                         self._ans_set = True
                         return self._ans
-                self._ans = _lib_call(self._inner.sg_close)
+                self._ans = _lib_call_closer(self._inner.sg_close)
                 self._ans_set = True
                 return self._ans
             if termMap is not None:
@@ -1001,7 +1003,7 @@ def _install(alg_module_globals: dict) -> None:
             if not callable(fn):
                 raise TypeError("sgClose(elems, closedMark, termMap) is not bound")
             mark = 0 if closedMark is None else int(closedMark)
-            self._ans = _lib_call(fn, elems, mark)
+            self._ans = _lib_call_closer(fn, elems, mark)
             self._ans_set = True
             return self._ans
 
@@ -1017,12 +1019,12 @@ def _install(alg_module_globals: dict) -> None:
             fn = getattr(self._inner, "sg_close_parallel", None)
             if not callable(fn):
                 raise TypeError("sgCloseParallel is not bound")
-            self._ans = _lib_call(fn)
+            self._ans = _lib_call_closer(fn)
             self._ans_set = True
             return self._ans
 
         def sgClosePower(self) -> Any:
-            self._ans = _lib_call(self._inner.sg_close_power)
+            self._ans = _lib_call_closer(self._inner.sg_close_power)
             self._ans_set = True
             return self._ans
 
@@ -2182,6 +2184,16 @@ def _install(alg_module_globals: dict) -> None:
             return fn(*args, **kwargs)
         except ValueError as exc:
             translate_illegal_argument(exc)
+        except MemoryError as exc:
+            raise OutOfMemoryError(str(exc)) from exc
+        except TimeoutError as exc:
+            raise RuntimeException(str(exc)) from exc
+
+    def _lib_call_closer(fn: Any, *args: Any, **kwargs: Any) -> Any:
+        try:
+            return _lib_call(fn, *args, **kwargs)
+        except KeyboardInterrupt:
+            return None
 
     def _as_algebra(alg: Any) -> Any:
         return getattr(alg, "_inner", alg)

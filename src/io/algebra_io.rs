@@ -326,7 +326,7 @@ pub fn read_op<R: BufRead>(arity: i32, size: i32, reader: &mut R) -> Result<Box<
     
     let op_sym = OperationSymbol::get_operation_symbol(arity);
     operations::make_int_operation(op_sym, size, values)
-        .map_err(|e| BadAlgebraFileException::new(&e))
+        .map_err(|e| BadAlgebraFileException::new(&e.to_string()))
 }
 
 /// Read a depth-2 list (unimplemented).

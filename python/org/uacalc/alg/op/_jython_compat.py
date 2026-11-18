@@ -12,6 +12,8 @@ from org.uacalc._exceptions import (
     ClassCastException,
     IllegalArgumentException,
     NullPointerException,
+    OutOfMemoryError,
+    RuntimeException,
     UnsupportedOperationException,
     translate_illegal_argument,
 )
@@ -37,6 +39,10 @@ def _install(op_globals: dict) -> None:
             if "Unsupported operation" in msg:
                 raise ClassCastException(msg) from exc
             translate_illegal_argument(exc)
+        except MemoryError as exc:
+            raise OutOfMemoryError(str(exc)) from exc
+        except TimeoutError as exc:
+            raise RuntimeException(str(exc)) from exc
 
     # PyIntOperation is not weakrefable and compares by value, so record
     # construction by identity. Java IntOperationImp / value-at / function

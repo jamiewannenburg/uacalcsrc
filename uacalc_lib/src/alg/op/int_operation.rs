@@ -443,15 +443,18 @@ impl PyIntOperation {
 impl PyIntOperation {
     /// Build a table-based IntOperation from any Operation trait object.
     pub(crate) fn from_dyn_op(op: &dyn Operation) -> PyResult<Self> {
-        match uacalc::alg::op::ops::make_int_operation_from_dyn(op) {
-            Ok(boxed) => {
-                let sym = boxed.symbol().clone();
-                let set_size = boxed.get_set_size();
-                let table = boxed.get_table().unwrap().to_vec();
-                let inner = IntOperation::new(sym, set_size, table).map_err(PyValueError::new_err)?;
-                Ok(PyIntOperation { inner })
+        Python::with_gil(|py| {
+            match uacalc::alg::op::ops::make_int_operation_from_dyn(op) {
+                Ok(boxed) => {
+                    let sym = boxed.symbol().clone();
+                    let set_size = boxed.get_set_size();
+                    let table = boxed.get_table().unwrap().to_vec();
+                    let inner =
+                        IntOperation::new(sym, set_size, table).map_err(PyValueError::new_err)?;
+                    Ok(PyIntOperation { inner })
+                }
+                Err(e) => Err(crate::resource::ua_to_py(e, py)),
             }
-            Err(e) => Err(PyValueError::new_err(e)),
-        }
+        })
     }
 }

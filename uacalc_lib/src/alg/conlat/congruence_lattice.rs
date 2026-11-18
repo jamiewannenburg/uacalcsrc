@@ -51,7 +51,13 @@ impl PyCongruenceLattice {
 
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
-    fn con_cardinality(&mut self) -> usize { self.inner.con_cardinality() }
+    fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
+        use uacalc::resource::ComputationScope;
+        let _scope = ComputationScope::enter();
+        self.inner
+            .con_cardinality_checked()
+            .map_err(|e| crate::resource::ua_to_py(e, py))
+    }
 
     fn is_distributive(&mut self) -> bool { self.inner.is_distributive() }
 
@@ -90,10 +96,11 @@ impl PyCongruenceLattice {
         jis.iter().map(|p| PyPartition { inner: p.clone() }).collect()
     }
 
-    fn principals(&mut self) -> Vec<PyPartition> {
-        use uacalc::alg::conlat::CongruenceLattice;
-        let principals: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::principals(&mut self.inner);
-        principals.iter().map(|p| PyPartition { inner: p.clone() }).collect()
+    fn principals(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        match self.inner.principals_checked() {
+            Ok(parts) => Ok(parts.iter().map(|p| PyPartition { inner: p.clone() }).collect()),
+            Err(e) => Err(crate::resource::ua_to_py(e, py)),
+        }
     }
 
     fn atoms(&mut self) -> Vec<PyPartition> {
@@ -136,7 +143,12 @@ impl PyCongruenceLattice {
 
     fn permutability_level(&mut self) -> i32 { self.inner.permutability_level() }
 
-    fn cg(&mut self, a: usize, b: usize) -> PyPartition { PyPartition { inner: self.inner.cg(a, b) } }
+    fn cg(&mut self, py: Python<'_>, a: usize, b: usize) -> PyResult<PyPartition> {
+        match self.inner.cg_checked(a, b) {
+            Ok(p) => Ok(PyPartition { inner: p }),
+            Err(e) => Err(crate::resource::ua_to_py(e, py)),
+        }
+    }
 
     fn complements(&mut self, partition: &PyPartition) -> Vec<PyPartition> {
         self.inner
@@ -285,8 +297,8 @@ impl PyCongruenceLattice {
     ///
     /// Returns:
     ///     int: The cardinality
-    fn cardinality(&mut self) -> usize {
-        self.con_cardinality()
+    fn cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
+        self.con_cardinality(py)
     }
 
     /// Get the BasicLattice view of this congruence lattice.
@@ -516,9 +528,15 @@ impl PyCongruenceLatticeIntArray {
 
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
-    fn con_cardinality(&mut self) -> usize { self.inner.con_cardinality() }
+    fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
+        use uacalc::resource::ComputationScope;
+        let _scope = ComputationScope::enter();
+        self.inner
+            .con_cardinality_checked()
+            .map_err(|e| crate::resource::ua_to_py(e, py))
+    }
 
-    fn cardinality(&mut self) -> usize { self.con_cardinality() }
+    fn cardinality(&mut self, py: Python<'_>) -> PyResult<usize> { self.con_cardinality(py) }
 
     fn is_distributive(&mut self) -> bool { self.inner.is_distributive() }
 
@@ -557,10 +575,11 @@ impl PyCongruenceLatticeIntArray {
         jis.iter().map(|p| PyPartition { inner: p.clone() }).collect()
     }
 
-    fn principals(&mut self) -> Vec<PyPartition> {
-        use uacalc::alg::conlat::CongruenceLattice;
-        let principals: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::principals(&mut self.inner);
-        principals.iter().map(|p| PyPartition { inner: p.clone() }).collect()
+    fn principals(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        match self.inner.principals_checked() {
+            Ok(parts) => Ok(parts.iter().map(|p| PyPartition { inner: p.clone() }).collect()),
+            Err(e) => Err(crate::resource::ua_to_py(e, py)),
+        }
     }
 
     fn atoms(&mut self) -> Vec<PyPartition> {
@@ -603,7 +622,12 @@ impl PyCongruenceLatticeIntArray {
 
     fn permutability_level(&mut self) -> i32 { self.inner.permutability_level() }
 
-    fn cg(&mut self, a: usize, b: usize) -> PyPartition { PyPartition { inner: self.inner.cg(a, b) } }
+    fn cg(&mut self, py: Python<'_>, a: usize, b: usize) -> PyResult<PyPartition> {
+        match self.inner.cg_checked(a, b) {
+            Ok(p) => Ok(PyPartition { inner: p }),
+            Err(e) => Err(crate::resource::ua_to_py(e, py)),
+        }
+    }
 
     fn complements(&mut self, partition: &PyPartition) -> Vec<PyPartition> {
         self.inner

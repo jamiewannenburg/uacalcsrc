@@ -277,6 +277,7 @@ where
             closer.set_term_map(Some(initial_term_map));
         }
 
+        let _scope = crate::resource::ComputationScope::enter();
         let universe = closer.sg_close()?;
         if find_terms {
             let term_map: HashMap<IntArray, Box<dyn Term>> = closer

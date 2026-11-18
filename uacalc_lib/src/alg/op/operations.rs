@@ -1,5 +1,6 @@
 //! Python wrapper for Operations utility class
 
+use crate::resource::ua_to_py;
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyDict};
@@ -178,7 +179,7 @@ impl PyOperations {
     /// Overloaded constructor for IntOperation from symbol or name.
     #[staticmethod]
     #[pyo3(signature = (a, b, c, d=None))]
-    fn make_int_operation(a: &Bound<'_, PyAny>, b: i32, c: &Bound<'_, PyAny>, d: Option<&Bound<'_, PyAny>>) -> PyResult<PyIntOperation> {
+    fn make_int_operation(py: Python<'_>, a: &Bound<'_, PyAny>, b: i32, c: &Bound<'_, PyAny>, d: Option<&Bound<'_, PyAny>>) -> PyResult<PyIntOperation> {
         // Case 1: (symbol, set_size, table)
         if let Ok(sym) = a.extract::<PyRef<PyOperationSymbol>>() {
             let set_size = b;
@@ -191,7 +192,7 @@ impl PyOperations {
                     let inner = uacalc::alg::op::IntOperation::new(sy, ss, tb).map_err(PyValueError::new_err)?;
                     return Ok(PyIntOperation { inner })
                 },
-                Err(e) => return Err(PyValueError::new_err(e)),
+                Err(e) => return Err(ua_to_py(e, py)),
             }
         }
         // Fallback: if `a` looks like an OperationSymbol instance (alias), reconstruct
@@ -208,7 +209,7 @@ impl PyOperations {
                     let inner = uacalc::alg::op::IntOperation::new(sy, ss, tb).map_err(PyValueError::new_err)?;
                     return Ok(PyIntOperation { inner })
                 },
-                Err(e) => return Err(PyValueError::new_err(e)),
+                Err(e) => return Err(ua_to_py(e, py)),
             }
         }
         // Case 2: (name: str, arity, set_size, table)
@@ -225,7 +226,7 @@ impl PyOperations {
                     let inner = uacalc::alg::op::IntOperation::new(sy, ss, tb).map_err(PyValueError::new_err)?;
                     return Ok(PyIntOperation { inner })
                 },
-                Err(e) => return Err(PyValueError::new_err(e)),
+                Err(e) => return Err(ua_to_py(e, py)),
             }
         }
         Err(PyValueError::new_err("Expected OperationSymbol or name string"))
@@ -233,7 +234,7 @@ impl PyOperations {
 
     /// Construct an operation from a string symbol and table.
     #[staticmethod]
-    fn make_int_operation_str(name: &str, arity: i32, set_size: i32, table: Vec<i32>) -> PyResult<PyIntOperation> {
+    fn make_int_operation_str(py: Python<'_>, name: &str, arity: i32, set_size: i32, table: Vec<i32>) -> PyResult<PyIntOperation> {
         match uacalc::alg::op::ops::make_int_operation_str(name, arity, set_size, table) {
             Ok(op) => {
                 let sym = op.symbol().clone();
@@ -242,7 +243,7 @@ impl PyOperations {
                 let inner = uacalc::alg::op::IntOperation::new(sym, set_size, table).map_err(PyValueError::new_err)?;
                 Ok(PyIntOperation { inner })
             },
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(ua_to_py(e, py)),
         }
     }
 
