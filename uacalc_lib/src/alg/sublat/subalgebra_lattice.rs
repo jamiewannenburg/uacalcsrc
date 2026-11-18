@@ -111,10 +111,8 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let one_gens = py
             .allow_threads(move || {
-                use uacalc::resource::ComputationScope;
-                let _scope = ComputationScope::enter();
-                lat
-                    .lock()
+                let _scope = uacalc::resource::maybe_computation_scope();
+                lat.lock()
                     .unwrap()
                     .one_generated_subalgebras_checked()
                     .map(|v| v.clone())
@@ -134,10 +132,8 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let jis = py
             .allow_threads(move || {
-                use uacalc::resource::ComputationScope;
-                let _scope = ComputationScope::enter();
-                lat
-                    .lock()
+                let _scope = uacalc::resource::maybe_computation_scope();
+                lat.lock()
                     .unwrap()
                     .join_irreducibles_checked()
                     .map(|v| v.clone())
@@ -235,10 +231,8 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let univ = py
             .allow_threads(move || {
-                use uacalc::resource::ComputationScope;
-                let _scope = ComputationScope::enter();
-                lat
-                    .lock()
+                let _scope = uacalc::resource::maybe_computation_scope();
+                lat.lock()
                     .unwrap()
                     .universe_checked()
                     .map(|set| set.iter().cloned().collect::<Vec<_>>())
@@ -258,8 +252,7 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let n = py
             .allow_threads(move || {
-                use uacalc::resource::ComputationScope;
-                let _scope = ComputationScope::enter();
+                let _scope = uacalc::resource::maybe_computation_scope();
                 lat.lock().unwrap().cardinality_checked()
             })
             .map_err(|e| crate::resource::ua_to_py(e, py))?;
@@ -278,8 +271,7 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let filtered = py
             .allow_threads(move || {
-                use uacalc::resource::ComputationScope;
-                let _scope = ComputationScope::enter();
+                let _scope = uacalc::resource::maybe_computation_scope();
                 lat.lock()
                     .unwrap()
                     .filter_checked(&element)

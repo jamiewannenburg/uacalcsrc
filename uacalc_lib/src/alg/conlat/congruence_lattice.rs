@@ -53,8 +53,7 @@ impl PyCongruenceLattice {
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
         py.allow_threads(|| {
-            use uacalc::resource::ComputationScope;
-            let _scope = ComputationScope::enter();
+            let _scope = uacalc::resource::maybe_computation_scope();
             self.inner.con_cardinality_checked()
         })
         .map_err(|e| crate::resource::ua_to_py(e, py))
@@ -138,8 +137,7 @@ impl PyCongruenceLattice {
 
     fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
         py.allow_threads(|| {
-            use uacalc::resource::ComputationScope;
-            let _scope = ComputationScope::enter();
+            let _scope = uacalc::resource::maybe_computation_scope();
             self.inner.universe_checked()
         })
         .map(|univ| univ.into_iter().map(|p| PyPartition { inner: p }).collect())
@@ -554,8 +552,7 @@ impl PyCongruenceLatticeIntArray {
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
         py.allow_threads(|| {
-            use uacalc::resource::ComputationScope;
-            let _scope = ComputationScope::enter();
+            let _scope = uacalc::resource::maybe_computation_scope();
             self.inner.con_cardinality_checked()
         })
         .map_err(|e| crate::resource::ua_to_py(e, py))
@@ -641,8 +638,7 @@ impl PyCongruenceLatticeIntArray {
 
     fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
         py.allow_threads(|| {
-            use uacalc::resource::ComputationScope;
-            let _scope = ComputationScope::enter();
+            let _scope = uacalc::resource::maybe_computation_scope();
             self.inner.universe_checked()
         })
         .map(|univ| univ.into_iter().map(|p| PyPartition { inner: p }).collect())

@@ -204,6 +204,80 @@ fn sublattice_join_irreducibles_then_filter_same_lattice() {
     reset_all_limits();
 }
 
+/// Nested checked calls on one lattice: `join_irreducibles` then explicit `universe`.
+#[test]
+fn sublattice_join_irreducibles_then_universe_same_lattice() {
+    reset_all_limits();
+    let mut lat = m4_sub_lat();
+    let _scope = ComputationScope::enter();
+    assert!(!lat.join_irreducibles_checked().unwrap().is_empty());
+    assert_eq!(lat.universe_checked().unwrap().len(), M4_SUB_CARD);
+    reset_all_limits();
+}
+
+/// Filter populates universe-related caches; a follow-up `universe` must succeed on the same lattice.
+#[test]
+fn sublattice_filter_then_universe_same_lattice() {
+    reset_all_limits();
+    let mut lat = m4_sub_lat();
+    let _scope = ComputationScope::enter();
+    let one = lat.zero().clone();
+    lat.filter_checked(&one).expect("filter without universe cache");
+    assert_eq!(lat.universe_checked().unwrap().len(), M4_SUB_CARD);
+    reset_all_limits();
+}
+
+/// `join_irreducibles_checked` builds on one-generated data; `cardinality_checked` needs `universe`.
+#[test]
+fn sublattice_join_irreducibles_then_cardinality_same_lattice() {
+    reset_all_limits();
+    let mut lat = m4_sub_lat();
+    let _scope = ComputationScope::enter();
+    assert!(!lat.join_irreducibles_checked().unwrap().is_empty());
+    assert_eq!(lat.cardinality_checked().unwrap(), M4_SUB_CARD);
+    reset_all_limits();
+}
+
+/// Filter without a cached universe walks one-generated / closure paths (exercises universe hooks).
+#[test]
+fn sublattice_filter_then_cardinality_same_lattice() {
+    reset_all_limits();
+    let mut lat = m4_sub_lat();
+    let _scope = ComputationScope::enter();
+    let one = lat.zero().clone();
+    lat.filter_checked(&one).expect("filter without universe cache");
+    assert_eq!(lat.cardinality_checked().unwrap(), M4_SUB_CARD);
+    reset_all_limits();
+}
+
+/// Mirrors the `Arc<Mutex<SubalgebraLattice>>` Python wrapper: universe on one thread, filter on another (no deadlock).
+#[test]
+fn sublattice_arc_mutex_universe_then_filter_on_other_thread() {
+    reset_all_limits();
+    let lat = Arc::new(Mutex::new(m4_sub_lat()));
+    let (ready_tx, ready_rx) = sync_channel::<()>(0);
+    let worker_lat = Arc::clone(&lat);
+    let universe_handle = thread::spawn(move || {
+        let mut g = worker_lat.lock().unwrap();
+        ready_tx.send(()).unwrap();
+        g.universe_checked().expect("universe on worker");
+    });
+    ready_rx.recv().unwrap();
+    let filter_lat = Arc::clone(&lat);
+    let filter_handle = thread::spawn(move || {
+        let mut g = filter_lat.lock().unwrap();
+        let z = g.zero().clone();
+        g.filter_checked(&z).expect("filter after worker universe")
+    });
+    universe_handle.join().unwrap();
+    filter_handle.join().unwrap();
+    reset_all_limits();
+    assert_eq!(
+        lat.lock().unwrap().cardinality_checked().unwrap(),
+        M4_SUB_CARD
+    );
+}
+
 #[test]
 #[serial]
 fn cancel_consumed_at_checkpoint_force() {

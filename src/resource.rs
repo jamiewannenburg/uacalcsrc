@@ -62,6 +62,15 @@ impl From<UaError> for String {
 }
 
 static CANCEL_REQUESTED: AtomicBool = AtomicBool::new(false);
+/// Set when any thread has a non-None memory/element/time limit (fast path for overhead-free runs).
+static LIMITS_CONFIGURED: AtomicBool = AtomicBool::new(false);
+
+fn sync_limits_configured() {
+    let configured = with_state(|s| {
+        s.memory_limit.is_some() || s.element_limit.is_some() || s.time_limit.is_some()
+    });
+    LIMITS_CONFIGURED.store(configured, Ordering::Release);
+}
 
 type SignalHookFn = Box<dyn Fn() -> Result<(), UaError> + Send + Sync>;
 
@@ -255,14 +264,17 @@ fn with_state<R>(f: impl FnOnce(&mut ThreadState) -> R) -> R {
 
 pub fn set_memory_limit(limit: Option<u64>) {
     with_state(|s| s.memory_limit = limit);
+    sync_limits_configured();
 }
 
 pub fn set_element_limit(limit: Option<u64>) {
     with_state(|s| s.element_limit = limit);
+    sync_limits_configured();
 }
 
 pub fn set_time_limit(limit: Option<Duration>) {
     with_state(|s| s.time_limit = limit);
+    sync_limits_configured();
 }
 
 pub fn request_cancel() {
@@ -276,13 +288,30 @@ pub fn clear_cancel() {
 /// Reset all limit configuration and cancel flag (for tests).
 pub fn reset_all_limits() {
     clear_cancel();
-    set_memory_limit(None);
-    set_element_limit(None);
-    set_time_limit(None);
+    with_state(|s| {
+        s.memory_limit = None;
+        s.element_limit = None;
+        s.time_limit = None;
+    });
+    sync_limits_configured();
 }
 
 pub fn cancel_requested() -> bool {
     CANCEL_REQUESTED.load(Ordering::SeqCst)
+}
+
+/// True when any cooperative limit or cancel is in play (tests / user configuration).
+pub fn cooperative_limits_active() -> bool {
+    cancel_requested() || LIMITS_CONFIGURED.load(Ordering::Acquire)
+}
+
+/// Enter a computation scope only when limits are active (fast path for overhead-free runs).
+pub fn maybe_computation_scope() -> Option<ComputationScope> {
+    if cooperative_limits_active() {
+        Some(ComputationScope::enter())
+    } else {
+        None
+    }
 }
 
 /// RAII guard: entering depth 0 resets per-computation counters and deadline.
