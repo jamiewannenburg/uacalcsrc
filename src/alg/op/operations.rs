@@ -190,23 +190,25 @@ pub fn equal_values(op0: &dyn Operation, op1: &dyn Operation) -> Result<bool, St
 // =============================================================================
 
 /// Table-ize any operation so later factory methods can return `IntOperation`.
-pub fn make_int_operation_from_dyn(op: &dyn Operation) -> Result<Box<dyn Operation>, String> {
+pub fn make_int_operation_from_dyn(op: &dyn Operation) -> Result<Box<dyn Operation>, crate::resource::UaError> {
     if let Some(table) = op.get_table() {
-        return make_int_operation(op.symbol().clone(), op.get_set_size(), table.to_vec());
+        return make_int_operation(op.symbol().clone(), op.get_set_size(), table.to_vec())
+            .map_err(crate::resource::UaError::from);
     }
     let arity = op.arity();
     let set_size = op.get_set_size();
-    let table_size = if arity == 0 {
-        1
+    let table = if arity == 0 {
+        vec![op.int_value_at(&[]).map_err(crate::resource::UaError::from)?]
     } else {
-        (set_size as usize).pow(arity as u32)
+        let mut table = crate::resource::alloc_i32_table(set_size as usize, arity as u32)?;
+        for i in 0..table.len() {
+            let args = horner::horner_inv_same_size(i as i32, set_size, arity as usize);
+            table[i] = op.int_value_at(&args).map_err(crate::resource::UaError::from)?;
+        }
+        table
     };
-    let mut table = Vec::with_capacity(table_size);
-    for i in 0..table_size {
-        let args = horner::horner_inv_same_size(i as i32, set_size, arity as usize);
-        table.push(op.int_value_at(&args)?);
-    }
     make_int_operation(op.symbol().clone(), set_size, table)
+        .map_err(crate::resource::UaError::from)
 }
 
 /// Make Jónsson operations from a near-unanimity function, omitting the two projections.
@@ -219,7 +221,7 @@ pub fn make_jonsson_operations_from_nuf(nuf: &dyn Operation) -> Result<Vec<Box<d
     if cap < 0 {
         return Err(format!("Illegal Capacity: {}", cap));
     }
-    let table_op = make_int_operation_from_dyn(nuf)?;
+    let table_op = make_int_operation_from_dyn(nuf).map_err(|e| e.to_string())?;
     let arc: Arc<dyn Operation> = Arc::from(table_op);
     let mut ans = Vec::with_capacity(cap as usize);
     let mut reduct_array = vec![0i32; nuf_arity as usize];
@@ -399,6 +401,9 @@ pub fn make_int_operation(
     alg_size: i32,
     value_table: Vec<i32>,
 ) -> Result<Box<dyn Operation>, String> {
+    if let Err(e) = crate::resource::try_charge((value_table.len() as u64).saturating_mul(4)) {
+        return Err(e.to_string());
+    }
     let op = IntOperation::new(symbol, alg_size, value_table)?;
     Ok(Box::new(op))
 }

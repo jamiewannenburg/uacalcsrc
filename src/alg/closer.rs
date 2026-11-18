@@ -8,6 +8,7 @@
 #![allow(unused_imports, dead_code, unused_variables)]
 
 use crate::alg::big_product_algebra::BigProductAlgebra;
+use crate::resource::{charge_kept_closure_element, checkpoint, ComputationScope, UaError};
 use crate::alg::conlat::partition::Partition;
 use crate::alg::parallel::SingleClose;
 use crate::alg::Algebra;
@@ -724,7 +725,7 @@ where
     /// // let mut closer = ...;
     /// // let closure = closer.sg_close()?;
     /// ```
-    pub fn sg_close(&mut self) -> Result<Vec<IntArray>, String> {
+    pub fn sg_close(&mut self) -> Result<Vec<IntArray>, UaError> {
         self.sg_close_from(None, 0)
     }
 
@@ -737,7 +738,7 @@ where
         &mut self,
         elems: Option<Vec<IntArray>>,
         closed_mark: usize,
-    ) -> Result<Vec<IntArray>, String> {
+    ) -> Result<Vec<IntArray>, UaError> {
         if let Some(elems) = elems {
             self.generators = elems;
         }
@@ -780,7 +781,7 @@ where
     /// // let mut closer = ...; // with a power algebra
     /// // let closure = closer.sg_close_power()?;
     /// ```
-    pub fn sg_close_power(&mut self) -> Result<Vec<IntArray>, String> {
+    pub fn sg_close_power(&mut self) -> Result<Vec<IntArray>, UaError> {
         self.sg_close_power_impl(0)
     }
 
@@ -792,7 +793,9 @@ where
     /// # Returns
     /// * `Ok(Vec<IntArray>)` - The closure
     /// * `Err(String)` - If computation fails
-    fn sg_close_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, String> {
+    fn sg_close_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
+        let _scope = ComputationScope::enter();
+        checkpoint()?;
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");
         }
@@ -802,7 +805,9 @@ where
         // wrapper state.
         let operations = self.algebra.operations_ref_arc().to_vec();
         if operations.is_empty() {
-            return Err("Algebra has no operations for closure computation".to_string());
+            return Err(UaError::message(
+                "Algebra has no operations for closure computation",
+            ));
         }
 
         // Initialize answer with generators
@@ -938,6 +943,7 @@ where
             }
 
             pass += 1;
+            checkpoint()?;
 
             // Check max size
             if let Some(max_size) = self.max_size {
@@ -995,6 +1001,7 @@ where
                     // Get current indices (use get_current to avoid borrow issues)
                     let indices = inc.get_current();
                     combination_count += 1;
+                    checkpoint()?;
 
                     // Collect arguments - check bounds to avoid out-of-range access
                     // Note: The incrementor generates indices in range [0, original_current_mark-1],
@@ -1030,6 +1037,10 @@ where
                                     let was_new = su.insert(result_ia.clone());
                                     // Check if it's new
                                     if was_new {
+                                        charge_kept_closure_element(
+                                            result_ia.as_slice().len(),
+                                            self.term_map.is_some(),
+                                        )?;
                                         // New element found - add to closure
                                         self.ans.push(result_ia.clone());
 
@@ -1483,7 +1494,9 @@ where
     /// # Returns
     /// * `Ok(Vec<IntArray>)` - The closure
     /// * `Err(String)` - If computation fails
-    fn sg_close_power_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, String> {
+    fn sg_close_power_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
+        let _scope = ComputationScope::enter();
+        checkpoint()?;
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");
         }
@@ -1492,9 +1505,9 @@ where
         let root_factors = self
             .algebra
             .root_factors()
-            .ok_or("Power algebra should have root factors".to_string())?;
+            .ok_or_else(|| UaError::message("Power algebra should have root factors"))?;
         if root_factors.is_empty() {
-            return Err("Power algebra has no root factors".to_string());
+            return Err(UaError::message("Power algebra has no root factors"));
         }
         let root_alg = &root_factors[0];
 
@@ -1720,6 +1733,7 @@ where
             }
 
             pass += 1;
+            checkpoint()?;
 
             // Apply operations to expand the closure
             use crate::util::SequenceGenerator;
@@ -1757,6 +1771,7 @@ where
                 loop {
                     let indices = inc.get_current();
                     combo_count += 1;
+                    checkpoint()?;
 
                     // DEBUG: Print first few combinations
                     if combo_count <= 10 {
@@ -1777,11 +1792,11 @@ where
                     for &idx in &indices {
                         let idx_usize = idx as usize;
                         if idx_usize >= raw_list.len() {
-                            return Err(format!(
+                            return Err(UaError::message(format!(
                                 "Index {} out of bounds for raw_list (length: {})",
                                 idx_usize,
                                 raw_list.len()
-                            ));
+                            )));
                         }
                     }
 
@@ -1799,11 +1814,11 @@ where
                             if (index as usize) < table.len() {
                                 v_raw[j] = table[index as usize];
                             } else {
-                                return Err(format!(
+                                return Err(UaError::message(format!(
                                     "Table index {} out of bounds for table size {}",
                                     index,
                                     table.len()
-                                ));
+                                )));
                             }
                         }
                     } else {
@@ -1832,6 +1847,10 @@ where
 
                     if let Ok(v) = IntArray::from_array(v_raw) {
                         if su.insert(v.clone()) {
+                            charge_kept_closure_element(
+                                v.as_slice().len(),
+                                self.term_map.is_some(),
+                            )?;
                             self.ans.push(v.clone());
                             raw_list.push(v.as_slice().to_vec());
 
@@ -1852,24 +1871,27 @@ where
                                             // This shouldn't happen - all arguments should have terms
                                             eprintln!("WARNING: No term found for argument at index {} (element: {:?})", idx_usize, arg_elem);
                                             // fail gracefully
-                                            return Err(format!("No term found for argument at index {} (element: {:?})", idx_usize, arg_elem));
+                                            return Err(UaError::message(format!(
+                                                "No term found for argument at index {} (element: {:?})",
+                                                idx_usize, arg_elem
+                                            )));
                                         }
                                     } else {
                                         // Index out of bounds - this should never happen with correct sequence generation
                                         // but if it does, we should fail rather than create an incomplete term
-                                        return Err(format!(
+                                        return Err(UaError::message(format!(
                                             "Index {} out of bounds (current_mark: {})",
                                             idx_usize, current_mark
-                                        ));
+                                        )));
                                     }
                                 }
                                 // Ensure we have the correct number of children (should match arity)
                                 if children.len() != arity {
-                                    return Err(format!(
+                                    return Err(UaError::message(format!(
                                         "Expected {} children but got {} for term construction",
                                         arity,
                                         children.len()
-                                    ));
+                                    )));
                                 }
                                 let symbol = symbols[i].clone();
                                 let new_term = Box::new(NonVariableTerm::new(symbol, children))

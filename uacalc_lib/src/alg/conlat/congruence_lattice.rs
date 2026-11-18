@@ -51,7 +51,14 @@ impl PyCongruenceLattice {
 
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
-    fn con_cardinality(&mut self) -> usize { self.inner.con_cardinality() }
+    fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
+        use uacalc::resource::ComputationScope;
+        let _scope = ComputationScope::enter();
+        match self.inner.make_universe_with_limit_checked(usize::MAX) {
+            Ok(()) => Ok(self.inner.con_cardinality()),
+            Err(e) => Err(crate::resource::ua_to_py(e, py)),
+        }
+    }
 
     fn is_distributive(&mut self) -> bool { self.inner.is_distributive() }
 
@@ -285,8 +292,8 @@ impl PyCongruenceLattice {
     ///
     /// Returns:
     ///     int: The cardinality
-    fn cardinality(&mut self) -> usize {
-        self.con_cardinality()
+    fn cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
+        self.con_cardinality(py)
     }
 
     /// Get the BasicLattice view of this congruence lattice.
@@ -516,9 +523,16 @@ impl PyCongruenceLatticeIntArray {
 
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
-    fn con_cardinality(&mut self) -> usize { self.inner.con_cardinality() }
+    fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
+        use uacalc::resource::ComputationScope;
+        let _scope = ComputationScope::enter();
+        match self.inner.make_universe_with_limit_checked(usize::MAX) {
+            Ok(()) => Ok(self.inner.con_cardinality()),
+            Err(e) => Err(crate::resource::ua_to_py(e, py)),
+        }
+    }
 
-    fn cardinality(&mut self) -> usize { self.con_cardinality() }
+    fn cardinality(&mut self, py: Python<'_>) -> PyResult<usize> { self.con_cardinality(py) }
 
     fn is_distributive(&mut self) -> bool { self.inner.is_distributive() }
 

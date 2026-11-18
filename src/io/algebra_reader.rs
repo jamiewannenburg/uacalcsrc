@@ -15,6 +15,7 @@ use crate::alg::BasicAlgebra;
 use crate::alg::FreeAlgebra;
 use crate::alg::op::Operation;
 use crate::alg::op::operations as Operations;
+use crate::resource::alloc_i32_table;
 use crate::util::horner as Horner;
 
 /// Algebra type constants
@@ -370,8 +371,8 @@ impl AlgebraParser {
             "subProductAlgebra" | "bigProductAlgebra" => {}
             
             "opTable" => {
-                let size = (self.cardinality as usize).pow(self.arity as u32);
-                self.int_array = vec![0; size];
+                self.int_array = alloc_i32_table(self.cardinality as usize, self.arity as u32)
+                    .map_err(|e| e.to_string())?;
                 self.int_array_index = 0;
             }
             "congruence" => {

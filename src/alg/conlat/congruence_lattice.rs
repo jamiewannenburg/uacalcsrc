@@ -333,7 +333,10 @@ where
             }
         }
         
-        self.make_universe_with_limit(size);
+        if self.make_universe_with_limit(size).is_err() {
+            self.universe = None;
+            return false;
+        }
         if self.universe.is_none() {
             return false;
         }
@@ -660,55 +663,75 @@ where
     /// This method computes all congruences on the algebra by taking joins
     /// of join irreducibles.
     pub fn make_universe(&mut self) {
-        self.make_universe_with_limit(usize::MAX);
+        let _ = self.make_universe_with_limit(usize::MAX);
     }
     
     /// Generate the universe with a size limit.
     ///
     /// # Arguments
     /// * `max_size` - Maximum size before stopping (usize::MAX for no limit)
-    pub fn make_universe_with_limit(&mut self, max_size: usize) {
+    pub fn make_universe_with_limit(&mut self, max_size: usize) -> Result<(), crate::resource::UaError> {
+        use crate::resource::{charge_kept_partition, checkpoint, ComputationScope};
+        let _scope = ComputationScope::enter();
         let stop_if_big = max_size < usize::MAX;
-        
+
         // Get join irreducibles
         if self.join_irreducibles.is_none() {
             self.make_join_irreducibles();
         }
-        
+
         let jis = self.join_irreducibles.as_ref().unwrap();
         let mut univ: Vec<Partition> = jis.clone();
         let mut hash: HashSet<Partition> = jis.iter().cloned().collect();
-        
+
         self.size_computed = univ.len();
         let size = jis.len();
-        
+
         for k in 0..size {
+            checkpoint()?;
             let elem = jis[k].clone();
             let n = univ.len();
-            
-            // Join with all elements from k onwards (not k+1!)
-            // This matches the Java implementation: for (int i = makeUniverseK; i < n; i++)
+
             for i in k..n {
-                let join = elem.join(&univ[i]).unwrap();
-                
+                checkpoint()?;
+                let join = elem
+                    .join(&univ[i])
+                    .map_err(|e| crate::resource::UaError::message(e))?;
+
                 if !hash.contains(&join) {
                     self.size_computed += 1;
-                    
+
                     if stop_if_big && self.size_computed >= max_size {
-                        return;
+                        return Ok(());
                     }
-                    
+
+                    charge_kept_partition(self.alg_size)?;
                     hash.insert(join.clone());
                     univ.push(join);
                 }
             }
         }
-        
-        // Add zero congruence at the beginning
+
         hash.insert(self.zero_cong.clone());
         univ.insert(0, self.zero_cong.clone());
-        
+
         self.universe = Some(univ);
+        Ok(())
+    }
+
+    /// Like [`make_universe_with_limit`] but clears partial universe state on failure.
+    pub fn make_universe_with_limit_checked(
+        &mut self,
+        max_size: usize,
+    ) -> Result<(), crate::resource::UaError> {
+        match self.make_universe_with_limit(max_size) {
+            Ok(()) => Ok(()),
+            Err(e) => {
+                self.universe = None;
+                self.size_computed = 0;
+                Err(e)
+            }
+        }
     }
     
     /// Get the universe of all congruences.

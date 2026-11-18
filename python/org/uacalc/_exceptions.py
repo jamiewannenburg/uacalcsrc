@@ -65,6 +65,13 @@ class IOException(OSError, JavaException):
     """java.io.IOException."""
 
 
+class OutOfMemoryError(MemoryError, JavaException):
+    """java.lang.OutOfMemoryError."""
+
+    def __init__(self, message: str = "") -> None:
+        super().__init__(message or "Java heap space")
+
+
 class FileNotFoundException(FileNotFoundError, IOException):
     """java.io.FileNotFoundException.
 

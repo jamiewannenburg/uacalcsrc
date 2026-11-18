@@ -4,6 +4,7 @@ use crate::alg::conlat::partition::PyPartition;
 use crate::alg::convert::{ops_to_basic_algebra, py_to_term, term_to_py};
 use crate::eq::PyEquation;
 use crate::util::PyIntArray;
+use crate::resource::ua_to_py;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyDict, PyList};
@@ -113,30 +114,31 @@ impl PyCloser {
         }
     }
 
-    fn sg_close(&mut self) -> PyResult<Vec<PyIntArray>> {
+    fn sg_close(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
         match self.inner.sg_close() {
             Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(ua_to_py(e, py)),
         }
     }
 
     /// Java `sgClose(elems, closedMark, termMap)` element-set path.
     fn sg_close_from(
         &mut self,
+        py: Python<'_>,
         elems: &Bound<'_, PyAny>,
         closed_mark: usize,
     ) -> PyResult<Vec<PyIntArray>> {
         let rust_elems = extract_int_arrays(elems)?;
         match self.inner.sg_close_from(Some(rust_elems), closed_mark) {
             Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(ua_to_py(e, py)),
         }
     }
 
-    fn sg_close_power(&mut self) -> PyResult<Vec<PyIntArray>> {
+    fn sg_close_power(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
         match self.inner.sg_close_power() {
             Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(ua_to_py(e, py)),
         }
     }
 
