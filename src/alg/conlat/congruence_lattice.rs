@@ -830,6 +830,14 @@ where
         }
         self.universe.as_ref().unwrap()
     }
+
+    /// Universe with resource limits; clears partial caches on failure.
+    pub fn universe_checked(&mut self) -> Result<Vec<Partition>, crate::resource::UaError> {
+        if self.universe.is_none() {
+            self.make_universe_with_limit_checked(usize::MAX)?;
+        }
+        Ok(self.universe.as_ref().unwrap().clone())
+    }
     
     /// Get the cardinality of the congruence lattice.
     /// This will compute the universe if it hasn't been computed yet.

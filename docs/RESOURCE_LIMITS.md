@@ -11,6 +11,7 @@ Cooperative **per-computation** limits live in the Rust core. There is no subpro
 | `set_time_limit(seconds \| None)` | Wall-clock budget from top-level scope entry |
 | `cancel()` | Request cooperative stop (global flag) |
 | `clear_cancel()` | Clear the cancel flag without consuming it |
+| `checkpoint()` | Poll limits/cancel from pure-Python loops (e.g. org term table build) |
 
 Limits apply when a **top-level** `ComputationScope` starts (e.g. `Closer.sg_close`, `con_cardinality`, `SubalgebraLattice.cardinality` / `universe`). Nested scopes share the same budget and do **not** reset counters.
 
@@ -47,26 +48,31 @@ Parallel closure workers attach to a **shared budget** (`SharedBudget`) so charg
 
 ### Phase 3
 
-7. **Term interpretation** (`VariableImp` / `NonVariableTerm::interpretation*`) — `alloc_i32_table` up front, checkpoints in the Horner fill loop, `make_int_operation_precharged`; `ComputationScope` per interpretation call.
-8. **`make_int_operation_from_dyn`** — checkpoints in the materialization loop.
-9. **`Partition::unary_polymorphisms` / `binary_polymorphisms`** — scope, checkpoints in search, charge per kept polymorphism table.
-10. **`TypeFinder::find_type_set`**, **`next_pair_for_subtrace`**, **`find_type_from_subtrace`** — scope and checkpoints; element charge when growing A² / A⁴ universes.
-11. **`Closer::sg_close_parallel`** — `ComputationScope`, shared budget across `SingleClose` workers, checkpoints and `charge_kept_closure_element` in worker loops; `UaError` propagation (Python `ua_to_py`).
-12. **Python GIL** — `py.allow_threads` on `Closer::sg_close`, `sg_close_from`, `sg_close_power`, `sg_close_parallel`, and `CongruenceLattice::con_cardinality` (checked). **`SubalgebraLattice` universe/cardinality/filter** still hold the GIL: `PySubalgebraLattice` uses an internal `RefCell`, which is not `Sync` and cannot be used inside `allow_threads` without restructuring the wrapper.
+7. **Term interpretation** — `alloc_i32_table` up front, checkpoints in Horner fill, `make_int_operation_precharged`; scope per call.
+8. **`make_int_operation_from_dyn`** — checkpoints in materialization loop.
+9. **`Partition::unary_polymorphisms` / `binary_polymorphisms`** — scope, checkpoints, charge per kept table.
+10. **`TypeFinder::find_type_set`** and subtrace helpers — scope and checkpoints.
+11. **`Closer::sg_close_parallel`** — shared budget across workers.
+12. **Python GIL** — `py.allow_threads` on long **`Closer`** closure methods and `CongruenceLattice::con_cardinality`.
+
+### Phase 4
+
+13. **Lazy `make_table`** — `build_i32_table_horner` in `ProductOperation`, `RestrictedOperation` (subalgebra), quotient op, `convert::operation_to_py` / `ops_to_basic_algebra`; failed builds clear partial tables.
+14. **`make_random_operation(s)`** — `alloc_i32_table`, checkpoints in fill and across the similarity type batch.
+15. **`Closer::close_checked`** — scope + checkpoint; Python `close()` uses `allow_threads` and `ua_to_py`.
+16. **Homomorphism map growth** — `charge_homomorphism_entry` on new `homomorphism.insert` entries during serial closure (in addition to kept-element charges).
+17. **`SubalgebraLattice` GIL** — `Arc<Mutex<...>>` wrapper; `allow_threads` on `universe`, `cardinality`, `filter`, `one_generated_subalgebras`, `join_irreducibles` (lock not held across Python re-entry).
+18. **`CongruenceLattice::universe_checked`** — Python `universe()` uses checked path + `allow_threads`.
+19. **org `TermOperationImp._ensure_table_op`** — calls `uacalc_lib.checkpoint()` every 256 Horner entries.
+
+**Deliberately light / unchanged**
+
+- **`VirtualLists` equality / hash** over huge lists: still O(n) without charging (rare in hot paths); indexed access remains virtual.
+- **`PyAbstractOperation::make_table`** (Python callback mode): still runs under the GIL without Rust table charging — callers should prefer Rust table ops when limits matter.
+- **`BigProductOperation`**: remains non-table-based by design.
 
 Stress helpers (`_stress_sg_close_power`, `_stress_sub_universe`) remain for focused tests.
 
-## Phase 4 (not covered)
-
-- Lazy `make_table` on `ProductOperation`, `SubgroupOperation`, `uacalc_lib::abstract_operation::make_table`, and manual n^arity builders in `power_algebra` / `convert` paths
-- **`VirtualLists`** / combination enumeration helpers
-- **`make_random_operations*`** large table batches beyond existing `make_int_operation` charge
-- **`Closer::close`** (non–sub-power) and most **`BigProductAlgebra`** entry points without `allow_threads`
-- **`SubalgebraLattice` GIL release** (requires `RefCell` → `Mutex` or owned-lattice transfer before `allow_threads`)
-- **`CongruenceLattice::universe`** Python accessor (still uncached infallible path; limits apply via `con_cardinality_checked` / `make_universe_with_limit_checked` on other entry points)
-- Term interpretation during **Jython compat** table builds in `python/org/uacalc/alg/op/_jython_compat.py` (pure Python loops)
-- Homomorphism / equation checking inside serial closure (no extra charges beyond kept elements)
-
 ## Python GIL and cross-thread `cancel()`
 
-`cancel()` sets a **global** flag honored at checkpoints (including on parallel worker threads when a shared budget is attached). Phase 3 releases the GIL on long-running **`Closer`** closure methods so another Python thread can call `cancel()` while subpower closure runs. Ctrl-C on the main thread is still polled via the signal hook inside checkpoints.
+`cancel()` sets a **global** flag honored at checkpoints (including on parallel worker threads when a shared budget is attached). Phase 3+ releases the GIL on long-running **`Closer`** closure methods and, in phase 4, on **`SubalgebraLattice` universe/cardinality/filter** and **`CongruenceLattice.universe`** so another Python thread can call `cancel()` while lattice work runs.

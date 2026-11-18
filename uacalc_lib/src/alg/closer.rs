@@ -107,11 +107,10 @@ impl PyCloser {
         to_py_int_arrays(self.inner.get_answer())
     }
 
-    fn close(&mut self) -> PyResult<Vec<PyIntArray>> {
-        match self.inner.close() {
-            Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(PyValueError::new_err(e)),
-        }
+    fn close(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
+        py.allow_threads(|| self.inner.close_checked())
+            .map(|result| to_py_int_arrays(&result))
+            .map_err(|e| ua_to_py(e, py))
     }
 
     fn sg_close(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {

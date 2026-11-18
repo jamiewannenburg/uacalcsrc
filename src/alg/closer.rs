@@ -9,8 +9,8 @@
 
 use crate::alg::big_product_algebra::BigProductAlgebra;
 use crate::resource::{
-    begin_shared_budget, charge_kept_closure_element, checkpoint, checkpoint_entry,
-    end_shared_budget, ComputationScope, UaError,
+    begin_shared_budget, charge_homomorphism_entry, charge_kept_closure_element, checkpoint,
+    checkpoint_entry, end_shared_budget, ComputationScope, UaError,
 };
 use crate::alg::conlat::partition::Partition;
 use crate::alg::parallel::SingleClose;
@@ -299,9 +299,17 @@ where
 
     /// Java `close()` stub: only implemented for powers; copies generators to `ans`.
     pub fn close(&mut self) -> Result<Vec<IntArray>, String> {
+        Self::close_checked(self).map_err(|e| e.to_string())
+    }
+
+    /// Checked [`close`] under the active computation budget.
+    pub fn close_checked(&mut self) -> Result<Vec<IntArray>, UaError> {
+        let _scope = ComputationScope::enter();
+        checkpoint_entry()?;
         if !self.algebra.is_power() {
-            return Err("only implemented for powers".to_string());
+            return Err(UaError::message("only implemented for powers"));
         }
+        checkpoint()?;
         self.ans = self.generators.clone();
         Ok(self.ans.clone())
     }
@@ -930,6 +938,7 @@ where
                                             }
                                         } else {
                                             // New constant - add to homomorphism
+                                            charge_homomorphism_entry(constant_arr.universe_size())?;
                                             homomorphism.insert(constant_arr.clone(), image_value);
                                         }
                                     }
@@ -1725,6 +1734,7 @@ where
                                 }
                             } else {
                                 // New constant - add to homomorphism
+                                charge_homomorphism_entry(arr.universe_size())?;
                                 homomorphism.insert(arr.clone(), image_value);
                             }
                         }
@@ -2036,6 +2046,7 @@ where
                                             };
 
                                             // Store image in homomorphism
+                                            charge_homomorphism_entry(v.universe_size())?;
                                             homomorphism.insert(v.clone(), image_value);
                                         }
                                     }

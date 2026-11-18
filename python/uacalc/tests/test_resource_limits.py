@@ -460,6 +460,31 @@ def test_lib_subalgebra_universe_element_limit():
     assert len(sub.universe()) == M4_SUB_CARD
 
 
+def test_lib_subalgebra_universe_main_thread_responsive_during_compute():
+    done = threading.Event()
+    started = threading.Event()
+
+    def run() -> None:
+        sub = _m4_lib_algebra().sub()
+        started.set()
+        end = time.perf_counter() + 0.5
+        while time.perf_counter() < end:
+            sub.universe()
+        done.set()
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    assert started.wait(timeout=GENEROUS_TEST_BOUND_SEC)
+    ticks = 0
+    deadline = time.perf_counter() + 0.35
+    while time.perf_counter() < deadline and not done.is_set():
+        ticks += 1
+        time.sleep(0.01)
+    assert ticks >= 10, "main thread starved during SubalgebraLattice.universe"
+    done.wait(timeout=GENEROUS_TEST_BOUND_SEC)
+    t.join(timeout=GENEROUS_TEST_BOUND_SEC)
+
+
 def test_lib_subalgebra_cancel_from_other_thread():
     uacalc_lib.clear_cancel()
     started = threading.Event()

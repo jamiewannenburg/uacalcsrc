@@ -136,10 +136,14 @@ impl PyCongruenceLattice {
         }
     }
 
-    fn universe(&mut self) -> Vec<PyPartition> {
-        use uacalc::alg::conlat::CongruenceLattice;
-        let univ: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::universe(&mut self.inner);
-        univ.iter().map(|p| PyPartition { inner: p.clone() }).collect()
+    fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        py.allow_threads(|| {
+            use uacalc::resource::ComputationScope;
+            let _scope = ComputationScope::enter();
+            self.inner.universe_checked()
+        })
+        .map(|univ| univ.into_iter().map(|p| PyPartition { inner: p }).collect())
+        .map_err(|e| crate::resource::ua_to_py(e, py))
     }
 
     fn permutability_level(&mut self) -> i32 { self.inner.permutability_level() }
@@ -436,8 +440,8 @@ impl PyCongruenceLattice {
         self.inner.make_join_irreducibles();
     }
 
-    fn get_universe_list(&mut self) -> Vec<PyPartition> {
-        self.universe()
+    fn get_universe_list(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        self.universe(py)
     }
 
     fn lattice_join(&self, a: &PyPartition, b: &PyPartition) -> PyResult<PyPartition> {
@@ -616,10 +620,14 @@ impl PyCongruenceLatticeIntArray {
         }
     }
 
-    fn universe(&mut self) -> Vec<PyPartition> {
-        use uacalc::alg::conlat::CongruenceLattice;
-        let univ: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::universe(&mut self.inner);
-        univ.iter().map(|p| PyPartition { inner: p.clone() }).collect()
+    fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        py.allow_threads(|| {
+            use uacalc::resource::ComputationScope;
+            let _scope = ComputationScope::enter();
+            self.inner.universe_checked()
+        })
+        .map(|univ| univ.into_iter().map(|p| PyPartition { inner: p }).collect())
+        .map_err(|e| crate::resource::ua_to_py(e, py))
     }
 
     fn permutability_level(&mut self) -> i32 { self.inner.permutability_level() }

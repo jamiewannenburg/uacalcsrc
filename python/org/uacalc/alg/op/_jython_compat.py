@@ -752,7 +752,12 @@ def _install(op_globals: dict) -> None:
             for _ in range(arity):
                 total *= size
             values = []
+            _CHECKPOINT_EVERY = 256
             for idx in range(total):
+                if idx % _CHECKPOINT_EVERY == 0:
+                    import uacalc_lib
+
+                    uacalc_lib.checkpoint()
                 args = []
                 remaining = idx
                 for _ in range(arity):

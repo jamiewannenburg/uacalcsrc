@@ -224,21 +224,18 @@ impl Operation for QuotientOperation {
     }
     
     fn make_table(&mut self) -> Result<(), String> {
+        let size = self.size as i32;
         let arity = self.arity() as usize;
-        let mut table_size = 1;
-        for _ in 0..arity {
-            table_size *= self.size;
+        match crate::resource::build_i32_table_horner(size, arity, |args| self.int_value_at(args)) {
+            Ok(table) => {
+                *self.table.write().unwrap() = Some(table);
+                Ok(())
+            }
+            Err(e) => {
+                *self.table.write().unwrap() = None;
+                Err(e.to_string())
+            }
         }
-        
-        let mut table = vec![0; table_size];
-        
-        for i in 0..table_size {
-            let args = crate::util::horner::horner_inv_same_size(i as i32, self.size as i32, arity);
-            table[i] = self.int_value_at(&args)?;
-        }
-        
-        *self.table.write().unwrap() = Some(table);
-        Ok(())
     }
     
     fn is_idempotent(&self) -> Result<bool, String> {

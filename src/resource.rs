@@ -525,6 +525,38 @@ pub fn alloc_i32_table(n: usize, arity: u32) -> Result<Vec<i32>, UaError> {
     Ok(table)
 }
 
+/// Fill an operation table by Horner index (charges up front; checkpoints in the loop).
+pub fn build_i32_table_horner<F>(
+    set_size: i32,
+    arity: usize,
+    mut fill: F,
+) -> Result<Vec<i32>, UaError>
+where
+    F: FnMut(&[i32]) -> Result<i32, String>,
+{
+    use crate::util::horner;
+    if arity == 0 {
+        let v = fill(&[]).map_err(UaError::from)?;
+        let mut table = alloc_i32_table(1, 0)?;
+        table[0] = v;
+        return Ok(table);
+    }
+    let mut table = alloc_i32_table(set_size as usize, arity as u32)?;
+    for i in 0..table.len() {
+        checkpoint()?;
+        let args = horner::horner_inv_same_size(i as i32, set_size, arity);
+        table[i] = fill(&args).map_err(UaError::from)?;
+    }
+    Ok(table)
+}
+
+/// Charge for a newly stored homomorphism / equation-search map entry.
+pub fn charge_homomorphism_entry(slice_len: usize) -> Result<(), UaError> {
+    const MAP_ENTRY: u64 = 96;
+    let bytes = MAP_ENTRY.saturating_add((slice_len as u64).saturating_mul(4));
+    try_charge(bytes)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

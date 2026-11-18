@@ -2,6 +2,11 @@
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use uacalc::resource::UaError;
+
+fn ua_err(e: UaError) -> PyErr {
+    Python::with_gil(|py| crate::resource::ua_to_py(e, py))
+}
 use pyo3::types::{PyAny, PyDict};
 use std::collections::HashMap;
 use uacalc::alg::op::{IntOperation, Operation};
@@ -96,31 +101,10 @@ pub fn operation_to_py(py: Python<'_>, op: &dyn Operation) -> PyResult<PyObject>
         )));
     }
     let arity = op.arity();
-    let table_size = if arity == 0 {
-        1usize
-    } else {
-        (set_size as usize)
-            .checked_pow(arity as u32)
-            .ok_or_else(|| {
-                PyValueError::new_err(format!(
-                    "operation {} table is too large to materialize",
-                    symbol.name()
-                ))
-            })?
-    };
-    let mut table_vec = Vec::with_capacity(table_size);
-    for i in 0..table_size {
-        let args = if arity == 0 {
-            Vec::new()
-        } else {
-            horner::horner_inv_same_size_safe(i as i32, set_size, arity as usize)
-                .map_err(PyValueError::new_err)?
-        };
-        table_vec.push(
-            op.int_value_at(&args)
-                .map_err(|e| PyValueError::new_err(e))?,
-        );
-    }
+    let table_vec = uacalc::resource::build_i32_table_horner(set_size, arity as usize, |args| {
+        op.int_value_at(args)
+    })
+    .map_err(|e| crate::resource::ua_to_py(e, py))?;
     let int_op = IntOperation::new(symbol, set_size, table_vec).map_err(PyValueError::new_err)?;
     Ok(Py::new(py, PyIntOperation { inner: int_op })?.to_object(py))
 }
@@ -175,30 +159,14 @@ pub fn ops_to_basic_algebra(
     let universe: HashSet<i32> = (0..cardinality).collect();
     let mut rust_ops: Vec<Box<dyn Operation>> = Vec::new();
     for op in ops {
+        uacalc::resource::checkpoint().map_err(ua_err)?;
         let symbol = op.symbol().clone();
         let arity = op.arity();
-        let table_size = if arity == 0 {
-            1usize
-        } else {
-            (cardinality as usize)
-                .checked_pow(arity as u32)
-                .ok_or_else(|| {
-                    PyValueError::new_err(format!(
-                        "operation {} table is too large to materialize",
-                        symbol.name()
-                    ))
-                })?
-        };
-        let mut table_vec = Vec::with_capacity(table_size);
-        for i in 0..table_size {
-            let args = if arity == 0 {
-                Vec::new()
-            } else {
-                horner::horner_inv_same_size_safe(i as i32, cardinality, arity as usize)
-                    .map_err(PyValueError::new_err)?
-            };
-            table_vec.push(op.int_value_at(&args).map_err(PyValueError::new_err)?);
-        }
+        let table_vec =
+            uacalc::resource::build_i32_table_horner(cardinality, arity as usize, |args| {
+                op.int_value_at(args)
+            })
+            .map_err(ua_err)?;
         let int_op =
             IntOperation::new(symbol, cardinality, table_vec).map_err(PyValueError::new_err)?;
         rust_ops.push(Box::new(int_op));

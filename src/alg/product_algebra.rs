@@ -739,23 +739,25 @@ impl Operation for ProductOperation {
     }
     
     fn make_table(&mut self) -> Result<(), String> {
-        let mut h = 1usize;
-        for _ in 0..self.arity {
-            h = h.saturating_mul(self.size as usize);
+        if self.arity > 0 {
+            let card = self.size as usize;
+            let table_len = card.checked_pow(self.arity as u32);
+            if table_len.map(|n| n > 10_000_000).unwrap_or(true) {
+                return Err("Operation table too large".to_string());
+            }
         }
-        
-        if h > 10_000_000 {
-            return Err("Operation table too large".to_string());
+        let size = self.size;
+        let arity = self.arity as usize;
+        match crate::resource::build_i32_table_horner(size, arity, |args| self.int_value_at(args)) {
+            Ok(table) => {
+                self.value_table = Some(table);
+                Ok(())
+            }
+            Err(e) => {
+                self.value_table = None;
+                Err(e.to_string())
+            }
         }
-        
-        let mut table = Vec::with_capacity(h);
-        for i in 0..h {
-            let args = horner::horner_inv_same_size(i as i32, self.size, self.arity as usize);
-            table.push(self.int_value_at(&args)?);
-        }
-        
-        self.value_table = Some(table);
-        Ok(())
     }
     
     fn get_table(&self) -> Option<&[i32]> {
