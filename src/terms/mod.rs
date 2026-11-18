@@ -349,7 +349,7 @@ impl Term for VariableImp {
             table.push(args[index]);
         }
         
-        operations::make_int_operation(symbol, alg_size, table)
+        operations::make_int_operation(symbol, alg_size, table).map_err(|e| e.to_string()).map_err(|e| e.to_string())
     }
     
     fn interpretation_simple(
@@ -395,7 +395,7 @@ impl Term for VariableImp {
             table.push(args[index]);
         }
         
-        operations::make_int_operation(symbol, free_card, table)
+        operations::make_int_operation(symbol, free_card, table).map_err(|e| e.to_string())
     }
     
     fn depth(&self) -> i32 {
@@ -641,7 +641,7 @@ impl Term for NonVariableTerm {
             table.push(value);
         }
         
-        operations::make_int_operation(symbol, alg_size, table)
+        operations::make_int_operation(symbol, alg_size, table).map_err(|e| e.to_string())
     }
     
     fn interpretation_on_free_algebra(
@@ -704,7 +704,7 @@ impl Term for NonVariableTerm {
             table.push(value);
         }
         
-        operations::make_int_operation(symbol, free_card, table)
+        operations::make_int_operation(symbol, free_card, table).map_err(|e| e.to_string())
     }
     
     fn interpretation_simple(

@@ -10,6 +10,26 @@ import pytest
 import uacalc_lib
 from typing import Optional
 
+pytestmark = []
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "slow: long-running or Java comparison tests")
+
+
+@pytest.fixture(autouse=True)
+def reset_resource_limits():
+    """Teardown thread-local limit state between tests that touch budgets."""
+    uacalc_lib.clear_cancel()
+    uacalc_lib.set_memory_limit(None)
+    uacalc_lib.set_element_limit(None)
+    uacalc_lib.set_time_limit(None)
+    uacalc_lib.clear_cancel()
+    yield
+    uacalc_lib.set_memory_limit(None)
+    uacalc_lib.set_element_limit(None)
+    uacalc_lib.set_time_limit(None)
+    uacalc_lib.clear_cancel()
+
 # Import all fixtures from test_utils to make them available
 from test_utils import (
     test_config,

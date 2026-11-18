@@ -1888,7 +1888,7 @@ impl Mace4Reader {
                         .map_err(|e| self.error(&e))?;
                     
                     let operation = operations::make_int_operation(op_sym, cardinality, table)
-                        .map_err(|e| self.error(&e))?;
+                        .map_err(|e| self.error(&e.to_string()))?;
                     
                     operations.push(operation);
                 } else {

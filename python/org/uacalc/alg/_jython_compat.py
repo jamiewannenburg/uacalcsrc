@@ -15,6 +15,7 @@ from org.uacalc._exceptions import (
     NoSuchElementException,
     NullPointerException,
     OutOfMemoryError,
+    RuntimeException,
     UnsupportedOperationException,
     translate_illegal_argument,
 )
@@ -2182,11 +2183,11 @@ def _install(alg_module_globals: dict) -> None:
         try:
             return fn(*args, **kwargs)
         except ValueError as exc:
-            if "memory limit" in str(exc).lower() or "element limit" in str(exc).lower():
-                raise OutOfMemoryError(str(exc)) from exc
             translate_illegal_argument(exc)
         except MemoryError as exc:
             raise OutOfMemoryError(str(exc)) from exc
+        except TimeoutError as exc:
+            raise RuntimeException(str(exc)) from exc
 
     def _lib_call_closer(fn: Any, *args: Any, **kwargs: Any) -> Any:
         try:

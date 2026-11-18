@@ -795,6 +795,7 @@ where
     /// * `Err(String)` - If computation fails
     fn sg_close_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
         let _scope = ComputationScope::enter();
+        crate::resource::checkpoint_force()?;
         checkpoint()?;
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");
@@ -1496,6 +1497,7 @@ where
     /// * `Err(String)` - If computation fails
     fn sg_close_power_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
         let _scope = ComputationScope::enter();
+        crate::resource::checkpoint_force()?;
         checkpoint()?;
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");

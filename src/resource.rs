@@ -128,6 +128,14 @@ pub fn clear_cancel() {
     CANCEL_REQUESTED.store(false, Ordering::SeqCst);
 }
 
+/// Reset all limit configuration and cancel flag (for tests).
+pub fn reset_all_limits() {
+    clear_cancel();
+    set_memory_limit(None);
+    set_element_limit(None);
+    set_time_limit(None);
+}
+
 pub fn cancel_requested() -> bool {
     CANCEL_REQUESTED.load(Ordering::SeqCst)
 }

@@ -999,13 +999,13 @@ impl PyBasicLattice {
     }
 
     /// Integer-universe BasicAlgebra of join/meet tables (Java getBasicLattice ops).
-    fn as_indexed_algebra(&self) -> PyResult<crate::alg::PyBasicAlgebra> {
+    fn as_indexed_algebra(&self, py: Python<'_>) -> PyResult<crate::alg::PyBasicAlgebra> {
         let (n, join_table, meet_table) = self.int_join_meet_tables()?;
         let n = n as i32;
         let join_op = uacalc::alg::op::ops::make_int_operation_str("join", 2, n, join_table)
-            .map_err(PyValueError::new_err)?;
+            .map_err(|e| crate::resource::ua_to_py(e, py))?;
         let meet_op = uacalc::alg::op::ops::make_int_operation_str("meet", 2, n, meet_table)
-            .map_err(PyValueError::new_err)?;
+            .map_err(|e| crate::resource::ua_to_py(e, py))?;
         let univ: HashSet<i32> = (0..n).collect();
         Ok(crate::alg::PyBasicAlgebra::from_inner(
             uacalc::alg::BasicAlgebra::new(self.name(), univ, vec![join_op, meet_op]),
@@ -1013,14 +1013,14 @@ impl PyBasicLattice {
     }
 
     /// Java `BasicLattice.con()`: CongruenceLattice of the join/meet algebra.
-    fn con(&self) -> PyResult<crate::alg::PyCongruenceLattice> {
-        let alg = self.as_indexed_algebra()?;
+    fn con(&self, py: Python<'_>) -> PyResult<crate::alg::PyCongruenceLattice> {
+        let alg = self.as_indexed_algebra(py)?;
         Ok(crate::alg::PyCongruenceLattice::from_algebra(&alg))
     }
 
     /// Java `BasicLattice.sub()`: SubalgebraLattice of the join/meet algebra.
-    fn sub(&self) -> PyResult<crate::alg::PySubalgebraLattice> {
-        let alg = self.as_indexed_algebra()?;
+    fn sub(&self, py: Python<'_>) -> PyResult<crate::alg::PySubalgebraLattice> {
+        let alg = self.as_indexed_algebra(py)?;
         crate::alg::sublat::subalgebra_lattice::PySubalgebraLattice::from_basic(&alg)
     }
 

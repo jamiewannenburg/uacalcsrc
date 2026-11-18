@@ -190,10 +190,16 @@ pub fn equal_values(op0: &dyn Operation, op1: &dyn Operation) -> Result<bool, St
 // =============================================================================
 
 /// Table-ize any operation so later factory methods can return `IntOperation`.
-pub fn make_int_operation_from_dyn(op: &dyn Operation) -> Result<Box<dyn Operation>, crate::resource::UaError> {
+use crate::resource::UaError;
+
+#[inline]
+fn int_op_string(r: Result<Box<dyn Operation>, UaError>) -> Result<Box<dyn Operation>, String> {
+    r.map_err(Into::into)
+}
+
+pub fn make_int_operation_from_dyn(op: &dyn Operation) -> Result<Box<dyn Operation>, UaError> {
     if let Some(table) = op.get_table() {
-        return make_int_operation(op.symbol().clone(), op.get_set_size(), table.to_vec())
-            .map_err(crate::resource::UaError::from);
+        return make_int_operation(op.symbol().clone(), op.get_set_size(), table.to_vec());
     }
     let arity = op.arity();
     let set_size = op.get_set_size();
@@ -208,7 +214,6 @@ pub fn make_int_operation_from_dyn(op: &dyn Operation) -> Result<Box<dyn Operati
         table
     };
     make_int_operation(op.symbol().clone(), set_size, table)
-        .map_err(crate::resource::UaError::from)
 }
 
 /// Make Jónsson operations from a near-unanimity function, omitting the two projections.
@@ -269,7 +274,7 @@ pub fn make_left_shift(vec_size: i32, root_size: i32) -> Result<Box<dyn Operatio
         }
         table.push(horner::horner_same_size(&arr, root_size));
     }
-    make_int_operation(sym, alg_size, table)
+    int_op_string(make_int_operation(sym, alg_size, table))
 }
 
 /// Maps a pair of vectors `(x, y)` to `(y_{k-1}, x_0, ..., x_{k-2})`.
@@ -296,7 +301,7 @@ pub fn make_binary_left_shift(vec_size: i32, root_size: i32) -> Result<Box<dyn O
         }
         table.push(horner::horner_same_size(&ans, root_size));
     }
-    make_int_operation(sym, alg_size, table)
+    int_op_string(make_int_operation(sym, alg_size, table))
 }
 
 /// Diagonal operation of arity `vec_size` on `root_size ** vec_size` elements.
@@ -320,7 +325,7 @@ pub fn make_matrix_diagonal_op(vec_size: i32, root_size: i32) -> Result<Box<dyn 
         }
         table.push(horner::horner_same_size(&ans, root_size));
     }
-    make_int_operation(sym, alg_size, table)
+    int_op_string(make_int_operation(sym, alg_size, table))
 }
 
 /// Make a module operation with the given modulus and coefficients: f(x1,...,xk) = sum c_i x_i (mod m).
@@ -338,7 +343,7 @@ pub fn make_module_operation(modulus: i32, coeffs: &[i32]) -> Result<Box<dyn Ope
         }
         table.push((acc + modulus) % modulus);
     }
-    make_int_operation(sym, modulus, table)
+    int_op_string(make_int_operation(sym, modulus, table))
 }
 
 /// Make a composition operation for transformation semigroups.
@@ -380,7 +385,7 @@ pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, Strin
         value_table.push(horner::horner_same_size(&comp, n));
     }
 
-    make_int_operation(sym, pow, value_table)
+    int_op_string(make_int_operation(sym, pow, value_table))
 }
 
 // =============================================================================
@@ -400,11 +405,9 @@ pub fn make_int_operation(
     symbol: OperationSymbol,
     alg_size: i32,
     value_table: Vec<i32>,
-) -> Result<Box<dyn Operation>, String> {
-    if let Err(e) = crate::resource::try_charge((value_table.len() as u64).saturating_mul(4)) {
-        return Err(e.to_string());
-    }
-    let op = IntOperation::new(symbol, alg_size, value_table)?;
+) -> Result<Box<dyn Operation>, crate::resource::UaError> {
+    crate::resource::try_charge((value_table.len() as u64).saturating_mul(4))?;
+    let op = IntOperation::new(symbol, alg_size, value_table).map_err(UaError::Message)?;
     Ok(Box::new(op))
 }
 
@@ -414,8 +417,8 @@ pub fn make_int_operation_str(
     arity: i32,
     alg_size: i32,
     value_table: Vec<i32>,
-) -> Result<Box<dyn Operation>, String> {
-    let sym = OperationSymbol::new_safe(symbol, arity, false)?;
+) -> Result<Box<dyn Operation>, crate::resource::UaError> {
+    let sym = OperationSymbol::new_safe(symbol, arity, false).map_err(UaError::Message)?;
     make_int_operation(sym, alg_size, value_table)
 }
 
@@ -444,7 +447,7 @@ pub fn make_binary_int_operation(
         }
     }
     
-    make_int_operation(symbol, alg_size, value_table)
+    int_op_string(make_int_operation(symbol, alg_size, value_table))
 }
 
 /// Make a constant (nullary) integer operation.
@@ -468,7 +471,7 @@ pub fn make_constant_int_operation_with_prefix(
     
     let sym = OperationSymbol::new_safe(&format!("{}{}", symbol_prefix, elt), 0, false)?;
     let value_table = vec![elt];
-    make_int_operation(sym, alg_size, value_table)
+    int_op_string(make_int_operation(sym, alg_size, value_table))
 }
 
 /// Make all constant (nullary) operations for the given algebra size.
@@ -504,7 +507,7 @@ pub fn make_transposition(alg_size: i32, a0: i32, a1: i32) -> Result<Box<dyn Ope
         }
     }
     
-    make_int_operation(sym, alg_size, value_table)
+    int_op_string(make_int_operation(sym, alg_size, value_table))
 }
 
 /// Make a unary operation that is a full cycle: f(x) = (x + 1) mod alg_size.
@@ -516,7 +519,7 @@ pub fn make_full_cycle(alg_size: i32) -> Result<Box<dyn Operation>, String> {
         value_table.push((i + 1) % alg_size);
     }
     
-    make_int_operation(sym, alg_size, value_table)
+    int_op_string(make_int_operation(sym, alg_size, value_table))
 }
 
 // =============================================================================
@@ -571,7 +574,7 @@ fn make_random_operation_with_rng(
     for _ in 0..table_size {
         values.push(rng.next_int(n));
     }
-    make_int_operation(op_sym, n, values)
+    int_op_string(make_int_operation(op_sym, n, values))
 }
 
 /// Make a list of random operations corresponding to a similarity type and set size.
@@ -655,7 +658,7 @@ pub fn make_derived_operation(
     
     let name = format!("{}_derived{}", op.symbol().name(), ArrayString::to_string(&reduction_array));
     let sym = OperationSymbol::new_safe(&name, new_arity, false)?;
-    make_int_operation(sym, alg_size, value_table)
+    int_op_string(make_int_operation(sym, alg_size, value_table))
 }
 
 /// Create a ternary discriminator operation.
@@ -680,7 +683,7 @@ pub fn ternary_discriminator(size: i32) -> Result<Box<dyn Operation>, String> {
         }
     }
     
-    make_int_operation(sym, size, value_table)
+    int_op_string(make_int_operation(sym, size, value_table))
 }
 
 // =============================================================================
