@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inventory Jamie's top-level PhD scripts (read-only source tree) and probe under Jython."""
+"""Inventory Jamie's PhD scripts with full temp-tree copy and Jython probes."""
 from __future__ import annotations
 
 import ast
@@ -8,7 +8,6 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 import time
 from pathlib import Path
@@ -20,7 +19,9 @@ VENDOR = REPO / "tests" / "jython_scripts" / "_vendor"
 MAX_FILE = 1024 * 1024
 TIMEOUT = 30
 
-SKIP_DIR = {"venv", "__pycache__", ".jython_cache", "output", "input"}
+SKIP_DIR_NAMES = {"venv", "__pycache__", ".jython_cache", "node_modules"}
+SKIP_SUFFIX = {".class", ".out"}
+SKIP_TOP_OUTPUT = "output"
 
 
 def _scripts() -> list[Path]:
@@ -31,9 +32,10 @@ def _classify_imports(text: str) -> dict[str, bool]:
     low = text.lower()
     return {
         "org_uacalc": "org.uacalc" in text or "uacalc.jar" in text,
-        "pyparsing": "pyparsing" in low or "import pp" in low,
+        "pyparsing": "pyparsing" in low or re.search(r"\bimport pp\b", text) is not None,
         "dmm": re.search(r"\b(from dmm|import dmm)\b", text) is not None,
         "other_java": "from java." in text,
+        "py3_print": "print(" in text and "end=" in text,
     }
 
 
@@ -54,55 +56,99 @@ def _local_imports(text: str) -> set[str]:
 
 
 def _input_refs(text: str) -> list[str]:
-    return sorted(set(re.findall(r"""['"](?:input/)?([^'"]+\.(?:ua|model|in|json))['"]""", text)))
+    return sorted(
+        set(re.findall(r"""['"](?:input/)?([^'"]+\.(?:ua|model|in|json))['"]""", text))
+    )
 
 
-def _needs_argv(text: str) -> bool:
-    return "sys.argv" in text
+def should_skip_path(path: Path) -> bool:
+    if any(part in SKIP_DIR_NAMES for part in path.parts):
+        return True
+    if path.suffix.lower() in SKIP_SUFFIX:
+        return True
+    try:
+        if path.is_file() and path.stat().st_size > MAX_FILE:
+            return True
+    except OSError:
+        return True
+    return False
 
 
-def _copy_deps(tmp: Path, script: Path, text: str) -> None:
-    deps = _local_imports(text) & {p.stem for p in _scripts()}
-    for name in deps:
-        src = SRC / f"{name}.py"
-        if src.is_file():
-            shutil.copy2(src, tmp / f"{name}.py")
-    inp = tmp / "input"
-    inp.mkdir(exist_ok=True)
-    for ref in _input_refs(text):
-        candidates = [SRC / "input" / ref, SRC / ref]
-        for c in candidates:
-            if c.is_file() and c.stat().st_size <= MAX_FILE:
-                shutil.copy2(c, inp / Path(ref).name)
-                break
-    argv = json.loads(ARGV_MANIFEST.read_text(encoding="utf-8")).get(script.name, [])
-    for tok in argv:
-        if tok.endswith((".ua", ".model", ".in", ".json")):
-            cands = [SRC / tok, SRC / "input" / Path(tok).name]
-            for c in cands:
-                if c.is_file() and c.stat().st_size <= MAX_FILE:
-                    dst = inp / Path(tok).name
-                    if tok.startswith("input/"):
-                        shutil.copy2(c, inp / Path(tok).name)
-                    else:
-                        shutil.copy2(c, inp / c.name)
-                    break
+def copy_phd_tree(dest: Path) -> None:
+    """Copy all small files from Jamie's tree (read-only source)."""
+    dest.mkdir(parents=True, exist_ok=True)
+    for root, dirnames, filenames in os.walk(SRC):
+        root_path = Path(root)
+        dirnames[:] = [
+            d
+            for d in dirnames
+            if d not in SKIP_DIR_NAMES and not (root_path == SRC and d == SKIP_TOP_OUTPUT)
+        ]
+        rel = root_path.relative_to(SRC)
+        for name in filenames:
+            src = root_path / name
+            if should_skip_path(src):
+                continue
+            target = dest / rel / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, target)
+    if VENDOR.is_dir():
+        vendor_dest = dest / "_vendor_pyparsing"
+        vendor_dest.mkdir(exist_ok=True)
+        for p in VENDOR.glob("*.py"):
+            shutil.copy2(p, vendor_dest / p.name)
 
 
-def _run_jython(tmp: Path, script_name: str, argv: list[str]) -> dict:
+def _categorize_error(stderr: str, stdout: str, imports: dict) -> str:
+    s = (stderr + stdout).lower()
+    if "timed out" in s or "timeout" in s:
+        return "timeout"
+    if "could not find" in s or "no such file" in s or "filenotfound" in s:
+        return "missing-input-or-args"
+    if "syntaxerror" in s or "mismatched input" in s:
+        return "syntax-jython2-vs-py3"
+    if imports.get("pyparsing") and "no module named pyparsing" in s:
+        return "missing-pyparsing"
+    if "importerror: no module named" in s:
+        return "missing-local-module"
+    if "varlist must have all the variable" in s:
+        return "api-java-termoperationimp-varlist"
+    if "empty string" in s and "illegalargumentexception" in s:
+        return "api-java-stringtoterm-nullary"
+    if "sparqlwrapper" in s or "dbpedia" in s:
+        return "external-network"
+    if "pygraphviz" in s or "no module named numpy" in s:
+        return "missing-optional-python-dep"
+    if "illegalargumentexception" in s or "nullpointerexception" in s:
+        return "java-runtime-exception"
+    if "exception" in s or "traceback" in s:
+        return "script-or-data-exception"
+    return "other"
+
+
+def _run_jython(
+    tmp: Path,
+    script_name: str,
+    argv: list[str],
+    *,
+    jar: Path,
+    use_repo_jar_for_syspath: bool,
+) -> dict:
     jython = os.environ.get("JYTHON", "jython")
-    cp = os.environ.get("CLASSPATH", str(REPO / "jars" / "uacalc.jar"))
-    pp = str(VENDOR) if VENDOR.is_dir() else str(SRC / "venv" / "Lib" / "site-packages")
+    pp_parts = [
+        str(tmp / "_vendor_pyparsing") if (tmp / "_vendor_pyparsing").is_dir() else "",
+        str(VENDOR),
+    ]
+    pp = os.pathsep.join(p for p in pp_parts if p)
     env = os.environ.copy()
-    env["CLASSPATH"] = cp
+    env["CLASSPATH"] = str(jar.resolve())
     env["PYTHONPATH"] = pp
-  # uacalc.jar beside scripts (some scripts sys.path.append it)
-    jar_src = SRC / "uacalc.jar"
-    if jar_src.is_file() and jar_src.stat().st_size < MAX_FILE:
-        shutil.copy2(jar_src, tmp / "uacalc.jar")
-    lat = SRC / "LatDraw.jar"
-    if lat.is_file() and lat.stat().st_size < MAX_FILE:
-        shutil.copy2(lat, tmp / "LatDraw.jar")
+    if use_repo_jar_for_syspath:
+        shutil.copy2(jar, tmp / "uacalc.jar")
+    else:
+        old = SRC / "uacalc.jar"
+        if old.is_file() and old.stat().st_size < MAX_FILE:
+            shutil.copy2(old, tmp / "uacalc.jar")
     cmd = [jython, str(tmp / script_name), *argv]
     t0 = time.perf_counter()
     try:
@@ -119,7 +165,8 @@ def _run_jython(tmp: Path, script_name: str, argv: list[str]) -> dict:
             "exit": proc.returncode,
             "seconds": round(elapsed, 3),
             "stdout_len": len(proc.stdout),
-            "stderr": proc.stderr[:500],
+            "stdout_head": proc.stdout[:300],
+            "stderr": proc.stderr[:1200],
             "timed_out": False,
         }
     except subprocess.TimeoutExpired as exc:
@@ -127,16 +174,17 @@ def _run_jython(tmp: Path, script_name: str, argv: list[str]) -> dict:
             "exit": -1,
             "seconds": TIMEOUT,
             "stdout_len": len(exc.stdout or ""),
-            "stderr": (exc.stderr or b"").decode("utf-8", errors="replace")[:500],
+            "stdout_head": (exc.stdout or b"").decode("utf-8", errors="replace")[:300],
+            "stderr": (exc.stderr or b"").decode("utf-8", errors="replace")[:1200],
             "timed_out": True,
         }
 
 
-def status_for(imports: dict[str, bool], run: dict | None, text: str) -> str:
+def status_for(imports: dict, run: dict | None) -> str:
     if not imports["org_uacalc"] and not imports["dmm"]:
         return "not-applicable"
-    if imports["pyparsing"]:
-        return "needs-pyparsing"
+    if imports.get("py3_print"):
+        return "syntax-jython2"
     if run is None:
         return "jython-error"
     if run["timed_out"]:
@@ -148,40 +196,88 @@ def status_for(imports: dict[str, bool], run: dict | None, text: str) -> str:
 
 def main() -> int:
     argv_map = json.loads(ARGV_MANIFEST.read_text(encoding="utf-8"))
+    repo_jar = (REPO / "jars" / "uacalc.jar").resolve()
+    old_jar = (SRC / "uacalc.jar").resolve()
+
+    with tempfile.TemporaryDirectory(prefix="phd_full_") as td:
+        full_tree = Path(td)
+        copy_phd_tree(full_tree)
+
     rows = []
     for script in _scripts():
         text = script.read_text(encoding="utf-8", errors="replace")
         imports = _classify_imports(text)
+        argv = argv_map.get(script.name, [])
         entry = {
             "script": script.name,
             "imports": imports,
-            "needs_argv": _needs_argv(text),
-            "argv_default": argv_map.get(script.name, []),
+            "needs_argv": "sys.argv" in text,
+            "argv_default": argv,
             "input_refs": _input_refs(text),
             "local_deps": sorted(_local_imports(text)),
         }
-        st = "not-applicable"
-        run_info = None
-        if imports["org_uacalc"] or imports["dmm"]:
-            if imports["pyparsing"]:
-                st = "needs-pyparsing"
-            else:
-                with tempfile.TemporaryDirectory(prefix="phd_inv_") as td:
-                    tmp = Path(td)
-                    shutil.copy2(script, tmp / script.name)
-                    _copy_deps(tmp, script, text)
-                    run_info = _run_jython(tmp, script.name, entry["argv_default"])
-                    st = status_for(imports, run_info, text)
-        entry["status"] = st
-        entry["run"] = run_info
+        if not imports["org_uacalc"] and not imports["dmm"]:
+            entry["status"] = "not-applicable"
+            entry["run_repo_jar"] = None
+            rows.append(entry)
+            continue
+        if imports.get("py3_print"):
+            entry["status"] = "syntax-jython2"
+            entry["error_category"] = "syntax-jython2-vs-py3"
+            entry["run_repo_jar"] = None
+            rows.append(entry)
+            continue
+
+        with tempfile.TemporaryDirectory(prefix="phd_run_") as td:
+            tmp = Path(td)
+            copy_phd_tree(tmp)
+            run_repo = _run_jython(
+                tmp,
+                script.name,
+                argv,
+                jar=repo_jar,
+                use_repo_jar_for_syspath=True,
+            )
+        entry["run_repo_jar"] = run_repo
+        entry["status"] = status_for(imports, run_repo)
+        if entry["status"] == "jython-error":
+            entry["error_category"] = _categorize_error(
+                run_repo.get("stderr", ""),
+                run_repo.get("stdout_head", ""),
+                imports,
+            )
+            with tempfile.TemporaryDirectory(prefix="phd_old_") as td:
+                tmp = Path(td)
+                copy_phd_tree(tmp)
+                run_old = _run_jython(
+                    tmp,
+                    script.name,
+                    argv,
+                    jar=old_jar,
+                    use_repo_jar_for_syspath=False,
+                )
+            entry["run_old_jar"] = run_old
+            if run_old["exit"] == 0 and run_repo["exit"] != 0:
+                entry["error_category"] = (
+                    entry["error_category"] + "+api-drift-old-jar-works"
+                )
+            elif run_old["exit"] != 0 and run_repo["exit"] != 0:
+                if run_old.get("stderr", "")[:80] == run_repo.get("stderr", "")[:80]:
+                    entry["error_category"] = entry["error_category"] + "+same-on-old-jar"
+        else:
+            entry["error_category"] = None
         rows.append(entry)
 
     out = REPO / "tools" / "phd_inventory.json"
     out.write_text(json.dumps(rows, indent=2), encoding="utf-8")
     counts: dict[str, int] = {}
+    cats: dict[str, int] = {}
     for r in rows:
         counts[r["status"]] = counts.get(r["status"], 0) + 1
-    print(json.dumps(counts, indent=2))
+        cat = r.get("error_category")
+        if cat:
+            cats[cat] = cats.get(cat, 0) + 1
+    print(json.dumps({"status": counts, "error_categories": cats}, indent=2))
     print(f"wrote {out}")
     return 0
 
