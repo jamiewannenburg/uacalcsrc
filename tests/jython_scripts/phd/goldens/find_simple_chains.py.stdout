@@ -1,0 +1,27 @@
+Finding simple chains with cardinality 5
+found example 244
+found example 344
+C-{5}-{1} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-1.ua
+C-{5}-{2} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-2.ua
+C-{5}-{3} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-3.ua
+C-{5}-{4} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-4.ua
+C-{5}-{5} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-5.ua
+C-{5}-{6} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-6.ua
+C-{5}-{7} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-7.ua
+C-{5}-{8} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-8.ua
+C-{5}-{9} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-9.ua
+C-{5}-{10} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-10.ua
+C-{5}-{11} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-244.ua
+C-{5}-{12} deleting C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-344.ua
+writing C-{5}-{1} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-1.ua
+writing C-{5}-{2} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-2.ua
+writing C-{5}-{3} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-3.ua
+writing C-{5}-{4} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-4.ua
+writing C-{5}-{5} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-5.ua
+writing C-{5}-{6} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-6.ua
+writing C-{5}-{7} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-7.ua
+writing C-{5}-{8} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-8.ua
+writing C-{5}-{9} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-9.ua
+writing C-{5}-{10} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-10.ua
+writing C-{5}-{11} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-11.ua
+writing C-{5}-{12} to C:\Users\u28409265\Documents\uacalcsrc\tests\jython_scripts\phd_runtime\input\C-5-12.ua

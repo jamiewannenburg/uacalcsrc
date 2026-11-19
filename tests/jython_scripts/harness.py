@@ -35,6 +35,16 @@ def normalize_phd_file(content: str, path: str | Path) -> str:
     if suffix == ".json":
         try:
             obj = json.loads(text)
+            if isinstance(obj, dict) and "edges" in obj:
+                obj = dict(obj)
+                if isinstance(obj.get("nodes"), list):
+                    obj["nodes"] = sorted(obj["nodes"], key=str)
+                if isinstance(obj.get("edges"), list):
+                    obj["edges"] = sorted(
+                        [tuple(e) for e in obj["edges"]],
+                        key=lambda t: (str(t[0]), str(t[1])),
+                    )
+                    obj["edges"] = [list(e) for e in obj["edges"]]
             return json.dumps(obj, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
         except json.JSONDecodeError:
             pass
@@ -152,8 +162,10 @@ def _prime_cpython_imports() -> None:
     scripts_dir = str(Path(__file__).resolve().parent)
     if scripts_dir not in sys.path:
         sys.path.insert(0, scripts_dir)
+    from cpython_support.latdraw_shim import install_latdraw_shim  # noqa: WPS433
     from cpython_support.load_dmm import ensure_dmm_loaded  # noqa: WPS433
 
+    install_latdraw_shim()
     ensure_dmm_loaded()
 
 
@@ -188,12 +200,12 @@ def run_phd_script_cpython(
     out_buf = io.StringIO()
     err_buf = io.StringIO()
     old_stdout, old_stderr = sys.stdout, sys.stderr
-    tmp_dir: tempfile.TemporaryDirectory[str] | None = None
     run_cwd = cwd
+    used_fixture_tmp = False
     try:
         if fixture_root.is_dir():
-            tmp_dir = tempfile.TemporaryDirectory(prefix="phd_fixture_")
-            work = Path(tmp_dir.name)
+            work = Path(tempfile.mkdtemp(prefix="phd_fixture_"))
+            used_fixture_tmp = True
             shutil.copytree(
                 fixture_root,
                 work,
@@ -202,6 +214,8 @@ def run_phd_script_cpython(
             )
             run_cwd = work
         os.chdir(str(run_cwd))
+        os.environ.setdefault("PHD_SKIP_DRAW", "1")
+        os.environ.setdefault("PHD_SIMPLE_DOT", "1")
         sys.path = phd_sys_path() + [p for p in saved_path if p not in phd_sys_path()]
         sys.argv = [str(script)] + list(argv_suffix or [])
         sys.stdout = out_buf
@@ -226,7 +240,7 @@ def run_phd_script_cpython(
         for name, mod in list(sys.modules.items()):
             if name not in saved_modules:
                 del sys.modules[name]
-    artifact_dir = run_cwd if tmp_dir is not None else None
+    artifact_dir = run_cwd if used_fixture_tmp else None
     return rc, out_buf.getvalue(), err_buf.getvalue(), artifact_dir
 
 

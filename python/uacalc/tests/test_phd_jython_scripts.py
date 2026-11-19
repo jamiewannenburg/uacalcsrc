@@ -62,8 +62,13 @@ def test_phd_script_stdout_matches_jython_golden(entry: dict):
     if xfail:
         if compare_stdout and (got != expected or rc != 0):
             pytest.xfail(xfail.get("reason", "known PhD script divergence"))
-        elif not compare_stdout and rc != 0:
+        if rc != 0:
             pytest.xfail(xfail.get("reason", "known PhD script divergence"))
+        if compare_files:
+            base = artifact_dir or (FIXTURES_ROOT if entry.get("cwd_fixture") else cwd)
+            file_errors = compare_phd_outputs(entry, out, Path(base))
+            if file_errors:
+                pytest.xfail(xfail.get("reason", "known PhD script divergence"))
         return
     assert rc == 0, f"stderr:\n{err}"
     if compare_stdout:

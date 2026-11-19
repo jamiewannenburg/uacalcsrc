@@ -24,9 +24,9 @@
     ],
     "run_repo_jar": {
       "exit": 0,
-      "seconds": 25.162,
-      "stdout_len": 441,
-      "stdout_head": "C-5-*.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-1.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-2.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-3.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-4.ua\nC:\\",
+      "seconds": 20.201,
+      "stdout_len": 81,
+      "stdout_head": "C-5-*.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\input\\C-5-1.ua\n",
       "stderr": "",
       "timed_out": false
     },
@@ -52,7 +52,7 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": 0,
-      "seconds": 18.466,
+      "seconds": 15.576,
       "stdout_len": 32,
       "stdout_head": "Created meet and arrow for B_2.\n",
       "stderr": "",
@@ -79,23 +79,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 17.534,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\associativity_of_iff.py\", line 34, in <module>\n    s8 = get_sugihara_monoid(8)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sugihara.py\", line 70, in get_sugihara_monoid\n    return add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)\n\n\tat java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)\n\n\tat java.base/java.lang.ref",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "script-or-data-exception+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 19.003,
+      "seconds": 15.41,
       "stdout_len": 312,
       "stdout_head": "S_8 is not associative as ((((x->y)^(y->x))->z)^(z->((x->y)^(y->x))))=((x->((y->z)^(z->y)))^(((y->z)^(z->y))->x)) fails at {x: 0, y: 0, z: 1}.\niff is associative in B_2\nS_3 is not associative as ((((x->y)^(y->x))->z)^(z->((x->y)^(y->x))))=((x->((y->z)^(z->y)))^(((y->z)^(z->y))->x)) fails at {x: 0, y",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "check_andrew.py",
@@ -116,20 +108,20 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": 1,
-      "seconds": 23.988,
+      "seconds": 14.632,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 36, in <module>\n    check_andrew(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 27, in check_andrew\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\check_andrew.py\", line 36, in <module>\n    check_andrew(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\check_andrew.py\", line 27, in check_andrew\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:89)\n\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:93)\n\n\tat org.uacalc.terms.NonVariableTerm$1.intValueAt(NonVariableTerm.java:155)\n\n\tat org.uacalc.alg.op.Operations.findDifference(Operations.java:237)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:69)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.NullPointerException: java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.Operation.arity()\" because \"op\" is null\n",
       "timed_out": false
     },
     "status": "jython-error",
-    "error_category": "api-java-termoperationimp-varlist+same-on-old-jar",
+    "error_category": "java-runtime-exception+same-on-old-jar",
     "run_old_jar": {
       "exit": 1,
-      "seconds": 18.678,
+      "seconds": 14.649,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 36, in <module>\n    check_andrew(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 27, in check_andrew\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:89)\n\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:93)\n\n\tat org.uacalc.terms.NonVariableTerm$1.intValueAt(NonVariableTerm.java:144)\n\n\tat org.uacalc.alg.op.Operations.findDifference(Operations.java:249)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:69)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.NullPointerException: java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.Operation.arity()\" because \"op\" is null\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\check_andrew.py\", line 36, in <module>\n    check_andrew(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\check_andrew.py\", line 27, in check_andrew\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:89)\n\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:93)\n\n\tat org.uacalc.terms.NonVariableTerm$1.intValueAt(NonVariableTerm.java:144)\n\n\tat org.uacalc.alg.op.Operations.findDifference(Operations.java:249)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:69)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.NullPointerException: java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.Operation.arity()\" because \"op\" is null\n",
       "timed_out": false
     }
   },
@@ -151,23 +143,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 20.689,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_crl.py\", line 18, in <module>\n    if check_crl(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 559, in check_crl\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 19.045,
+      "seconds": 15.347,
       "stdout_len": 13,
       "stdout_head": "B_2 is a crl\n",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "check_dunn.py",
@@ -187,23 +171,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 18.057,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_dunn.py\", line 14, in <module>\n    if check_dunn(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 548, in check_dunn\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 20.545,
+      "seconds": 14.671,
       "stdout_len": 21,
       "stdout_head": "B_2 is a Dunn monoid\n",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "check_heyting.py",
@@ -223,23 +199,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 23.945,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_heyting.py\", line 45, in <module>\n    if check_heyting(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 604, in check_heyting\n    return check_brouwerian(alg,example)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 583, in check_brouwerian\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 22.13,
+      "seconds": 15.087,
       "stdout_len": 25,
       "stdout_head": "B_2 is a Heyting algebra\n",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "check_m.py",
@@ -259,23 +227,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 24.032,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_m.py\", line 21, in <module>\n    if check_m(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 537, in check_m\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "api-java-termoperationimp-varlist",
-    "run_old_jar": {
-      "exit": -1,
-      "seconds": 36.974,
+      "exit": 0,
+      "seconds": 14.378,
       "stdout_len": 56,
       "stdout_head": "B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {x: 1}.\n",
       "stderr": "",
-      "timed_out": true
-    }
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "dmm.py",
@@ -295,23 +255,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 27.71,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 640, in <module>\n    if check_dmm(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 526, in check_dmm\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 27.024,
+      "seconds": 15.113,
       "stdout_len": 27,
       "stdout_head": "B_2 is a De Morgan monoid.\n",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "draw.py",
@@ -360,20 +312,20 @@
     ],
     "run_repo_jar": {
       "exit": 1,
-      "seconds": 25.337,
+      "seconds": 17.366,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\draw_chains.py\", line 95, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/SevenElementSimples.tex'\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\draw_chains.py\", line 95, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\output/SevenElementSimples.tex'\n",
       "timed_out": false
     },
     "status": "jython-error",
     "error_category": "script-or-data-exception+same-on-old-jar",
     "run_old_jar": {
       "exit": 1,
-      "seconds": 27.401,
+      "seconds": 17.514,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\draw_chains.py\", line 95, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/SevenElementSimples.tex'\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\draw_chains.py\", line 95, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\output/SevenElementSimples.tex'\n",
       "timed_out": false
     }
   },
@@ -388,20 +340,27 @@
     },
     "needs_argv": true,
     "argv_default": [
-      "KR-8.model"
+      "output/RN-0.json"
     ],
     "input_refs": [],
     "local_deps": [
       "json",
-      "matplotlib",
       "networkx",
       "os",
       "pygraphviz",
       "re",
       "sys"
     ],
-    "status": "not-applicable",
-    "run_repo_jar": null
+    "run_repo_jar": {
+      "exit": 0,
+      "seconds": 11.581,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "ez_setup.py",
@@ -447,23 +406,15 @@
       "sys"
     ],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 20.406,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\filter2sa_mace4.py\", line 142, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.modelall\n",
+      "exit": 0,
+      "seconds": 14.965,
+      "stdout_len": 169,
+      "stdout_head": "oneGenerated size = 1\npass 0 of 1, size = 1\n('Wrote ', 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\input\\\\KR-1gen-1.ua')\n('Found', 1, 'Algebra', 0)\n",
+      "stderr": "",
       "timed_out": false
     },
-    "status": "jython-error",
-    "error_category": "missing-input-or-args+same-on-old-jar",
-    "run_old_jar": {
-      "exit": 1,
-      "seconds": 21.893,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\filter2sa_mace4.py\", line 142, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.modelall\n",
-      "timed_out": false
-    }
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "find_chains_neg_cone.py",
@@ -487,7 +438,7 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": -1,
-      "seconds": 31.405,
+      "seconds": 31.557,
       "stdout_len": 15,
       "stdout_head": "Finding chains\n",
       "stderr": "",
@@ -512,15 +463,23 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": -1,
-      "seconds": 31.301,
+      "exit": 1,
+      "seconds": 15.33,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "",
-      "timed_out": true
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\find_covers.py\", line 98, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\output/ManyCoversOfC4New.tex'\n",
+      "timed_out": false
     },
-    "status": "slow",
-    "error_category": null
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 15.483,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\find_covers.py\", line 98, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\output/ManyCoversOfC4New.tex'\n",
+      "timed_out": false
+    }
   },
   {
     "script": "find_dots.py",
@@ -542,23 +501,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 24.04,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_dots.py\", line 251, in <module>\n    map(lambda x: build_and_check_alg(cardinality,x), make_dots(cardinality))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_dots.py\", line 251, in <lambda>\n    map(lambda x: build_and_check_alg(cardinality,x), make_dots(cardinality))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_dots.py\", line 215, in build_and_check_alg\n    alg = add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.in",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "script-or-data-exception",
-    "run_old_jar": {
       "exit": -1,
-      "seconds": 31.36,
+      "seconds": 30.966,
       "stdout_len": 0,
       "stdout_head": "",
       "stderr": "",
       "timed_out": true
-    }
+    },
+    "status": "slow",
+    "error_category": null
   },
   {
     "script": "find_simple_chains.py",
@@ -580,23 +531,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 23.457,
-      "stdout_len": 41,
-      "stdout_head": "Finding simple chains with cardinality 5\n",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains.py\", line 261, in <module>\n    map(lambda x: build_and_check_alg(n,x), make_dots(n))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains.py\", line 261, in <lambda>\n    map(lambda x: build_and_check_alg(n,x), make_dots(n))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains.py\", line 214, in build_and_check_alg\n    alg = add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.internal.reflec",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "script-or-data-exception+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 22.639,
-      "stdout_len": 1553,
-      "stdout_head": "Finding simple chains with cardinality 5\nfound example 244\nfound example 344\nC-{5}-{1} deleting C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-1.ua\nC-{5}-{2} deleting C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-2.ua\nC-{5}-{3} deleting C:\\Users\\U28409~1\\AppD",
+      "seconds": 16.389,
+      "stdout_len": 633,
+      "stdout_head": "Finding simple chains with cardinality 5\nfound example 244\nfound example 344\nC-{5}-{1} deleting C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\input\\C-5-1.ua\nC-{5}-{2} deleting C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\input\\C-5-244.ua\nC-{5}-{3} deleting C:\\Users\\U28409~1\\Ap",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "find_simple_chains_powers.py",
@@ -615,20 +558,20 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": 1,
-      "seconds": 28.569,
-      "stdout_len": 1711,
-      "stdout_head": "simple_chains_power5_09^{1} 2\nsimple_chains_power5_10^{1} 1\nsimple_chains_power5_11^{1} 2\nsimple_chains_power5_11^{2} 1\nsimple_chains_power5_11^{3} 1\nsimple_chains_power5_11^{4} 2\nsimple_chains_power5_11^{5} 2\nsimple_chains_power5_11^{6} 2\nsimple_chains_power5_11^{7} 1\nsimple_chains_power5_11^{8} 2\n",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains_powers.py\", line 100, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/ManyPowers5.tex'\n",
+      "seconds": 14.868,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\find_simple_chains_powers.py\", line 100, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\output/ManyPowers5.tex'\n",
       "timed_out": false
     },
     "status": "jython-error",
     "error_category": "script-or-data-exception+same-on-old-jar",
     "run_old_jar": {
       "exit": 1,
-      "seconds": 20.184,
-      "stdout_len": 1711,
-      "stdout_head": "simple_chains_power5_09^{1} 2\nsimple_chains_power5_10^{1} 1\nsimple_chains_power5_11^{1} 2\nsimple_chains_power5_11^{2} 1\nsimple_chains_power5_11^{3} 1\nsimple_chains_power5_11^{4} 2\nsimple_chains_power5_11^{5} 2\nsimple_chains_power5_11^{6} 2\nsimple_chains_power5_11^{7} 1\nsimple_chains_power5_11^{8} 2\n",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains_powers.py\", line 100, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/ManyPowers5.tex'\n",
+      "seconds": 15.865,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\find_simple_chains_powers.py\", line 100, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\output/ManyPowers5.tex'\n",
       "timed_out": false
     }
   },
@@ -653,20 +596,20 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": 1,
-      "seconds": 21.555,
+      "seconds": 15.8,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "org.uacalc.alg.FreeAlgebra INFO free algebra size = 4\nTraceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\free_algebras.py\", line 88, in <module>\n    tex += r\"\\end{tabular}\"+'\\n\\n\\n'\nIOError: [Errno 13] Permission denied: 'output\\\\b2_subalgebra.tex'\n",
+      "stderr": "org.uacalc.alg.FreeAlgebra INFO free algebra size = 4\nTraceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\free_algebras.py\", line 88, in <module>\n    tex += r\"\\end{tabular}\"+'\\n\\n\\n'\nIOError: [Errno 13] Permission denied: 'output\\\\b2_subalgebra.tex'\n",
       "timed_out": false
     },
     "status": "jython-error",
     "error_category": "script-or-data-exception+same-on-old-jar",
     "run_old_jar": {
       "exit": 1,
-      "seconds": 22.112,
+      "seconds": 15.725,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "org.uacalc.alg.FreeAlgebra INFO free algebra size = 4\nTraceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\free_algebras.py\", line 88, in <module>\n    tex += r\"\\end{tabular}\"+'\\n\\n\\n'\nIOError: [Errno 13] Permission denied: 'output\\\\b2_subalgebra.tex'\n",
+      "stderr": "org.uacalc.alg.FreeAlgebra INFO free algebra size = 4\nTraceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\free_algebras.py\", line 88, in <module>\n    tex += r\"\\end{tabular}\"+'\\n\\n\\n'\nIOError: [Errno 13] Permission denied: 'output\\\\b2_subalgebra.tex'\n",
       "timed_out": false
     }
   },
@@ -690,7 +633,7 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": -1,
-      "seconds": 31.302,
+      "seconds": 31.19,
       "stdout_len": 0,
       "stdout_head": "",
       "stderr": "",
@@ -725,20 +668,20 @@
     ],
     "run_repo_jar": {
       "exit": 1,
-      "seconds": 19.787,
+      "seconds": 14.691,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\get_subreducts.py\", line 50, in <module>\n    models_handle = open(models_file_name)\nIOError: [Errno 2] No such file or directory: 'group.in'\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\get_subreducts.py\", line 53, in <module>\n    for i,alg in enumerate(to_alg_stream(models_handle)):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\mace4.py\", line 139, in to_alg_stream\n    yield interpretation.parseString(buffer)[0]\n  File \"C:\\Users\\u28409265\\AppData\\Local\\Programs\\jython\\Lib\\site-packages\\pyparsing-2.4.7-py2.7.egg\\pyparsing.py\", line 1955, in parseString\n    raise exc\npyparsing.ParseException: Expected \"interpretation\", found 's'  (at char 1), (line:2, col:1)\n",
       "timed_out": false
     },
     "status": "jython-error",
-    "error_category": "missing-input-or-args+same-on-old-jar",
+    "error_category": "script-or-data-exception+same-on-old-jar",
     "run_old_jar": {
       "exit": 1,
-      "seconds": 20.706,
+      "seconds": 14.319,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\get_subreducts.py\", line 50, in <module>\n    models_handle = open(models_file_name)\nIOError: [Errno 2] No such file or directory: 'group.in'\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\get_subreducts.py\", line 53, in <module>\n    for i,alg in enumerate(to_alg_stream(models_handle)):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\mace4.py\", line 139, in to_alg_stream\n    yield interpretation.parseString(buffer)[0]\n  File \"C:\\Users\\u28409265\\AppData\\Local\\Programs\\jython\\Lib\\site-packages\\pyparsing-2.4.7-py2.7.egg\\pyparsing.py\", line 1955, in parseString\n    raise exc\npyparsing.ParseException: Expected \"interpretation\", found 's'  (at char 1), (line:2, col:1)\n",
       "timed_out": false
     }
   },
@@ -753,30 +696,22 @@
     },
     "needs_argv": true,
     "argv_default": [
-      "t3.model"
+      "d3"
     ],
     "input_refs": [
       "{}_dual.ua"
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 22.8,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\heyting_from_poset.py\", line 35, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\t3.model.lat\n",
+      "exit": 0,
+      "seconds": 16.216,
+      "stdout_len": 33,
+      "stdout_head": "dual(d_3)_* is a Heyting algebra\n",
+      "stderr": "",
       "timed_out": false
     },
-    "status": "jython-error",
-    "error_category": "missing-input-or-args+same-on-old-jar",
-    "run_old_jar": {
-      "exit": 1,
-      "seconds": 21.465,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\heyting_from_poset.py\", line 35, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\t3.model.lat\n",
-      "timed_out": false
-    }
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "isomorphism.py",
@@ -793,7 +728,7 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": 0,
-      "seconds": 14.424,
+      "seconds": 10.369,
       "stdout_len": 0,
       "stdout_head": "",
       "stderr": "",
@@ -819,15 +754,23 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": -1,
-      "seconds": 31.642,
+      "exit": 1,
+      "seconds": 14.541,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "",
-      "timed_out": true
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\jep_check.py\", line 54, in <module>\n    c4_covers = [AlgebraIO.readAlgebraFile( os.path.join(dir,\"{}.ua\".format(name)) ) for name in c4_covers_names]\n\tat java.base/java.io.FileInputStream.open0(Native Method)\n\n\tat java.base/java.io.FileInputStream.open(FileInputStream.java:213)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:152)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:106)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.connect(FileURLConnection.java:84)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.getInputStream(FileURLConnection.java:180)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLEntityManager.setupCurrentEntity(XMLEntityManager.java:654)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLVersionDetector.determineDocVersion(XMLVersionDetector.java:150)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:861)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)\n\n\tat java.xml/com.su",
+      "timed_out": false
     },
-    "status": "slow",
-    "error_category": null
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 15.433,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\jep_check.py\", line 54, in <module>\n    c4_covers = [AlgebraIO.readAlgebraFile( os.path.join(dir,\"{}.ua\".format(name)) ) for name in c4_covers_names]\n\tat java.base/java.io.FileInputStream.open0(Native Method)\n\n\tat java.base/java.io.FileInputStream.open(FileInputStream.java:213)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:152)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:106)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.connect(FileURLConnection.java:84)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.getInputStream(FileURLConnection.java:180)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLEntityManager.setupCurrentEntity(XMLEntityManager.java:654)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLVersionDetector.determineDocVersion(XMLVersionDetector.java:150)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:861)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)\n\n\tat java.xml/com.su",
+      "timed_out": false
+    }
   },
   {
     "script": "KR_pretty_print.py",
@@ -881,20 +824,20 @@
     ],
     "run_repo_jar": {
       "exit": 1,
-      "seconds": 21.882,
+      "seconds": 15.438,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\latex.py\", line 173, in <module>\n    graph_dict = get_graph(alg)\nIOError: [Errno 13] Permission denied: 'output\\\\b2.json'\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\latex.py\", line 173, in <module>\n    graph_dict = get_graph(alg)\nIOError: [Errno 13] Permission denied: 'output\\\\b2.json'\n",
       "timed_out": false
     },
     "status": "jython-error",
     "error_category": "script-or-data-exception+same-on-old-jar",
     "run_old_jar": {
       "exit": 1,
-      "seconds": 21.126,
+      "seconds": 16.267,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\latex.py\", line 173, in <module>\n    graph_dict = get_graph(alg)\nIOError: [Errno 13] Permission denied: 'output\\\\b2.json'\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\latex.py\", line 173, in <module>\n    graph_dict = get_graph(alg)\nIOError: [Errno 13] Permission denied: 'output\\\\b2.json'\n",
       "timed_out": false
     }
   },
@@ -924,23 +867,15 @@
       "sys"
     ],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 19.374,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\mace4.py\", line 156, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.model\n",
+      "exit": 0,
+      "seconds": 14.668,
+      "stdout_len": 98,
+      "stdout_head": "('Wrote ', 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master__o7g6jl3\\\\input\\\\KR-1gen-1.ua')\n",
+      "stderr": "",
       "timed_out": false
     },
-    "status": "jython-error",
-    "error_category": "missing-input-or-args+same-on-old-jar",
-    "run_old_jar": {
-      "exit": 1,
-      "seconds": 15.802,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\mace4.py\", line 156, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.model\n",
-      "timed_out": false
-    }
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "posets.py",
@@ -953,7 +888,7 @@
     },
     "needs_argv": true,
     "argv_default": [
-      "KR-8.model"
+      "d3"
     ],
     "input_refs": [],
     "local_deps": [
@@ -966,23 +901,15 @@
       "sys"
     ],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 17.881,
+      "exit": 0,
+      "seconds": 18.075,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\posets.py\", line 97, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\KR-8.model.lat\n",
+      "stderr": "",
       "timed_out": false
     },
-    "status": "jython-error",
-    "error_category": "missing-input-or-args+same-on-old-jar",
-    "run_old_jar": {
-      "exit": 1,
-      "seconds": 18.335,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\posets.py\", line 97, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\KR-8.model.lat\n",
-      "timed_out": false
-    }
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "powerset.py",
@@ -1032,7 +959,7 @@
     ],
     "run_repo_jar": {
       "exit": 0,
-      "seconds": 17.945,
+      "seconds": 15.719,
       "stdout_len": 2596,
       "stdout_head": "\n\\begin{picture}(126,178)\n%\n%% RN\n%\n\\put(69,5){\\circle*{4}}\n\\put(69,5){\\line(1,1){12}}\n\\put(69,5){\\line(-1,1){12}}\n\\put(81,17){\\circle*{4}}\n\\put(81,17){\\line(-1,1){12}}\n\\put(57,17){\\circle*{4}}\n\\put(57,17){\\line(1,1){12}}\n\\put(69,29){\\circle*{4}}\n\\put(75,3){$\\bot$}\n\\put(63,15){$w_0$}\n\\put(87,15){$w_",
       "stderr": "",
@@ -1066,7 +993,7 @@
     ],
     "run_repo_jar": {
       "exit": 0,
-      "seconds": 11.625,
+      "seconds": 10.865,
       "stdout_len": 0,
       "stdout_head": "",
       "stderr": "",
@@ -1091,15 +1018,23 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": -1,
-      "seconds": 31.374,
-      "stdout_len": 1521,
-      "stdout_head": "S(R(B_2)^- \\times R(S_3)^-) has size 14 and 4 subalgebras\nR(B_2) and R(S_3) embedds into S(R(B_2)^- \\times R(S_3)^-)\nS(R(B_2)^- \\times W(S_3)^-) has size 14 and 4 subalgebras\nR(B_2) and W(S_3) embedds into S(R(B_2)^- \\times W(S_3)^-)\nS(R(B_2)^- \\times W(C_4)^-) has size 18 and 4 subalgebras\nR(B_2) a",
-      "stderr": "",
-      "timed_out": true
+      "exit": 1,
+      "seconds": 14.91,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\sc_joins_of_covers.py\", line 19, in <module>\n    alg = AlgebraIO.readAlgebraFile(alg_file_name)\n\tat java.base/java.io.FileInputStream.open0(Native Method)\n\n\tat java.base/java.io.FileInputStream.open(FileInputStream.java:213)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:152)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:106)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.connect(FileURLConnection.java:84)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.getInputStream(FileURLConnection.java:180)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLEntityManager.setupCurrentEntity(XMLEntityManager.java:654)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLVersionDetector.determineDocVersion(XMLVersionDetector.java:150)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:861)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(X",
+      "timed_out": false
     },
-    "status": "slow",
-    "error_category": null
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 15.56,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\sc_joins_of_covers.py\", line 19, in <module>\n    alg = AlgebraIO.readAlgebraFile(alg_file_name)\n\tat java.base/java.io.FileInputStream.open0(Native Method)\n\n\tat java.base/java.io.FileInputStream.open(FileInputStream.java:213)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:152)\n\n\tat java.base/java.io.FileInputStream.<init>(FileInputStream.java:106)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.connect(FileURLConnection.java:84)\n\n\tat java.base/sun.net.www.protocol.file.FileURLConnection.getInputStream(FileURLConnection.java:180)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLEntityManager.setupCurrentEntity(XMLEntityManager.java:654)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.impl.XMLVersionDetector.determineDocVersion(XMLVersionDetector.java:150)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:861)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:825)\n\n\tat java.xml/com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(X",
+      "timed_out": false
+    }
   },
   {
     "script": "search_c4.py",
@@ -1141,20 +1076,20 @@
     ],
     "run_repo_jar": {
       "exit": 1,
-      "seconds": 17.333,
+      "seconds": 15.29,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\skew_reflection.py\", line 143, in <module>\n    raise Exception(\"Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\")\nException: Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\skew_reflection.py\", line 143, in <module>\n    raise Exception(\"Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\")\nException: Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\n",
       "timed_out": false
     },
     "status": "jython-error",
     "error_category": "script-or-data-exception+same-on-old-jar",
     "run_old_jar": {
       "exit": 1,
-      "seconds": 17.841,
+      "seconds": 16.065,
       "stdout_len": 0,
       "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\skew_reflection.py\", line 143, in <module>\n    raise Exception(\"Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\")\nException: Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master__o7g6jl3\\skew_reflection.py\", line 143, in <module>\n    raise Exception(\"Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\")\nException: Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\n",
       "timed_out": false
     }
   },
@@ -1175,7 +1110,7 @@
     "local_deps": [],
     "run_repo_jar": {
       "exit": 0,
-      "seconds": 17.233,
+      "seconds": 15.64,
       "stdout_len": 80,
       "stdout_head": "Checking arrow\nChecking dot\nChecking join\nChecking meet\nChecking neg\nChecking e\n",
       "stderr": "",
@@ -1207,23 +1142,15 @@
       "sys"
     ],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 17.212,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sugihara.py\", line 136, in <module>\n    alg = get_sugihara_monoid(n)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sugihara.py\", line 70, in get_sugihara_monoid\n    return add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)\n\n\tat java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)\n\n\tat java.base/java.lang.reflect.Const",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "script-or-data-exception+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 17.079,
+      "seconds": 14.647,
       "stdout_len": 0,
       "stdout_head": "",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "sums.py",
@@ -1235,9 +1162,7 @@
       "py3_print": false
     },
     "needs_argv": true,
-    "argv_default": [
-      "KR-8.model"
-    ],
+    "argv_default": [],
     "input_refs": [
       "A_brouwerian.ua",
       "Br2+A_brouwerian.ua",
@@ -1247,23 +1172,15 @@
     ],
     "local_deps": [],
     "run_repo_jar": {
-      "exit": 1,
-      "seconds": 17.284,
-      "stdout_len": 0,
-      "stdout_head": "",
-      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sums.py\", line 121, in <module>\n    result = peirce.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
-      "timed_out": false
-    },
-    "status": "jython-error",
-    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
-    "run_old_jar": {
       "exit": 0,
-      "seconds": 16.726,
+      "seconds": 15.681,
       "stdout_len": 115,
       "stdout_head": "Br2+Prod of Br3 x Br2-basic is does not satisfy Peirce's law as ((y->x)v(((x->y)->x)->x))=e fails at {x: 2, y: 4}.\n",
       "stderr": "",
       "timed_out": false
-    }
+    },
+    "status": "fast-ok",
+    "error_category": null
   },
   {
     "script": "twist.py",

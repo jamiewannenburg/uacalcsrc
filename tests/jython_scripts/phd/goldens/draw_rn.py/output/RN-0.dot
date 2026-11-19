@@ -1,0 +1,4 @@
+strict digraph G {
+graph [ratio="fill", size="5,4", rankdir=BT, label=" ", tooltip=" "];
+"w0" [label="w0"];
+}

@@ -12,68 +12,91 @@
       "argv": [
         "C-5-*.ua"
       ],
-      "slow": false
+      "slow": false,
+      "compare_stdout": true,
+      "xfail_cpython": {
+        "reason": "line count jython=11 cpython=13"
+      }
     },
     {
       "path": "add_arrow_and_meet.py",
       "argv": [
         "b2"
       ],
-      "slow": false
+      "slow": false,
+      "compare_stdout": true,
+      "use_fixture_copy": true
     },
     {
       "path": "associativity_of_iff.py",
       "argv": [],
-      "skip_cpython": "jython-error: script-or-data-exception+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: script-or-data-exception+api-drift-old-jar-works"
+      "slow": false,
+      "compare_stdout": true,
+      "use_fixture_copy": true,
+      "compare_files": [
+        "input/s8.ua"
+      ],
+      "xfail_cpython": {
+        "reason": "stdout differs from C:\\Users\\u28409265\\Documents\\uacalcsrc\\tests\\jython_scripts\\phd\\goldens\\associativity_of_iff.py.stdout"
+      }
     },
     {
       "path": "check_andrew.py",
       "argv": [
         "b2"
       ],
-      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+same-on-old-jar",
-      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+same-on-old-jar"
+      "skip_cpython": "jython-error: java-runtime-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: java-runtime-exception+same-on-old-jar"
     },
     {
       "path": "check_crl.py",
       "argv": [
         "b2"
       ],
-      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+      "slow": false,
+      "compare_stdout": true
     },
     {
       "path": "check_dunn.py",
       "argv": [
         "b2"
       ],
-      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+      "slow": false,
+      "compare_stdout": true
     },
     {
       "path": "check_heyting.py",
       "argv": [
         "b2"
       ],
-      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+      "slow": false,
+      "compare_stdout": true,
+      "xfail_cpython": {
+        "reason": "line count jython=1 cpython=0"
+      }
     },
     {
       "path": "check_m.py",
       "argv": [
         "b2"
       ],
-      "skip_cpython": "jython-error: api-java-termoperationimp-varlist",
-      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist"
+      "slow": false,
+      "compare_stdout": true,
+      "xfail_cpython": {
+        "reason": "line 1: jython='B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {x: 1}.' cpython='B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {VariableImp(\"x\"): 1}.'"
+      }
     },
     {
       "path": "dmm.py",
       "argv": [
         "b2"
       ],
-      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+      "slow": false,
+      "compare_stdout": true,
+      "use_fixture_copy": true,
+      "xfail_cpython": {
+        "reason": "line count jython=1 cpython=0"
+      }
     },
     {
       "path": "draw.py",
@@ -92,10 +115,14 @@
     {
       "path": "draw_rn.py",
       "argv": [
-        "KR-8.model"
+        "output/RN-0.json"
       ],
-      "skip_cpython": "not-applicable",
-      "skip_jython_golden": "not-applicable"
+      "slow": false,
+      "compare_stdout": false,
+      "use_fixture_copy": true,
+      "compare_files": [
+        "output/RN-0.dot"
+      ]
     },
     {
       "path": "ez_setup.py",
@@ -110,8 +137,9 @@
       "argv": [
         "KR-1gen"
       ],
-      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
-      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+      "slow": false,
+      "compare_stdout": false,
+      "use_fixture_copy": true
     },
     {
       "path": "find_chains_neg_cone.py",
@@ -125,25 +153,28 @@
     {
       "path": "find_covers.py",
       "argv": [],
-      "slow": true,
-      "skip_cpython": "jython probe exceeded 30s",
-      "skip_jython_golden": "jython probe exceeded 30s"
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
     },
     {
       "path": "find_dots.py",
       "argv": [
         "5"
       ],
-      "skip_cpython": "jython-error: script-or-data-exception",
-      "skip_jython_golden": "jython-error: script-or-data-exception"
+      "slow": true,
+      "skip_cpython": "jython probe exceeded 30s",
+      "skip_jython_golden": "jython probe exceeded 30s"
     },
     {
       "path": "find_simple_chains.py",
       "argv": [
         "5"
       ],
-      "skip_cpython": "jython-error: script-or-data-exception+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: script-or-data-exception+api-drift-old-jar-works"
+      "slow": false,
+      "compare_stdout": true,
+      "xfail_cpython": {
+        "reason": "line count jython=27 cpython=0"
+      }
     },
     {
       "path": "find_simple_chains_powers.py",
@@ -173,28 +204,35 @@
         "-f",
         "group.in"
       ],
-      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
-      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
     },
     {
       "path": "heyting_from_poset.py",
       "argv": [
-        "t3.model"
+        "d3"
       ],
-      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
-      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+      "slow": false,
+      "compare_stdout": false,
+      "use_fixture_copy": true,
+      "compare_files": [
+        "input/d3_dual.ua"
+      ],
+      "xfail_cpython": {
+        "reason": "exit code 1"
+      }
     },
     {
       "path": "isomorphism.py",
       "argv": [],
-      "slow": false
+      "slow": false,
+      "compare_stdout": true
     },
     {
       "path": "jep_check.py",
       "argv": [],
-      "slow": true,
-      "skip_cpython": "jython probe exceeded 30s",
-      "skip_jython_golden": "jython probe exceeded 30s"
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
     },
     {
       "path": "KR_pretty_print.py",
@@ -217,16 +255,21 @@
       "argv": [
         "KR-1gen"
       ],
-      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
-      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+      "slow": false,
+      "compare_stdout": false,
+      "use_fixture_copy": true
     },
     {
       "path": "posets.py",
       "argv": [
-        "KR-8.model"
+        "d3"
       ],
-      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
-      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+      "slow": false,
+      "compare_stdout": false,
+      "use_fixture_copy": true,
+      "compare_files": [
+        "output/d3.json"
+      ]
     },
     {
       "path": "powerset.py",
@@ -239,21 +282,23 @@
     {
       "path": "riger_nishinora.py",
       "argv": [],
-      "slow": false
+      "slow": false,
+      "compare_stdout": true
     },
     {
       "path": "rigorous_extension.py",
       "argv": [
         "b2"
       ],
-      "slow": false
+      "slow": false,
+      "compare_stdout": true,
+      "use_fixture_copy": true
     },
     {
       "path": "sc_joins_of_covers.py",
       "argv": [],
-      "slow": true,
-      "skip_cpython": "jython probe exceeded 30s",
-      "skip_jython_golden": "jython probe exceeded 30s"
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
     },
     {
       "path": "search_c4.py",
@@ -272,23 +317,26 @@
     {
       "path": "structural_completeness.py",
       "argv": [],
-      "slow": false
+      "slow": false,
+      "compare_stdout": true
     },
     {
       "path": "sugihara.py",
       "argv": [
         "4"
       ],
-      "skip_cpython": "jython-error: script-or-data-exception+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: script-or-data-exception+api-drift-old-jar-works"
+      "slow": false,
+      "compare_stdout": true,
+      "use_fixture_copy": true
     },
     {
       "path": "sums.py",
-      "argv": [
-        "KR-8.model"
-      ],
-      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
-      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+      "argv": [],
+      "slow": false,
+      "compare_stdout": true,
+      "xfail_cpython": {
+        "reason": "line count jython=1 cpython=0"
+      }
     },
     {
       "path": "twist.py",

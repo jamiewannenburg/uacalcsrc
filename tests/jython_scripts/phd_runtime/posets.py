@@ -108,6 +108,7 @@ if __name__ == '__main__':
     
     with open(graph_file_name,'w') as f:
         json.dump( graph_dict, f )
-    os.system('python draw.py {}'.format(graph_file_name))
+    if not os.environ.get("PHD_SKIP_DRAW"):
+        os.system('python draw.py {}'.format(graph_file_name))
     # os.system(pdf_file_name)
     

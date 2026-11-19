@@ -1,7 +1,33 @@
-import pygraphviz as pgv
-import networkx as nx
+# PhD harness: set PHD_SIMPLE_DOT=1 when pygraphviz is unavailable (compare .dot only).
+try:
+    import pygraphviz as pgv
+except ImportError:
+    pgv = None
+try:
+    import networkx as nx
+except ImportError:
+    nx = None
+
+
+def write_dot_simple(dic, dot_path):
+    lines = [
+        "strict digraph G {",
+        'graph [ratio="fill", size="5,4", rankdir=BT, label=" ", tooltip=" "];',
+    ]
+    labels = dic.get("labels") or {}
+    for n in dic.get("nodes", []):
+        lab = labels.get(n, n) if isinstance(labels, dict) else n
+        lines.append('"%s" [label="%s"];' % (n, lab))
+    for edge in dic.get("edges", []):
+        lines.append('"%s" -> "%s";' % (edge[0], edge[1]))
+    lines.append("}")
+    with open(dot_path, "w") as f:
+        f.write("\n".join(lines))
+
 
 def graph_from_dict(dic):
+    if pgv is None:
+        raise ImportError("pygraphviz required for graph_from_dict")
     G=pgv.AGraph('digraph G {ratio="fill";size="5,4";rankdir="BT";}')
     #ratio="fill";size="7.267,10.692"A0:"33.1,46.8"A4:"11.7,8.3";rankdir="LR""BT";ranksep=.75;overlap=false;
     G.graph_attr['label']=' '
@@ -22,8 +48,7 @@ if __name__=='__main__':
     import sys
     import json
     import re
-    import matplotlib.pyplot as plt
-    
+
     graph_file_name = sys.argv[1]
     if not os.path.isfile(graph_file_name):
         raise Exception("Could not find: {}".format(graph_file_name))
@@ -31,7 +56,14 @@ if __name__=='__main__':
     graph_file = graph_file_name.replace('.json','')
     with open(graph_file_name,'r') as f:
         graph_dict = json.load(f)
-        
+
+    dot_out = graph_file + ".dot"
+    if graph_file_name.endswith(".json"):
+        dot_out = graph_file_name[:-5] + ".dot"
+    if pgv is None or os.environ.get("PHD_SIMPLE_DOT"):
+        write_dot_simple(graph_dict, dot_out)
+        raise SystemExit(0)
+
     G = graph_from_dict(graph_dict)
     
     # N = nx.Graph(G)
@@ -91,6 +123,6 @@ if __name__=='__main__':
     
     G.write(graph_file + '.dot')
     
-    # G1.draw(graph_file + '.svg',format="svg",prog='fdp')
-    G.draw(graph_file + '.pdf',format="pdf",prog='dot')#['neato'|'dot'|'twopi'|'circo'|'fdp'|'sfdp'|'nop']
+    if not os.environ.get("PHD_SKIP_DRAW"):
+        G.draw(graph_file + '.pdf',format="pdf",prog='dot')
     # os.system(graph_file + '.pdf')

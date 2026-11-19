@@ -40,9 +40,61 @@ def _coerce_filters_for_uacalc(
     return iv, mapped
 
 
-def _ordered_set_from_latdraw(name: str, labels: list[int | str], filters: list[list[int | str]]) -> OrderedSet:
+class _JamiePosetElement:
+    def __init__(self, parent: "_JamieOrderedSet", index: int):
+        self._parent = parent
+        self._index = index
+
+    def upperCovers(self):
+        covers = self._parent._os.get_upper_covers(self._index)
+        return [_JamiePosetElement(self._parent, c) for c in covers]
+
+    def filter(self):
+        return [self._parent._el(i) for i in self._parent._os.filter(self._index)]
+
+    def label(self):
+        if self._parent._labels and self._index < len(self._parent._labels):
+            return self._parent._labels[self._index]
+        return str(self._index)
+
+    def __str__(self):
+        return str(self.label())
+
+    def __hash__(self):
+        return hash(self._index)
+
+    def __eq__(self, other):
+        return isinstance(other, _JamiePosetElement) and other._index == self._index
+
+
+class _JamieOrderedSet:
+    """LatDraw-like element API over ``org.uacalc.lat.OrderedSet``."""
+
+    def __init__(self, os: OrderedSet, labels: list[int | str], name: str):
+        self._os = os
+        self._labels = labels
+        self._name = name
+
+    def _el(self, index: int) -> _JamiePosetElement:
+        return _JamiePosetElement(self, index)
+
+    def univ(self):
+        return [self._el(i) for i in self._os.universe()]
+
+    def card(self):
+        return self._os.cardinality()
+
+    def name(self):
+        return self._name
+
+    def getName(self):
+        return self._name
+
+
+def _ordered_set_from_latdraw(name: str, labels: list[int | str], filters: list[list[int | str]]) -> _JamieOrderedSet:
     universe, filt = _coerce_filters_for_uacalc(labels, filters)
-    return OrderedSet.from_filters(universe, filt, name=name)
+    os = OrderedSet.from_filters(universe, filt, name=name)
+    return _JamieOrderedSet(os, list(labels), name)
 
 
 def InputPoset(filename: str) -> OrderedSet:
@@ -72,7 +124,7 @@ def get_upsets_lattice(po):
     univ = po.univ()
     filters = []
     for i in univ:
-        filters.append(set(po.filter(i)))
+        filters.append(set(i.filter()))
 
     new_universe = []
     for els in powerset(univ):

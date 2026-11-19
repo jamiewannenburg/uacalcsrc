@@ -11,8 +11,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 RUNTIME = REPO / "tests" / "jython_scripts" / "phd_runtime"
+FIXTURES = REPO / "tests" / "jython_scripts" / "phd" / "fixtures"
 GOLDENS = REPO / "tests" / "jython_scripts" / "phd" / "goldens"
 MANIFEST = REPO / "tests" / "jython_scripts" / "phd" / "manifest.json"
+LATDRAW = REPO / "jars" / "LatDraw.jar"
 
 
 def load_entries() -> list[dict]:
@@ -33,12 +35,15 @@ def run_jython(script: Path, argv: list[str], cwd: Path) -> tuple[int, str, str]
                 break
     default_jar = (REPO / "jars" / "uacalc.jar").resolve()
     cp = os.environ.get("CLASSPATH", str(default_jar))
+    if LATDRAW.is_file() and str(LATDRAW.resolve()) not in cp:
+        cp = cp + os.pathsep + str(LATDRAW.resolve())
     vendor = REPO / "tests" / "jython_scripts" / "_vendor"
     v2 = RUNTIME / "_vendor_pyparsing"
     pp = os.pathsep.join([str(v2), str(vendor)])
     env = os.environ.copy()
     env["CLASSPATH"] = cp
     env["PYTHONPATH"] = pp
+    env.setdefault("PHD_SKIP_DRAW", "1")
     proc = subprocess.run(
         [jython, str(script), *argv],
         cwd=str(cwd),
@@ -66,17 +71,25 @@ def main() -> int:
             print(f"missing {script}", file=sys.stderr)
             return 2
         argv = list(entry.get("argv") or [])
-        cwd = RUNTIME
-        if entry.get("cwd_model"):
-            cwd = RUNTIME
+        cwd = FIXTURES if entry.get("use_fixture_copy") else RUNTIME
         rc, out, err = run_jython(script, argv, cwd)
         if rc != 0:
             print(f"WARN {rel} exit {rc}", file=sys.stderr)
             if err:
                 print(err[:800], file=sys.stderr)
-        golden = GOLDENS / (Path(rel).name + ".stdout")
-        golden.write_text(out, encoding="utf-8")
-        print(f"golden {golden} ({len(out)} bytes, exit={rc})")
+        if entry.get("compare_stdout", True):
+            golden = GOLDENS / (Path(rel).name + ".stdout")
+            golden.write_text(out, encoding="utf-8")
+            print(f"golden {golden} ({len(out)} bytes, exit={rc})")
+        for relf in entry.get("compare_files") or []:
+            src = cwd / relf
+            dst = GOLDENS / Path(rel).name / relf
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if src.is_file():
+                dst.write_bytes(src.read_bytes())
+                print(f"golden file {dst}")
+            else:
+                print(f"WARN missing artifact {src}", file=sys.stderr)
     return 0
 
 
