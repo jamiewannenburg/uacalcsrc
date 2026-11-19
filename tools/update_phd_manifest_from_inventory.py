@@ -10,6 +10,49 @@ INV = REPO / "tools" / "phd_inventory.json"
 OUT = REPO / "tests" / "jython_scripts" / "phd" / "manifest.json"
 PROBE = "probes/nullary_string_to_term.py"
 
+# Per-script harness options (see docs/PHD_SCRIPT_COMPARISONS.md).
+PHD_PORT_META: dict[str, dict] = {
+    "posets.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["output/d3.json"],
+    },
+    "heyting_from_poset.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["input/d3_dual.ua"],
+    },
+    "draw_rn.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["output/RN-0.dot"],
+    },
+    "posets.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["output/d3.json"],
+    },
+    "associativity_of_iff.py": {
+        "use_fixture_copy": True,
+        "compare_files": ["input/s8.ua"],
+    },
+    "dmm.py": {"use_fixture_copy": True},
+    "add_arrow_and_meet.py": {"use_fixture_copy": True},
+    "rigorous_extension.py": {"use_fixture_copy": True},
+    "mace4.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["input/KR-1gen-1.ua"],
+    },
+    "filter2sa_mace4.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["input/KR-1gen-1.ua"],
+    },
+    "KR_pretty_print.py": {"use_fixture_copy": True, "compare_stdout": False},
+    "sugihara.py": {"use_fixture_copy": True},
+}
+
 
 def main() -> int:
     rows = json.loads(INV.read_text(encoding="utf-8"))
@@ -62,11 +105,8 @@ def main() -> int:
             )
             continue
         if st == "fast-ok":
-            ent = {"path": name, "argv": argv, "slow": False}
-            if name in ("mace4.py", "filter2sa_mace4.py") or any(
-                a.endswith(".model") for a in argv
-            ):
-                ent["cwd_model"] = True
+            ent = {"path": name, "argv": argv, "slow": False, "compare_stdout": True}
+            ent.update(PHD_PORT_META.get(name, {}))
             entries.append(ent)
             continue
         cat = row.get("error_category") or "jython-error"

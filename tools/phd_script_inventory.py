@@ -14,10 +14,14 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SRC = Path(r"C:\Users\u28409265\Documents\uacalc")
+RUNTIME = REPO / "tests" / "jython_scripts" / "phd_runtime"
+FIXTURES = REPO / "tests" / "jython_scripts" / "phd" / "fixtures"
+LATDRAW_JAR = REPO / "jars" / "LatDraw.jar"
 ARGV_MANIFEST = REPO / "tools" / "phd_script_argv.json"
 VENDOR = REPO / "tests" / "jython_scripts" / "_vendor"
 MAX_FILE = 1024 * 1024
 TIMEOUT = 30
+FORCE_RUN_SCRIPTS = frozenset({"draw_rn.py", "draw.py"})
 
 SKIP_DIR_NAMES = {"venv", "__pycache__", ".jython_cache", "node_modules"}
 SKIP_SUFFIX = {".class", ".out"}
@@ -25,7 +29,42 @@ SKIP_TOP_OUTPUT = "output"
 
 
 def _scripts() -> list[Path]:
+    if RUNTIME.is_dir() and any(RUNTIME.glob("*.py")):
+        return sorted(RUNTIME.glob("*.py"))
     return sorted(SRC.glob("*.py"))
+
+
+def copy_inventory_master(dest: Path) -> None:
+    """Repo phd_runtime scripts + phd/fixtures layout (not Jamie input junction)."""
+    dest.mkdir(parents=True, exist_ok=True)
+    for py in RUNTIME.glob("*.py"):
+        shutil.copy2(py, dest / py.name)
+    for sub in ("probes",):
+        src = RUNTIME / sub
+        if src.is_dir():
+            shutil.copytree(src, dest / sub, dirs_exist_ok=True)
+    if VENDOR.is_dir():
+        vdest = dest / "_vendor_pyparsing"
+        vdest.mkdir(exist_ok=True)
+        for p in VENDOR.glob("*.py"):
+            shutil.copy2(p, vdest / p.name)
+    if FIXTURES.is_dir():
+        for child in FIXTURES.iterdir():
+            if child.name == "output":
+                out_dest = dest / "output"
+                out_dest.mkdir(exist_ok=True)
+                for p in child.glob("RN-*.json"):
+                    shutil.copy2(p, out_dest / p.name)
+                continue
+            target = dest / child.name
+            if child.is_dir():
+                shutil.copytree(child, target, dirs_exist_ok=True)
+            elif child.is_file():
+                shutil.copy2(child, target)
+    for jar_name in ("uacalc.jar", "LatDraw.jar"):
+        src = REPO / "jars" / jar_name
+        if src.is_file():
+            shutil.copy2(src, dest / jar_name)
 
 
 def _classify_imports(text: str) -> dict[str, bool]:
@@ -186,8 +225,13 @@ def _run_jython(
     ]
     pp = os.pathsep.join(p for p in pp_parts if p)
     env = os.environ.copy()
-    env["CLASSPATH"] = str(jar.resolve())
+    cp = str(jar.resolve())
+    if LATDRAW_JAR.is_file():
+        cp = cp + os.pathsep + str(LATDRAW_JAR.resolve())
+    env["CLASSPATH"] = cp
     env["PYTHONPATH"] = pp
+    env["PHD_SKIP_DRAW"] = "1"
+    env["PHD_SIMPLE_DOT"] = "1"
     if use_repo_jar_for_syspath:
         shutil.copy2(jar, tmp / "uacalc.jar")
     else:
@@ -244,8 +288,12 @@ def _run_jython(
         }
 
 
-def status_for(imports: dict, run: dict | None) -> str:
-    if not imports["org_uacalc"] and not imports["dmm"]:
+def status_for(imports: dict, run: dict | None, *, script: str = "") -> str:
+    if (
+        not imports["org_uacalc"]
+        and not imports["dmm"]
+        and script not in FORCE_RUN_SCRIPTS
+    ):
         return "not-applicable"
     if imports.get("py3_print"):
         return "syntax-jython2"
@@ -262,6 +310,11 @@ def _strip_run_artifacts(root: Path) -> None:
     out = root / "output"
     if out.is_dir():
         shutil.rmtree(out, ignore_errors=True)
+    out.mkdir(exist_ok=True)
+    fixt = FIXTURES / "output"
+    if fixt.is_dir():
+        for p in fixt.glob("RN-*.json"):
+            shutil.copy2(p, out / p.name)
     for pattern in ("*_re.ua", "s*.ua", "sa*.ua"):
         for p in root.glob(pattern):
             if p.name not in {"sugihara.py"} and p.suffix == ".ua":
@@ -284,7 +337,7 @@ def main() -> int:
     rows = []
     with tempfile.TemporaryDirectory(prefix="phd_master_") as td:
         master = Path(td)
-        copy_phd_tree(master, copy_root_artifacts=True)
+        copy_inventory_master(master)
         scripts = _scripts()
         if args.only is not None:
             only = set(args.only)
@@ -302,7 +355,11 @@ def main() -> int:
                 "input_refs": _input_refs(text),
                 "local_deps": sorted(_local_imports(text)),
             }
-            if not imports["org_uacalc"] and not imports["dmm"]:
+            if (
+                not imports["org_uacalc"]
+                and not imports["dmm"]
+                and script.name not in FORCE_RUN_SCRIPTS
+            ):
                 entry["status"] = "not-applicable"
                 entry["run_repo_jar"] = None
                 rows.append(entry)
@@ -323,7 +380,7 @@ def main() -> int:
                 use_repo_jar_for_syspath=True,
             )
             entry["run_repo_jar"] = run_repo
-            entry["status"] = status_for(imports, run_repo)
+            entry["status"] = status_for(imports, run_repo, script=script.name)
             if entry["status"] == "jython-error":
                 entry["error_category"] = _categorize_error(
                     run_repo.get("stderr", ""),

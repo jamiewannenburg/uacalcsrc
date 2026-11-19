@@ -10,7 +10,7 @@ def add_iff(alg):
 
     # add iff
     iff_term = Terms.stringToTerm('meet(arrow(x,y),arrow(y,x))')
-    iff = TermOperationImp('iff',iff_term,[Variable.x,Variable.y],alg)
+    iff = TermOperationImp('iff', iff_term, iff_term.getVariableList(), alg)
 
     ops = join,meet,neg,e,dot,arrow,iff
     return BasicAlgebra(alg.getName(), alg.cardinality(), ops)

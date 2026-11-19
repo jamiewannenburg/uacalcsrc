@@ -1,3 +1,4 @@
+# PhD test mirror: _equation_varlist / equation_to_term merge term variables for current uacalc.jar.
 import sys
 sys.path.append("uacalc.jar")
 sys.path.append("LatDraw.jar")
@@ -63,6 +64,11 @@ convert_dict = {
         'comp':'-'
     }
 }
+
+def _term_op_imp(name, term, alg):
+    """TermOperationImp needs term.getVariableList() objects, not Variable.x literals."""
+    return TermOperationImp(name, term, term.getVariableList(), alg)
+
 
 def translate(op,translation='ascii'):
     try:
@@ -141,10 +147,12 @@ def make_readable(term,translation='ascii'):
     else:
         return translate(op,translation)+'('+','.join([ make_readable(t,translation) for t in term.getChildren()])+')'
 
-def equation_to_term(x): 
+def equation_to_term(x):
     l_term = to_term(x[0])
     r_term = to_term(x[1])
-    return Equation(l_term,r_term,x[2])
+    # Let Equation.makeVarList() build a Java ArrayList from term variables (Jamie's x[2] was
+    # incomplete and Python lists break varlist.containsAll in the current jar).
+    return Equation(l_term, r_term)
     
 def leq(eqs):
     return ['join(%s,%s)'%(eqs[0],eqs[1])]+eqs[1:]
@@ -285,7 +293,7 @@ def get_dual_lattice_operation(alg):
     # assume neg is a demorgan involution to construct dual operation
     if 'neg' in op_syms:
         term = Terms.stringToTerm('neg({}(neg(x),neg(y)))'.format(op_sym))
-        op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)
+        op = _term_op_imp(dual_sym, term, alg)
     else:
         given = alg.getOperation(OperationSymbol(op_sym,2))
         class dual_op(AbstractOperation):
@@ -413,7 +421,7 @@ def add_arrow_residuation(alg,fusion_sym='dot'):
     # assume neg is an involution to construct dual operation
     if 'neg' in op_syms:
         term = Terms.stringToTerm('neg({}(x,neg(y)))'.format(fusion_sym))
-        op = TermOperationImp('arrow',term,[Variable.x,Variable.y],alg)
+        op = _term_op_imp('arrow', term, alg)
     else:
         alg_leq = semi_lattice_leq(alg)
         alg = add_dual_lattice_operation(alg)
@@ -461,7 +469,7 @@ def add_dot_residuation(alg,arrow_sym='arrow'):
     # assume neg is an involution to construct dual operation
     if 'neg' in op_syms:
         term = Terms.stringToTerm('neg({}(x,neg(y)))'.format(arrow_sym))
-        op = TermOperationImp('dot',term,[Variable.x,Variable.y],alg)
+        op = _term_op_imp('dot', term, alg)
     else:
         alg_leq = semi_lattice_leq(alg)
         alg = add_dual_lattice_operation(alg)
@@ -575,7 +583,7 @@ def check_brouwerian(alg,example=True):
     # define dot equal to meet if needed
     if not 'dot' in op_syms:
         term = Terms.stringToTerm('meet(x,y)')
-        op = TermOperationImp('dot',term,[Variable.x,Variable.y],alg)
+        op = _term_op_imp('dot', term, alg)
         ops.append(op)
         alg = BasicAlgebra(alg.getName(), alg.cardinality(), ops)
         

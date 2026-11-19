@@ -1,0 +1,1 @@
+Br2+Prod of Br3 x Br2-basic is does not satisfy Peirce's law as ((y->x)v(((x->y)->x)->x))=e fails at {x: 2, y: 4}.

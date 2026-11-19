@@ -8,7 +8,12 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tests" / "jython_scripts"))
-from harness import normalize_phd_output, run_phd_script_cpython  # noqa: E402
+from harness import (  # noqa: E402
+    FIXTURES_ROOT,
+    compare_phd_outputs,
+    normalize_phd_output,
+    run_phd_script_cpython,
+)
 
 MANIFEST = REPO / "tests" / "jython_scripts" / "phd" / "manifest.json"
 GOLDENS = REPO / "tests" / "jython_scripts" / "phd" / "goldens"
@@ -32,16 +37,37 @@ def main() -> int:
         if entry.get("skip_cpython") or entry.get("skip_jython_golden"):
             continue
         rel = entry["path"]
-        golden = GOLDENS / (Path(rel).name + ".stdout")
-        if not golden.is_file():
+        compare_stdout = entry.get("compare_stdout", True)
+        compare_files = entry.get("compare_files") or []
+        if not compare_stdout and not compare_files:
             continue
-        expected = normalize_phd_output(golden.read_text(encoding="utf-8"))
-        rc, out, _ = run_phd_script_cpython(rel, list(entry.get("argv") or []))
+        golden = GOLDENS / (Path(rel).name + ".stdout")
+        expected = ""
+        if compare_stdout and golden.is_file():
+            expected = normalize_phd_output(golden.read_text(encoding="utf-8"))
+        fixture_root = FIXTURES_ROOT if entry.get("use_fixture_copy") else None
+        rc, out, _, artifact_dir = run_phd_script_cpython(
+            rel, list(entry.get("argv") or []), fixture_root=fixture_root
+        )
         got = normalize_phd_output(out)
-        if rc == 0 and got == expected:
+        ok = rc == 0
+        if compare_stdout and golden.is_file():
+            ok = ok and got == expected
+        if compare_files and artifact_dir:
+            errs = compare_phd_outputs(entry, out, artifact_dir)
+            ok = ok and not errs
+            fail_detail = errs[0] if errs else ""
+        else:
+            fail_detail = ""
+        if ok:
             entry.pop("xfail_cpython", None)
             continue
-        reason = first_diff(expected, got) if got != expected else f"exit code {rc}"
+        if fail_detail:
+            reason = fail_detail
+        elif compare_stdout and got != expected:
+            reason = first_diff(expected, got)
+        else:
+            reason = f"exit code {rc}"
         entry["xfail_cpython"] = {"reason": reason}
     MANIFEST.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print(f"updated {MANIFEST}")

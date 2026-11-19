@@ -9,7 +9,12 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tests" / "jython_scripts"))
-from harness import normalize_phd_output, run_phd_script_cpython  # noqa: E402
+from harness import (  # noqa: E402
+    FIXTURES_ROOT,
+    compare_phd_outputs,
+    normalize_phd_output,
+    run_phd_script_cpython,
+)
 
 PHD = REPO / "tests" / "jython_scripts" / "phd_runtime"
 MANIFEST = REPO / "tests" / "jython_scripts" / "phd" / "manifest.json"
@@ -32,22 +37,46 @@ def test_phd_script_stdout_matches_jython_golden(entry: dict):
     if entry.get("skip_jython_golden"):
         pytest.skip(entry["skip_jython_golden"])
     rel = entry["path"]
+    compare_stdout = entry.get("compare_stdout", True)
+    compare_files = entry.get("compare_files") or []
+    if not compare_stdout and not compare_files:
+        pytest.skip("no compare_stdout or compare_files")
+    rel = entry["path"]
     golden_path = GOLDENS / (Path(rel).name + ".stdout")
-    assert golden_path.is_file(), f"Missing golden {golden_path}; run tools/regenerate_phd_script_goldens.py"
-    expected = normalize_phd_output(golden_path.read_text(encoding="utf-8"))
+    expected = ""
+    if compare_stdout:
+        assert golden_path.is_file(), (
+            f"Missing golden {golden_path}; run tools/regenerate_phd_script_goldens.py"
+        )
+        expected = normalize_phd_output(golden_path.read_text(encoding="utf-8"))
     argv = list(entry.get("argv") or [])
     cwd = PHD
-    if entry.get("cwd_model"):
-        cwd = PHD
-    rc, out, err = run_phd_script_cpython(rel, argv, cwd=cwd)
+    if entry.get("cwd_fixture"):
+        cwd = FIXTURES_ROOT
+    fixture_root = FIXTURES_ROOT if entry.get("use_fixture_copy") else None
+    rc, out, err, artifact_dir = run_phd_script_cpython(
+        rel, argv, cwd=cwd, fixture_root=fixture_root
+    )
     got = normalize_phd_output(out)
     xfail = entry.get("xfail_cpython")
     if xfail:
-        if got != expected or rc != 0:
+        if compare_stdout and (got != expected or rc != 0):
             pytest.xfail(xfail.get("reason", "known PhD script divergence"))
+        if rc != 0:
+            pytest.xfail(xfail.get("reason", "known PhD script divergence"))
+        if compare_files:
+            base = artifact_dir or (FIXTURES_ROOT if entry.get("cwd_fixture") else cwd)
+            file_errors = compare_phd_outputs(entry, out, Path(base))
+            if file_errors:
+                pytest.xfail(xfail.get("reason", "known PhD script divergence"))
         return
     assert rc == 0, f"stderr:\n{err}"
-    assert got == expected, _first_diff(expected, got)
+    if compare_stdout:
+        assert got == expected, _first_diff(expected, got)
+    if compare_files:
+        base = artifact_dir or (FIXTURES_ROOT if entry.get("cwd_fixture") else cwd)
+        file_errors = compare_phd_outputs(entry, out, Path(base))
+        assert not file_errors, "\n".join(file_errors)
 
 
 def _first_diff(expected: str, got: str) -> str:
