@@ -15,7 +15,7 @@
       "slow": false,
       "compare_stdout": true,
       "xfail_cpython": {
-        "reason": "line count jython=11 cpython=13"
+        "reason": "line 12: jython=(end of golden) cpython='...\\\\phd_runtime\\\\input\\\\C-5-11.ua' (extra glob hit printed on CPython only)"
       }
     },
     {
@@ -37,7 +37,7 @@
         "input/s8.ua"
       ],
       "xfail_cpython": {
-        "reason": "stdout differs from C:\\Users\\u28409265\\Documents\\uacalcsrc\\tests\\jython_scripts\\phd\\goldens\\associativity_of_iff.py.stdout"
+        "reason": "TypeError at Equation.findFailureMap(iff_alg): dmm.BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81); script aborts before writing input/s8.ua"
       }
     },
     {
@@ -72,7 +72,7 @@
       "slow": false,
       "compare_stdout": true,
       "xfail_cpython": {
-        "reason": "line count jython=1 cpython=0"
+        "reason": "TypeError at check_brouwerian→Equation.findFailureMap(alg): dmm.BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81); never reaches bot OperationSymbol"
       }
     },
     {
@@ -93,10 +93,7 @@
       ],
       "slow": false,
       "compare_stdout": true,
-      "use_fixture_copy": true,
-      "xfail_cpython": {
-        "reason": "line count jython=1 cpython=0"
-      }
+      "use_fixture_copy": true
     },
     {
       "path": "draw.py",
@@ -139,7 +136,13 @@
       ],
       "slow": false,
       "compare_stdout": false,
-      "use_fixture_copy": true
+      "use_fixture_copy": true,
+      "compare_files": [
+        "input/KR-1gen-1.ua"
+      ],
+      "xfail_cpython": {
+        "reason": "ValueError at BasicAlgebra(__init__)→IntOperation.from_int_value_at (mace4 to_alg): table value 1 outside [0,1) when parsing Mace4 stream on CPython; input/KR-1gen-1.ua not written (rc=1)"
+      }
     },
     {
       "path": "find_chains_neg_cone.py",
@@ -173,7 +176,7 @@
       "slow": false,
       "compare_stdout": true,
       "xfail_cpython": {
-        "reason": "line count jython=27 cpython=0"
+        "reason": "stdout line 2 jython='found example 244' cpython='C-{5}-{1} deleting ...\\\\input\\\\C-5-1.ua' (diagnostic delete path vs Jython search message)"
       }
     },
     {
@@ -219,7 +222,7 @@
         "input/d3_dual.ua"
       ],
       "xfail_cpython": {
-        "reason": "exit code 1"
+        "reason": "input/d3_dual.ua differs from Jython golden after writeAlgebraFile; then check_heyting→check_brouwerian→Equation.findFailureMap: dmm.BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81)"
       }
     },
     {
@@ -257,7 +260,13 @@
       ],
       "slow": false,
       "compare_stdout": false,
-      "use_fixture_copy": true
+      "use_fixture_copy": true,
+      "compare_files": [
+        "input/KR-1gen-1.ua"
+      ],
+      "xfail_cpython": {
+        "reason": "ValueError at BasicAlgebra(__init__)→IntOperation.from_int_value_at (_jython_compat.py:163): mace4.py:131 to_alg_stream pyparsing→Jamie AbstractOperation; nullary row index 1 ∉ [0,1); golden input/KR-1gen-1.ua from Jython only"
+      }
     },
     {
       "path": "posets.py",
@@ -335,7 +344,7 @@
       "slow": false,
       "compare_stdout": true,
       "xfail_cpython": {
-        "reason": "line count jython=1 cpython=0"
+        "reason": "TypeError at peirce.findFailureMap(alg) in sums.py:121: dmm-built BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81)"
       }
     },
     {

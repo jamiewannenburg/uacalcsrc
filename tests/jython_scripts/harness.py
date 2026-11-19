@@ -10,6 +10,7 @@ import runpy
 import shutil
 import sys
 import tempfile
+import textwrap
 import tokenize
 from pathlib import Path
 from typing import Any
@@ -155,6 +156,7 @@ def prepare_jython2_source(source: str) -> str:
         source,
         flags=re.MULTILINE,
     )
+    source = re.sub(r"^import Queue\b", "import queue as Queue", source, flags=re.MULTILINE)
     return source
 
 
@@ -191,7 +193,24 @@ def run_phd_script_cpython(
         raise FileNotFoundError(script)
     cwd = cwd or PHD_ROOT
     fixture_root = fixture_root or FIXTURES_ROOT
-    source = prepare_jython2_source(script.read_text(encoding="utf-8", errors="replace"))
+    raw_source = script.read_text(encoding="utf-8", errors="replace")
+    from cpython_support.load_dmm import (  # noqa: WPS433
+        _PHD_ROOT,
+        _jython2_patches,
+        _strip_jython_preamble,
+    )
+
+    dmm_main_only = script_rel == "dmm.py"
+    if dmm_main_only:
+        dmm_raw = (_PHD_ROOT / "dmm.py").read_text(encoding="utf-8", errors="replace")
+        dmm_src = _jython2_patches(_strip_jython_preamble(dmm_raw))
+        marker = "if __name__ == '__main__':"
+        main_src = dmm_src[dmm_src.index(marker) :] if marker in dmm_src else dmm_src
+        body = re.sub(r"^if __name__ == ['\"]__main__['\"]:\s*\n", "", main_src, count=1)
+        raw_source = "import os\nimport sys\n" + textwrap.dedent(body)
+    elif "NoOutputStream" in raw_source and 'sys.path.append("uacalc.jar")' in raw_source:
+        raw_source = _strip_jython_preamble(raw_source)
+    source = prepare_jython2_source(raw_source)
 
     saved_path = list(sys.path)
     saved_modules = dict(sys.modules)
@@ -222,7 +241,13 @@ def run_phd_script_cpython(
         sys.stderr = err_buf
         _prime_cpython_imports()
         code = compile(source, str(script), "exec")
-        glob: dict[str, Any] = {"__name__": "__main__", "__file__": str(script)}
+        if dmm_main_only:
+            import dmm as dmm_mod
+
+            glob = dmm_mod.__dict__.copy()
+            glob["__name__"] = "__main__"
+        else:
+            glob = {"__name__": "__main__", "__file__": str(script)}
         exec(code, glob, glob)
         rc = 0
     except SystemExit as exc:

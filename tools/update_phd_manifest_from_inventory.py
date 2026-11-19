@@ -39,8 +39,16 @@ PHD_PORT_META: dict[str, dict] = {
     "dmm.py": {"use_fixture_copy": True},
     "add_arrow_and_meet.py": {"use_fixture_copy": True},
     "rigorous_extension.py": {"use_fixture_copy": True},
-    "mace4.py": {"use_fixture_copy": True, "compare_stdout": False},
-    "filter2sa_mace4.py": {"use_fixture_copy": True, "compare_stdout": False},
+    "mace4.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["input/KR-1gen-1.ua"],
+    },
+    "filter2sa_mace4.py": {
+        "use_fixture_copy": True,
+        "compare_stdout": False,
+        "compare_files": ["input/KR-1gen-1.ua"],
+    },
     "KR_pretty_print.py": {"use_fixture_copy": True, "compare_stdout": False},
     "sugihara.py": {"use_fixture_copy": True},
 }

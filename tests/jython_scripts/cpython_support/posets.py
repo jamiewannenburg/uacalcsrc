@@ -130,7 +130,7 @@ def get_upsets_lattice(po):
     for els in powerset(univ):
         union = set()
         for el in els:
-            union.update(set(po.filter(el)))
+            union.update(set(el.filter()))
         found = False
         for new_el in new_universe:
             if new_el == union:
