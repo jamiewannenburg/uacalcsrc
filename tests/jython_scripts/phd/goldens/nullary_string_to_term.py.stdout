@@ -1,0 +1,11 @@
+parse_ok|e|var:e
+depth is 0
+parse_fail|e()|empty string
+depth is 0
+parse_fail|f()|empty string
+parse_ok|x|var:x
+intEval_x0|e|NullPointerException:Cannot invoke "java.lang.Integer.intValue()" because the return value of "java.util.Map.get(Object)" is null
+depth is 0
+intEval_parse|e()|IllegalArgumentException:empty string
+makeConstant_e|e|1
+var_e_assign|e|1

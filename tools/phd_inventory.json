@@ -1,0 +1,997 @@
+[
+  {
+    "script": "2subalgebras.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "C-5-*.ua"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "dmm",
+      "glob",
+      "latex",
+      "org",
+      "os",
+      "re",
+      "sys"
+    ],
+    "status": "fast-ok",
+    "run": {
+      "exit": 0,
+      "seconds": 18.665,
+      "stdout_len": 9,
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "add_arrow_and_meet.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.71,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_5do39qvk\\add_arrow_and_meet.py\", line 3, in <module>\n    from dmm import check_type, add_arrow_and_meet, AlgebraIO\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "associativity_of_iff.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "b2.ua",
+      "s3.ua",
+      "s8.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 10.75,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_j0jiplio\\associativity_of_iff.py\", line 1, in <module>\n    from dmm import BasicAlgebra,AlgebraIO,OperationSymbol,Terms,TermOperationImp,Variable,make_readable,equation_to_term\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_andrew.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.255,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_6vpc_afi\\check_andrew.py\", line 3, in <module>\n    from dmm import leq, Variable, equation_to_term, check_crl, AlgebraIO, add_dual_residuation_operation, add_dual_lattice_operation, add_neg, make_readable\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_crl.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.252,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_t3722owl\\check_crl.py\", line 3, in <module>\n    from dmm import check_type, check_crl, AlgebraIO, add_dual_residuation_operation, add_dual_lattice_operation, add_neg\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_dunn.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.405,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_xby1i3sg\\check_dunn.py\", line 3, in <module>\n    from dmm import check_type, check_dunn, AlgebraIO, check_full\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_heyting.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 12.538,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_34_8rag5\\check_heyting.py\", line 3, in <module>\n    from dmm import AlgebraIO, AbstractOperation, BasicAlgebra, add_dual_lattice_operation, add_arrow_residuation, check_heyting, semi_lattice_minimal,semi_lattice_maximal\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_m.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.97,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_p8jueu69\\check_m.py\", line 3, in <module>\n    from dmm import check_type, check_m, AlgebraIO, check_full\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "dmm.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": true,
+      "dmm": false,
+      "other_java": true
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "needs-pyparsing",
+    "run": null
+  },
+  {
+    "script": "draw.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "input/KR-8-expl.json"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "json",
+      "os",
+      "pygraphviz",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run": null
+  },
+  {
+    "script": "draw_chains.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/C-7-*.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "glob",
+      "latex",
+      "org",
+      "os",
+      "sys"
+    ],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 18.446,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_n1yb1mh8\\draw_chains.py\", line 95, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_inv_n1yb1mh8\\\\output/SevenElementSimples.tex'\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "draw_rn.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "input/KR-8.model"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "json",
+      "matplotlib",
+      "networkx",
+      "os",
+      "pygraphviz",
+      "re",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run": null
+  },
+  {
+    "script": "ez_setup.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "install"
+    ],
+    "input_refs": [],
+    "local_deps": [],
+    "status": "not-applicable",
+    "run": null
+  },
+  {
+    "script": "filter2sa_mace4.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": true,
+      "dmm": true,
+      "other_java": true
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "%s-%d.ua",
+      "S-%d-%s.ua",
+      "{}.model"
+    ],
+    "local_deps": [
+      "org",
+      "os",
+      "pyparsing",
+      "re",
+      "sys"
+    ],
+    "status": "needs-pyparsing",
+    "run": null
+  },
+  {
+    "script": "find_chains_neg_cone.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "5"
+    ],
+    "input_refs": [
+      "%s-%d-%d.ua",
+      "%s-%d-%s.ua",
+      "-*.ua",
+      "b2xs3_reflection.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 13.086,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_x29zt8cv\\find_chains_neg_cone.py\", line 14, in <module>\n    from dmm import BasicAlgebra, AlgebraIO, AbstractOperation, add_arrow_and_meet, check_simple_chain, OperationSymbol, check_dmm\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "find_covers.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/S-*-*.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 12.074,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_8s48u_9d\\find_covers.py\", line 16, in <module>\n    from dmm import AlgebraIO, OperationSymbol,check_dmm\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "find_dots.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "5"
+    ],
+    "input_refs": [
+      "-*.ua",
+      "C-%d-%d.ua",
+      "Y-%d-%s.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 12.882,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_yev9v92d\\find_dots.py\", line 16, in <module>\n    from dmm import BasicAlgebra, AlgebraIO, AbstractOperation, add_arrow_and_meet, check_simple_chain, OperationSymbol\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "find_simple_chains.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "5"
+    ],
+    "input_refs": [
+      "-*.ua",
+      "C-%d-%d.ua",
+      "C-%d-%s.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 13.365,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_wceif8kn\\find_simple_chains.py\", line 13, in <module>\n    from dmm import BasicAlgebra, AlgebraIO, AbstractOperation, add_arrow_and_meet, check_simple_chain, OperationSymbol\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "find_simple_chains_powers.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/simple_chains_power5_*-*.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 13.286,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_l6pwsqqs\\find_simple_chains_powers.py\", line 16, in <module>\n    from dmm import AlgebraIO, OperationSymbol,check_dmm\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "free_algebras.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua",
+      "{}_F1.ua",
+      "{}_S.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 12.66,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_qo8uad0h\\free_algebras.py\", line 9, in <module>\n    from dmm import to_term, make_readable\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "get_idempotents.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "c4.ua",
+      "c4_weaved.ua",
+      "s3_reflection.ua",
+      "s3_weaved.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 12.986,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_c5v3t8hn\\get_idempotents.py\", line 10, in <module>\n    from dmm import to_term, make_readable\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "get_subreducts.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "dot",
+      "-f",
+      "input/group.in"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "isomorphism",
+      "itertools",
+      "mace4",
+      "org",
+      "os",
+      "sys"
+    ],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 15.307,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_xun8p_ng\\get_subreducts.py\", line 50, in <module>\n    models_handle = open(models_file_name)\nIOError: [Errno 2] No such file or directory: 'input/group.in'\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "heyting_from_poset.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "input/t3.model"
+    ],
+    "input_refs": [
+      "{}_dual.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.457,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_7g7rb7bb\\heyting_from_poset.py\", line 2, in <module>\n    from dmm import AbstractOperation, OperationSymbol, BasicAlgebra, add_arrow_residuation, semi_lattice_maximal, semi_lattice_minimal, check_heyting\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "isomorphism.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [],
+    "local_deps": [],
+    "status": "fast-ok",
+    "run": {
+      "exit": 0,
+      "seconds": 13.35,
+      "stdout_len": 0,
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "jep_check.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/C-*-*.ua",
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 12.728,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_fnt1uxhe\\jep_check.py\", line 13, in <module>\n    from dmm import AlgebraIO\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "KR_pretty_print.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": true,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.model"
+    ],
+    "local_deps": [
+      "itertools",
+      "numpy",
+      "os",
+      "powerset",
+      "pyparsing",
+      "re",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run": null
+  },
+  {
+    "script": "latex.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "json",
+      "os",
+      "sys"
+    ],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 18.259,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_ipf3p4ic\\latex.py\", line 156, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: input\\b2.ua\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "mace4.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": true,
+      "dmm": true,
+      "other_java": true
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "%s-%d.ua",
+      "S-%d-%s.ua",
+      "{}.model"
+    ],
+    "local_deps": [
+      "org",
+      "os",
+      "pyparsing",
+      "re",
+      "sys"
+    ],
+    "status": "needs-pyparsing",
+    "run": null
+  },
+  {
+    "script": "posets.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "input/KR-8.model"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "dmm",
+      "itertools",
+      "json",
+      "latex",
+      "org",
+      "os",
+      "sys"
+    ],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 18.797,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_8dzpsico\\posets.py\", line 97, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\input/KR-8.model.lat\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "powerset.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "3"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "itertools",
+      "numpy",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run": null
+  },
+  {
+    "script": "riger_nishinora.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "_dual.json",
+      "{}_dual.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "heyting_from_poset",
+      "json",
+      "latex",
+      "os",
+      "posets",
+      "sys"
+    ],
+    "status": "fast-ok",
+    "run": {
+      "exit": 0,
+      "seconds": 19.866,
+      "stdout_len": 2596,
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "rigorous_extension.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": true
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua",
+      "{}_re.ua"
+    ],
+    "local_deps": [
+      "org",
+      "os",
+      "re",
+      "sys"
+    ],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 13.289,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_iy20hp52\\rigorous_extension.py\", line 128, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_iy20hp52\\input\\b2.ua\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "sc_joins_of_covers.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.543,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_nphqahyu\\sc_joins_of_covers.py\", line 8, in <module>\n    from dmm import BasicAlgebra, AlgebraIO, AbstractOperation, OperationSymbol, add_arrow_and_meet\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "search_c4.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [],
+    "local_deps": [],
+    "status": "not-applicable",
+    "run": null
+  },
+  {
+    "script": "skew_reflection.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "s3_reflection"
+    ],
+    "input_refs": [
+      "{}.ua",
+      "{}_{}.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "os",
+      "sys"
+    ],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 16.601,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_dbiyonpd\\skew_reflection.py\", line 136, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: input\\s3_reflection.ua\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "structural_completeness.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.675,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_w_ga7c7s\\structural_completeness.py\", line 7, in <module>\n    from dmm import to_term, make_readable\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "sugihara.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "4"
+    ],
+    "input_refs": [
+      "s%s.ua",
+      "sa%s.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "os",
+      "sys"
+    ],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 16.786,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_el3tarci\\sugihara.py\", line 136, in <module>\n    alg = get_sugihara_monoid(n)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_el3tarci\\sugihara.py\", line 70, in get_sugihara_monoid\n    return add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_el3tarci\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\p",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "sums.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "input/KR-8.model"
+    ],
+    "input_refs": [
+      "A_brouwerian.ua",
+      "Br2+A_brouwerian.ua",
+      "Br2.ua",
+      "Br2xBr2.ua",
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "status": "jython-error",
+    "run": {
+      "exit": 1,
+      "seconds": 11.559,
+      "stdout_len": 0,
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_inv_5aik1md3\\sums.py\", line 2, in <module>\n    from dmm import AbstractOperation, OperationSymbol, BasicAlgebra, add_arrow_residuation, semi_lattice_maximal, semi_lattice_minimal\nImportError: No module named dmm\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "twist.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [],
+    "local_deps": [
+      "itertools"
+    ],
+    "status": "not-applicable",
+    "run": null
+  }
+]

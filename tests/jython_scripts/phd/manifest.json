@@ -1,0 +1,54 @@
+{
+  "scripts": [
+    {
+      "path": "probes/nullary_string_to_term.py",
+      "argv": [],
+      "slow": false,
+      "xfail_cpython": {
+        "reason": "Java Terms.stringToTerm rejects all nullary op() forms (IAE empty string); Rust shim accepts e(). Golden is Jython/Java truth."
+      }
+    },
+    {
+      "path": "rigorous_extension.py",
+      "argv": ["b2"],
+      "slow": false
+    },
+    {
+      "path": "sugihara.py",
+      "argv": ["4"],
+      "slow": false,
+      "skip_jython_golden": "Java TermOperationImp IAE in add_dual_lattice_operation with repo uacalc.jar",
+      "skip_cpython": "same failure path via dmm.add_arrow_and_meet"
+    },
+    {
+      "path": "associativity_of_iff.py",
+      "argv": [],
+      "slow": false,
+      "skip_jython_golden": "depends on get_sugihara_monoid(8) which fails on current jar",
+      "skip_cpython": "same"
+    },
+    {
+      "path": "check_crl.py",
+      "argv": ["b2"],
+      "slow": false,
+      "skip_jython_golden": "b2 is not a CRL; check_crl raises during equation interpretation",
+      "skip_cpython": "same"
+    },
+    {
+      "path": "twist.py",
+      "argv": [],
+      "slow": false,
+      "skip_jython_golden": "Py3 print syntax; Jython 2.7 cannot parse",
+      "skip_cpython": "not-applicable (no org.uacalc; combinatorics only)"
+    },
+    {
+      "path": "mace4.py",
+      "argv": ["KR-1gen"],
+      "slow": false,
+      "cwd_model": true,
+      "xfail_cpython": {
+        "reason": "mace4 builds anonymous Java AbstractOperations; shim IntOperation.from_int_value_at rejects out-of-range table cell on KR-1gen.model."
+      }
+    }
+  ]
+}
