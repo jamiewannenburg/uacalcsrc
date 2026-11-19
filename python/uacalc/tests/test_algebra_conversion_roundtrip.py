@@ -3,21 +3,35 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
+from typing import Any, Callable, Tuple
 
 import pytest
 
-from org.uacalc.alg import BasicAlgebra
-from org.uacalc.alg.op import AbstractOperation, OperationSymbol, IntOperation
-from org.uacalc.eq import Equation
-from org.uacalc.terms import VariableImp
-from org.uacalc.io import AlgebraIO
+# Import org.uacalc lazily: loading ``org.uacalc.alg`` at collection time
+# breaks later ``uacalc_lib`` lattice / Mace4 tests in the same pytest run.
 
 
-class _SubBasicAlgebra(BasicAlgebra):
-    """User subclass of the Jython-facing BasicAlgebra wrapper."""
+def _org_symbols() -> Tuple[Any, ...]:
+    from org.uacalc.alg import BasicAlgebra
+    from org.uacalc.alg.op import AbstractOperation, OperationSymbol, IntOperation
+    from org.uacalc.eq import Equation
+    from org.uacalc.io import AlgebraIO
+    from org.uacalc.terms import VariableImp
+
+    return (
+        BasicAlgebra,
+        AbstractOperation,
+        OperationSymbol,
+        IntOperation,
+        Equation,
+        AlgebraIO,
+        VariableImp,
+    )
 
 
-def _flip_bin_op(card: int):
+def _flip_bin_op(card: int) -> Callable[[], Any]:
+    _, AbstractOperation, *_ = _org_symbols()
+
     class Flip(AbstractOperation):
         def intValueAt(self, args):
             return (int(args[0]) + int(args[1]) + 1) % card
@@ -27,6 +41,7 @@ def _flip_bin_op(card: int):
 
 def test_nullary_mace4_style_uses_algebra_cardinality():
     """Mace4 nullary ops use AbstractOperation set size 1; coercion must use |A|."""
+    BasicAlgebra, AbstractOperation, OperationSymbol, *_ = _org_symbols()
 
     class Const(AbstractOperation):
         def intValueAt(self, _args):
@@ -41,6 +56,7 @@ def test_nullary_mace4_style_uses_algebra_cardinality():
 
 
 def test_callable_defined_operations_round_trip():
+    BasicAlgebra, _, OperationSymbol, IntOperation, *_ = _org_symbols()
     card = 4
 
     def plus_mod(args):
@@ -55,6 +71,7 @@ def test_callable_defined_operations_round_trip():
 
 
 def test_labeled_universe_order_preserved_in_get_universe():
+    BasicAlgebra, *_ = _org_symbols()
     order = ["z", "a", "m"]
     alg = BasicAlgebra("labels", order, [_flip_bin_op(3)])
     assert alg.get_universe() == order
@@ -64,15 +81,21 @@ def test_labeled_universe_order_preserved_in_get_universe():
 
 
 def test_subclass_wrapper_accepted_by_find_failure_map():
+    BasicAlgebra, _, _, IntOperation, Equation, _, VariableImp = _org_symbols()
+
+    class SubBasicAlgebra(BasicAlgebra):
+        """User subclass of the Jython-facing BasicAlgebra wrapper."""
+
     card = 2
     xor = IntOperation.binary_xor("xor")
-    sub = _SubBasicAlgebra("sub", card, [xor])
+    sub = SubBasicAlgebra("sub", card, [xor])
     x, y = VariableImp("x"), VariableImp("y")
     eq = Equation(x, y)
     assert eq.findFailureMap(sub) is not None
 
 
 def test_failure_map_values_use_universe_labels():
+    BasicAlgebra, _, _, _, Equation, _, VariableImp = _org_symbols()
     order = ["red", "green"]
     alg = BasicAlgebra("colors", order, [_flip_bin_op(2)])
     x, y = VariableImp("x"), VariableImp("y")
@@ -85,6 +108,7 @@ def test_failure_map_values_use_universe_labels():
 
 def test_dense_integer_ua_write_round_trip():
     """Java-style dense integer universes round-trip through write/read."""
+    BasicAlgebra, _, OperationSymbol, _, _, AlgebraIO, _ = _org_symbols()
     alg = BasicAlgebra("c4", 4, [_flip_bin_op(4)])
     with tempfile.NamedTemporaryFile(suffix=".ua", delete=False) as tmp:
         path = Path(tmp.name)
