@@ -98,6 +98,14 @@ $env:CLASSPATH = (Resolve-Path jars\uacalc.jar).Path
 
 After `maturin develop --release`, copy `venv/Lib/site-packages/uacalc_lib/*.pyd` into `python/uacalc_lib/` so `checkpoint_force` and other exports match the Rust build (repo `__init__.py` prefers the newest co-located `.pyd`).
 
+## CPython `.lat` reader and `varlist`
+
+Jamie poset scripts use Jython `org.latdraw.orderedset.InputLattice` to read `input/{name}.lat` files (S-expressions: lattice name, then one `(label (filter…))` line per element). On CPython, `tests/jython_scripts/cpython_support/read_lat.py` exposes `parse_lat_file(path) → (name, labels, upper_covers_list)` with the same triple Java uses (filters = elements weakly above each label). `cpython_support/posets.py` maps that into `org.uacalc.lat.OrderedSet.from_filters` (string labels are assigned `0…n-1` in file order).
+
+Full `dmm.py` is loaded via `cpython_support/load_dmm.py` without stripping axiom lists so `check_heyting` / `check_crl` paths keep working; those scripts depend on Java-style `TermOperationImp` **varlist** behaviour (constants need `e()` in terms; see `e()` vs `e` above).
+
+**Harness:** `run_phd_script_cpython(..., fixture_root=…)` copies `tests/jython_scripts/phd/fixtures` into a temp cwd when scripts write under `input/`. Manifest entries may set `compare_stdout`, `compare_files`, `use_fixture_copy`, and `cwd_fixture`; file goldens live under `tests/jython_scripts/phd/goldens/<script>.py/` and are compared with `normalize_phd_file` (JSON pretty-print, normalized newlines).
+
 Checklist artefacts:
 
 - `jython_comparison/run_comparison.py` → exit **0** (all parity scripts matched).

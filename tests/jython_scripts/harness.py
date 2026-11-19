@@ -7,7 +7,9 @@ import json
 import os
 import re
 import runpy
+import shutil
 import sys
+import tempfile
 import tokenize
 from pathlib import Path
 from typing import Any
@@ -17,11 +19,29 @@ VENDOR = Path(__file__).resolve().parent / "_vendor"
 CPYTHON_SUPPORT = Path(__file__).resolve().parent / "cpython_support"
 PHD_ROOT = Path(__file__).resolve().parent / "phd_runtime"
 GOLDENS_ROOT = Path(__file__).resolve().parent / "phd" / "goldens"
+FIXTURES_ROOT = Path(__file__).resolve().parent / "phd" / "fixtures"
 
 # Normalisations applied when comparing stdout (documented in PHD_SCRIPT_COMPARISONS.md).
 ADDRESS_RE = re.compile(r"\b(?:0x)?[0-9a-f]{8,}\b", re.I)
 TIMING_RE = re.compile(r"\b\d+\.\d+s\b")
 CLASS_AT_RE = re.compile(r"\b\w+@[0-9a-f]+\b", re.I)
+
+
+def normalize_phd_file(content: str, path: str | Path) -> str:
+    """Stable line endings and whitespace for golden file comparison (json/dot/tex)."""
+    path = Path(path)
+    suffix = path.suffix.lower()
+    text = content.replace("\r\n", "\n").replace("\r", "\n")
+    if suffix == ".json":
+        try:
+            obj = json.loads(text)
+            return json.dumps(obj, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
+        except json.JSONDecodeError:
+            pass
+    lines = [ln.rstrip() for ln in text.split("\n")]
+    while lines and not lines[-1]:
+        lines.pop()
+    return "\n".join(lines) + ("\n" if lines else "")
 
 
 def normalize_phd_output(text: str) -> str:
@@ -152,11 +172,13 @@ def run_phd_script_cpython(
     argv_suffix: list[str] | None = None,
     *,
     cwd: Path | None = None,
-) -> tuple[int, str, str]:
+    fixture_root: Path | None = None,
+) -> tuple[int, str, str, Path | None]:
     script = PHD_ROOT / script_rel
     if not script.is_file():
         raise FileNotFoundError(script)
     cwd = cwd or PHD_ROOT
+    fixture_root = fixture_root or FIXTURES_ROOT
     source = prepare_jython2_source(script.read_text(encoding="utf-8", errors="replace"))
 
     saved_path = list(sys.path)
@@ -166,8 +188,20 @@ def run_phd_script_cpython(
     out_buf = io.StringIO()
     err_buf = io.StringIO()
     old_stdout, old_stderr = sys.stdout, sys.stderr
+    tmp_dir: tempfile.TemporaryDirectory[str] | None = None
+    run_cwd = cwd
     try:
-        os.chdir(str(cwd))
+        if fixture_root.is_dir():
+            tmp_dir = tempfile.TemporaryDirectory(prefix="phd_fixture_")
+            work = Path(tmp_dir.name)
+            shutil.copytree(
+                fixture_root,
+                work,
+                dirs_exist_ok=True,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
+            run_cwd = work
+        os.chdir(str(run_cwd))
         sys.path = phd_sys_path() + [p for p in saved_path if p not in phd_sys_path()]
         sys.argv = [str(script)] + list(argv_suffix or [])
         sys.stdout = out_buf
@@ -192,7 +226,52 @@ def run_phd_script_cpython(
         for name, mod in list(sys.modules.items()):
             if name not in saved_modules:
                 del sys.modules[name]
-    return rc, out_buf.getvalue(), err_buf.getvalue()
+    artifact_dir = run_cwd if tmp_dir is not None else None
+    return rc, out_buf.getvalue(), err_buf.getvalue(), artifact_dir
+
+
+def compare_phd_outputs(
+    entry: dict[str, Any],
+    stdout: str,
+    artifact_dir: Path,
+    *,
+    goldens_root: Path | None = None,
+) -> list[str]:
+    """Return human-readable mismatch lines (empty when all comparisons pass)."""
+    goldens_root = goldens_root or GOLDENS_ROOT
+    script_path = Path(entry["path"])
+    stem = script_path.name
+    errors: list[str] = []
+
+    if entry.get("compare_stdout"):
+        golden_stdout = goldens_root / f"{stem}.stdout"
+        if not golden_stdout.is_file():
+            errors.append(f"missing golden stdout {golden_stdout}")
+        else:
+            expected = normalize_phd_output(golden_stdout.read_text(encoding="utf-8"))
+            got = normalize_phd_output(stdout)
+            if got != expected:
+                errors.append(f"stdout differs from {golden_stdout}")
+
+    for rel in entry.get("compare_files") or []:
+        rel_path = Path(rel)
+        got_path = artifact_dir / rel_path
+        golden_path = goldens_root / stem / rel_path
+        if not golden_path.is_file():
+            errors.append(f"missing golden {golden_path}")
+            continue
+        if not got_path.is_file():
+            errors.append(f"missing artifact {got_path}")
+            continue
+        got = normalize_phd_file(
+            got_path.read_text(encoding="utf-8", errors="replace"), rel_path
+        )
+        expected = normalize_phd_file(
+            golden_path.read_text(encoding="utf-8", errors="replace"), rel_path
+        )
+        if got != expected:
+            errors.append(f"file {rel} differs from {golden_path}")
+    return errors
 
 
 def load_manifest() -> list[dict[str, Any]]:

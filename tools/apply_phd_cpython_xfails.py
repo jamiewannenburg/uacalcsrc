@@ -36,7 +36,7 @@ def main() -> int:
         if not golden.is_file():
             continue
         expected = normalize_phd_output(golden.read_text(encoding="utf-8"))
-        rc, out, _ = run_phd_script_cpython(rel, list(entry.get("argv") or []))
+        rc, out, _, _ = run_phd_script_cpython(rel, list(entry.get("argv") or []))
         got = normalize_phd_output(out)
         if rc == 0 and got == expected:
             entry.pop("xfail_cpython", None)

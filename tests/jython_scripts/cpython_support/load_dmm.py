@@ -31,24 +31,6 @@ def _jython2_patches(source: str) -> str:
     )
     source = re.sub(r"=\s*map\(([^)\n]+)\)", r"= list(map(\1))", source)
     source = re.sub(r"\+\s*map\(([^)\n]+)\)", r"+ list(map(\1))", source)
-    source = re.sub(
-        r"^(\w+)\s*=\s*list\(map\(equation_to_term,.+\)\s*$",
-        r"\1 = []  # axiom lists not needed for PhD harness",
-        source,
-        flags=re.MULTILINE,
-    )
-    source = re.sub(
-        r"^(\w+)\s*=\s*.+\s*\+\s*list\(map\(equation_to_term,.+\)\s*$",
-        r"\1 = []  # axiom lists not needed for PhD harness",
-        source,
-        flags=re.MULTILINE,
-    )
-    source = re.sub(
-        r"^(\w+)\s*=\s*equation_to_term\(.+\)\s*$",
-        r"\1 = None  # stripped for PhD harness",
-        source,
-        flags=re.MULTILINE,
-    )
     return source
 
 
