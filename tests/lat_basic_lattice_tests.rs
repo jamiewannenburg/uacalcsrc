@@ -258,7 +258,7 @@ fn test_ordered_set_from_filters_d3_univ_order() {
     vec![0, 2],
     vec![0, 1, 2, 3],
   ];
-  let poset = OrderedSet::ordered_set_from_filters(Some("d_3".to_string()), univ, filters)
+  let poset = OrderedSet::ordered_set_from_filters_latdraw(Some("d_3".to_string()), univ, filters)
     .unwrap();
   let order: Vec<i32> = poset
     .univ()

@@ -434,6 +434,15 @@ where
     /// # Returns
     /// * `Ok(OrderedSet)` - Successfully created poset
     /// * `Err(String)` - If the poset structure is invalid
+    /// LatDraw ``orderedSetFromFilters`` applies rank sort; internal lattice rebuild must not.
+    pub fn ordered_set_from_filters_latdraw(
+        name: Option<String>,
+        universe: Vec<T>,
+        filters: Vec<Vec<T>>,
+    ) -> Result<Self, String> {
+        Self::ordered_set_from_filters(name, universe, filters).map(|poset| poset.with_java_univ_order())
+    }
+
     pub fn ordered_set_from_filters(
         name: Option<String>,
         universe: Vec<T>,
@@ -489,7 +498,7 @@ where
             upper_covers_list.push(covers);
         }
 
-        Self::new(name, universe, upper_covers_list).map(|poset| poset.with_java_univ_order())
+        Self::new(name, universe, upper_covers_list)
     }
 
     /// Get the universe of this poset.
