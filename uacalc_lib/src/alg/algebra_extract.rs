@@ -32,6 +32,15 @@ pub fn extract_boxed_small_algebra(
     if let Ok(pow) = obj.extract::<PyRef<PyPowerAlgebra>>() {
         return Ok(Box::new(pow.clone_inner()) as Box<dyn SmallAlgebra<UniverseItem = i32>>);
     }
+    if let Ok(method) = obj.getattr("to_basic_algebra") {
+        if method.is_callable() {
+            let converted = method.call0()?;
+            if let Ok(alg) = converted.extract::<PyRef<PyBasicAlgebra>>() {
+                return Ok(Box::new(alg.inner.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>);
+            }
+            return extract_boxed_small_algebra(&converted);
+        }
+    }
     Err(PyValueError::new_err(format!(
         "expected SmallAlgebra, got {}",
         obj.get_type().name()?
@@ -45,6 +54,14 @@ pub fn extract_basic_algebra(obj: &Bound<'_, PyAny>) -> PyResult<uacalc::alg::Ba
     if let Ok(inner) = obj.getattr("_inner") {
         if let Ok(alg) = inner.extract::<PyRef<PyBasicAlgebra>>() {
             return Ok(alg.inner.clone());
+        }
+    }
+    if let Ok(method) = obj.getattr("to_basic_algebra") {
+        if method.is_callable() {
+            let converted = method.call0()?;
+            if let Ok(alg) = converted.extract::<PyRef<PyBasicAlgebra>>() {
+                return Ok(alg.inner.clone());
+            }
         }
     }
     Err(PyValueError::new_err("expected BasicAlgebra"))

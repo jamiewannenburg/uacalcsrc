@@ -1825,7 +1825,7 @@ impl PyOrderedSet {
     #[staticmethod]
     #[pyo3(signature = (universe, filters, *, name=None))]
     fn from_filters(universe: Vec<i32>, filters: Vec<Vec<i32>>, name: Option<String>) -> PyResult<PyOrderedSet> {
-        match uacalc::lat::ordered_set::OrderedSet::ordered_set_from_filters(name, universe, filters) {
+        match uacalc::lat::ordered_set::OrderedSet::ordered_set_from_filters_latdraw(name, universe, filters) {
             Ok(poset) => Ok(PyOrderedSet {
                 inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
             }),

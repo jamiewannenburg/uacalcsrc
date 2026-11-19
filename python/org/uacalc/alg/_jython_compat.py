@@ -79,7 +79,7 @@ def _install(alg_module_globals: dict) -> None:
         if typ in ("PyIntOperation", "PyBasicOperation", "PyTermOperationImp"):
             return op
         if isinstance(op, AbstractOperation):
-            return op._as_int_operation()
+            return op._as_int_operation(algebra_set_size=set_size)
         # Native PyAbstractOperationNew
         if hasattr(op, "make_table") and hasattr(op, "from_int_value_at_function"):
             size = set_size
@@ -157,16 +157,27 @@ def _install(alg_module_globals: dict) -> None:
         def getSetSize(self) -> int:
             return self._set_size
 
-        def _as_int_operation(self) -> Any:
-            if self._cached_int_op is not None:
+        def _as_int_operation(self, algebra_set_size: Optional[int] = None) -> Any:
+            if self._cached_int_op is not None and algebra_set_size is None:
                 return self._cached_int_op
-            self._cached_int_op = IntOperation.from_int_value_at(
+            # Java ``BasicAlgebra(name, cardinality, ops)`` and Mace4Reader pass the
+            # algebra cardinality into ``Operations.makeIntOperation``, not the
+            # ``AbstractOperation`` set size (nullary Mace4 ops use algSize 1).
+            op_set_size = int(self._set_size)
+            table_set_size = (
+                int(algebra_set_size) if algebra_set_size is not None else op_set_size
+            )
+            if table_set_size < op_set_size:
+                table_set_size = op_set_size
+            int_op = IntOperation.from_int_value_at(
                 _sym_name(self._symbol),
                 self._arity,
-                self._set_size,
+                table_set_size,
                 lambda args, _self=self: int(_self.intValueAt(list(args))),
             )
-            return self._cached_int_op
+            if algebra_set_size is None:
+                self._cached_int_op = int_op
+            return int_op
 
     class AbstractIntOperation(AbstractOperation):
         """Java ``org.uacalc.alg.op.AbstractIntOperation``: concrete for Jython.

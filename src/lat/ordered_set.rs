@@ -330,6 +330,98 @@ where
         Ok(poset)
     }
 
+    /// LatDraw ``orderedSetFromFilters`` sorts ``elems`` by rank after ``setRanks``.
+    fn with_java_univ_order(mut self) -> Self {
+        if self.universe.len() <= 1 {
+            return self;
+        }
+
+        let ranks = self.compute_latdraw_ranks();
+        let n = self.universe.len();
+        let mut order: Vec<usize> = (0..n).collect();
+        order.sort_by_key(|&i| ranks[i]);
+
+        let cover_pairs: Vec<(T, Vec<T>)> = self
+            .universe
+            .iter()
+            .map(|e| {
+                let obj = e.get_underlying_object().clone();
+                let covers = self
+                    .get_upper_covers(e)
+                    .iter()
+                    .map(|c| c.get_underlying_object().clone())
+                    .collect();
+                (obj, covers)
+            })
+            .collect();
+
+        let old_universe = std::mem::take(&mut self.universe);
+        let mut obj_to_elem: HashMap<T, Arc<POElem<T>>> = HashMap::new();
+        for (new_idx, &old_idx) in order.iter().enumerate() {
+            let obj = old_universe[old_idx].get_underlying_object().clone();
+            let arc = Arc::new(POElem::new(obj.clone(), new_idx));
+            obj_to_elem.insert(obj, arc.clone());
+            self.universe.push(arc);
+        }
+
+        self.elem_order.clear();
+        for elem in &self.universe {
+            self.elem_order.insert(elem.clone(), elem.index());
+        }
+
+        let mut upper_covers: HashMap<Arc<POElem<T>>, Vec<Arc<POElem<T>>>> = HashMap::new();
+        for (obj, covers) in cover_pairs {
+            if let Some(elem) = obj_to_elem.get(&obj) {
+                let cover_elems: Vec<Arc<POElem<T>>> = covers
+                    .iter()
+                    .filter_map(|c| obj_to_elem.get(c).cloned())
+                    .collect();
+                upper_covers.insert(elem.clone(), cover_elems);
+            }
+        }
+        self.upper_covers = upper_covers;
+
+        self
+    }
+
+    /// Rank assignment ported from LatDraw ``OrderedSet.setRanks``.
+    fn compute_latdraw_ranks(&self) -> Vec<i32> {
+        let n = self.universe.len();
+        if n == 0 {
+            return Vec::new();
+        }
+
+        let mut low = vec![0i32; n];
+        for i in 0..n {
+            let elem = &self.universe[i];
+            let mut max_low = 0i32;
+            for lower in self.get_lower_covers(elem) {
+                if let Some(oi) = self.elem_order(&lower) {
+                    max_low = max_low.max(1 + low[oi]);
+                }
+            }
+            low[i] = max_low;
+        }
+
+        let mut high = vec![0i32; n];
+        let mut max_high = 0i32;
+        for i in (0..n).rev() {
+            let elem = &self.universe[i];
+            let mut max_h = 0i32;
+            for upper in self.get_upper_covers(elem) {
+                if let Some(oi) = self.elem_order(&upper) {
+                    max_h = max_h.max(1 + high[oi]);
+                }
+            }
+            high[i] = max_h;
+            max_high = max_high.max(max_h);
+        }
+
+        (0..n)
+            .map(|i| max_high + low[i] - high[i])
+            .collect()
+    }
+
     /// Create an OrderedSet from filters (like latdraw's orderedSetFromFilters).
     ///
     /// A filter for an element x is the set of all elements y such that x ≤ y.
@@ -342,6 +434,15 @@ where
     /// # Returns
     /// * `Ok(OrderedSet)` - Successfully created poset
     /// * `Err(String)` - If the poset structure is invalid
+    /// LatDraw ``orderedSetFromFilters`` applies rank sort; internal lattice rebuild must not.
+    pub fn ordered_set_from_filters_latdraw(
+        name: Option<String>,
+        universe: Vec<T>,
+        filters: Vec<Vec<T>>,
+    ) -> Result<Self, String> {
+        Self::ordered_set_from_filters(name, universe, filters).map(|poset| poset.with_java_univ_order())
+    }
+
     pub fn ordered_set_from_filters(
         name: Option<String>,
         universe: Vec<T>,

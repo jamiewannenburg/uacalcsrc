@@ -35,10 +35,7 @@
       "use_fixture_copy": true,
       "compare_files": [
         "input/s8.ua"
-      ],
-      "xfail_cpython": {
-        "reason": "TypeError at Equation.findFailureMap(iff_alg): dmm.BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81); script aborts before writing input/s8.ua"
-      }
+      ]
     },
     {
       "path": "check_andrew.py",
@@ -70,10 +67,7 @@
         "b2"
       ],
       "slow": false,
-      "compare_stdout": true,
-      "xfail_cpython": {
-        "reason": "TypeError at check_brouwerian→Equation.findFailureMap(alg): dmm.BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81); never reaches bot OperationSymbol"
-      }
+      "compare_stdout": true
     },
     {
       "path": "check_m.py",
@@ -81,10 +75,7 @@
         "b2"
       ],
       "slow": false,
-      "compare_stdout": true,
-      "xfail_cpython": {
-        "reason": "line 1: jython='B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {x: 1}.' cpython='B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {VariableImp(\"x\"): 1}.'"
-      }
+      "compare_stdout": true
     },
     {
       "path": "dmm.py",
@@ -139,10 +130,7 @@
       "use_fixture_copy": true,
       "compare_files": [
         "input/KR-1gen-1.ua"
-      ],
-      "xfail_cpython": {
-        "reason": "ValueError at BasicAlgebra(__init__)→IntOperation.from_int_value_at (mace4 to_alg): table value 1 outside [0,1) when parsing Mace4 stream on CPython; input/KR-1gen-1.ua not written (rc=1)"
-      }
+      ]
     },
     {
       "path": "find_chains_neg_cone.py",
@@ -220,10 +208,7 @@
       "use_fixture_copy": true,
       "compare_files": [
         "input/d3_dual.ua"
-      ],
-      "xfail_cpython": {
-        "reason": "input/d3_dual.ua differs from Jython golden after writeAlgebraFile; then check_heyting→check_brouwerian→Equation.findFailureMap: dmm.BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81)"
-      }
+      ]
     },
     {
       "path": "isomorphism.py",
@@ -263,10 +248,7 @@
       "use_fixture_copy": true,
       "compare_files": [
         "input/KR-1gen-1.ua"
-      ],
-      "xfail_cpython": {
-        "reason": "ValueError at BasicAlgebra(__init__)→IntOperation.from_int_value_at (_jython_compat.py:163): mace4.py:131 to_alg_stream pyparsing→Jamie AbstractOperation; nullary row index 1 ∉ [0,1); golden input/KR-1gen-1.ua from Jython only"
-      }
+      ]
     },
     {
       "path": "posets.py",
@@ -342,10 +324,7 @@
       "path": "sums.py",
       "argv": [],
       "slow": false,
-      "compare_stdout": true,
-      "xfail_cpython": {
-        "reason": "TypeError at peirce.findFailureMap(alg) in sums.py:121: dmm-built BasicAlgebra not PyBasicAlgebra (_jython_compat.py:81)"
-      }
+      "compare_stdout": true
     },
     {
       "path": "twist.py",

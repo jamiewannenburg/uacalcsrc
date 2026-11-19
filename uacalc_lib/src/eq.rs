@@ -5,6 +5,7 @@ use uacalc::eq::{Equation, equations, Presentation};
 use uacalc::terms::Term;  // Import Term trait for clone_box method
 use std::collections::HashMap;
 use std::sync::Arc;
+use crate::alg::algebra_extract::extract_boxed_small_algebra;
 use crate::alg::op::operation_symbol::PyOperationSymbol;
 use crate::terms::{term_to_py, PyVariableImp};
 
@@ -106,8 +107,9 @@ impl PyEquation {
     /// # Returns
     /// * List of variable values where the equation fails
     /// * None if the equation holds in the algebra
-    fn find_failure(&self, algebra: &crate::alg::PyBasicAlgebra) -> PyResult<Option<Vec<i32>>> {
-        let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = Arc::new(algebra.inner.clone());
+    fn find_failure(&self, algebra: &Bound<'_, PyAny>) -> PyResult<Option<Vec<i32>>> {
+        let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> =
+            Arc::from(extract_boxed_small_algebra(algebra)?);
         self.inner.find_failure(alg_arc)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -120,8 +122,9 @@ impl PyEquation {
     /// # Returns
     /// * Dictionary from variable names to values where the equation fails
     /// * None if the equation holds in the algebra
-    fn find_failure_map(&self, algebra: &crate::alg::PyBasicAlgebra) -> PyResult<Option<HashMap<String, i32>>> {
-        let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = Arc::new(algebra.inner.clone());
+    fn find_failure_map(&self, algebra: &Bound<'_, PyAny>) -> PyResult<Option<HashMap<String, i32>>> {
+        let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> =
+            Arc::from(extract_boxed_small_algebra(algebra)?);
         self.inner.find_failure_map(alg_arc)
             .map_err(|e| PyValueError::new_err(e))
     }
