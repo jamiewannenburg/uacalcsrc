@@ -75,10 +75,7 @@
         "b2"
       ],
       "slow": false,
-      "compare_stdout": true,
-      "xfail_cpython": {
-        "reason": "line 1: jython='B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {x: 1}.' cpython='B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {VariableImp(\"x\"): 1}.'"
-      }
+      "compare_stdout": true
     },
     {
       "path": "dmm.py",
@@ -211,10 +208,7 @@
       "use_fixture_copy": true,
       "compare_files": [
         "input/d3_dual.ua"
-      ],
-      "xfail_cpython": {
-        "reason": "line 31 input/d3_dual.ua: jython='<row r=\"[1]\">1,1,1,1,1,1</row>' (join) cpython='<row r=\"[1]\">1,1,2,3,4,5</row>' — upset-lattice join table before arrow residuation still differs from Jython"
-      }
+      ]
     },
     {
       "path": "isomorphism.py",

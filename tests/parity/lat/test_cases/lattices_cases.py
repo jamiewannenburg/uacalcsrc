@@ -903,6 +903,29 @@ else:
         skip_string_check=True,
     ),
     TestCaseSpec(
+        id="ordered_set_from_filters_d3_univ",
+        method="OrderedSet.from_filters",
+        setup="""
+import sys
+if sys.platform.startswith("java"):
+    from org.latdraw.orderedset import OrderedSet as _LDOrderedSet
+    from org.latdraw.orderedset import POElem
+    os_f = _LDOrderedSet.orderedSetFromFilters(
+        "d_3", [0, 1, 2, 3], [[0], [0, 1], [0, 2], [0, 1, 2, 3]]
+    )
+    from_filters_d3_univ = [int(p.label()) for p in os_f.univ()]
+else:
+    from org.uacalc.lat import OrderedSet
+    os_f = OrderedSet.from_filters(
+        [0, 1, 2, 3], [[0], [0, 1], [0, 2], [0, 1, 2, 3]], name="d_3"
+    )
+    from_filters_d3_univ = os_f.universe()
+""",
+        call="from_filters_d3_univ",
+        description="d3 diamond universe order matches LatDraw rank sort",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
         id="basic_lattice_name",
         method="BasicLattice.getName",
         setup=_CHAIN,

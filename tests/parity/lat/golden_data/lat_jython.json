@@ -4355,6 +4355,32 @@
     },
     {
       "args": [],
+      "call": "from_filters_d3_univ",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "d3 diamond universe order matches LatDraw rank sort",
+      "expected_exception": null,
+      "id": "ordered_set_from_filters_d3_univ",
+      "kwargs": {},
+      "method": "OrderedSet.from_filters",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          3,
+          1,
+          2,
+          0
+        ],
+        "string_repr": "[3, 1, 2, 0]",
+        "success": true
+      },
+      "setup": "\nimport sys\nif sys.platform.startswith(\"java\"):\n    from org.latdraw.orderedset import OrderedSet as _LDOrderedSet\n    from org.latdraw.orderedset import POElem\n    os_f = _LDOrderedSet.orderedSetFromFilters(\n        \"d_3\", [0, 1, 2, 3], [[0], [0, 1], [0, 2], [0, 1, 2, 3]]\n    )\n    from_filters_d3_univ = [int(p.label()) for p in os_f.univ()]\nelse:\n    from org.uacalc.lat import OrderedSet\n    os_f = OrderedSet.from_filters(\n        [0, 1, 2, 3], [[0], [0, 1], [0, 2], [0, 1, 2, 3]], name=\"d_3\"\n    )\n    from_filters_d3_univ = os_f.universe()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
       "call": "lat.getName() if hasattr(lat, 'getName') else lat.name()",
       "capture_file": false,
       "compare_exception_message": false,

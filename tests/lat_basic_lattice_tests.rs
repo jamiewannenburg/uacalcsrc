@@ -236,8 +236,35 @@ fn test_ordered_set_from_filters() {
     let poset = poset.unwrap();
     let univ_list = poset.univ();
     
-    // Check that order is correct
+    // Already rank-sorted (0 < 1 < 2 in universe order for this chain input)
+    assert_eq!(
+        univ_list
+            .iter()
+            .map(|e| *e.get_underlying_object())
+            .collect::<Vec<_>>(),
+        vec![0, 1, 2]
+    );
     assert!(poset.leq(&univ_list[0], &univ_list[1]));
     assert!(poset.leq(&univ_list[1], &univ_list[2]));
+}
+
+#[test]
+fn test_ordered_set_from_filters_d3_univ_order() {
+  // d3 diamond: matches LatDraw rank sort d, b, c, a (labels a,b,c,d as 0..3)
+  let univ = vec![0, 1, 2, 3];
+  let filters = vec![
+    vec![0],
+    vec![0, 1],
+    vec![0, 2],
+    vec![0, 1, 2, 3],
+  ];
+  let poset = OrderedSet::ordered_set_from_filters(Some("d_3".to_string()), univ, filters)
+    .unwrap();
+  let order: Vec<i32> = poset
+    .univ()
+    .iter()
+    .map(|e| *e.get_underlying_object())
+    .collect();
+  assert_eq!(order, vec![3, 1, 2, 0]);
 }
 
