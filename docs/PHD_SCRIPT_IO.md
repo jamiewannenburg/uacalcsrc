@@ -4,6 +4,25 @@ Source scripts live read-only under `C:\Users\u28409265\Documents\uacalc` (~39 t
 
 Test fixtures mirroring that layout: [`tests/jython_scripts/phd/fixtures/`](../tests/jython_scripts/phd/fixtures/) (see [`manifest.json`](../tests/jython_scripts/phd/fixtures/manifest.json)).
 
+## LatDraw dependency (`.lat` files)
+
+Jamie's `.lat` poset files are the LatDraw text format (see [latdraw.org](http://www.latdraw.org/doc/)). Only **`posets.py`** imports LatDraw directly:
+
+| API (Jython) | Use |
+|----------------|-----|
+| `org.latdraw.orderedset.InputLattice` | Parse a `.lat` file path (`name`, `labels`, `upperCoversList`) |
+| `org.latdraw.orderedset.OrderedSet.orderedSetFromFilters` | Build poset from filters; also used via `posets.dict2poset` |
+| `OrderedSet` element methods (`filter`, `label`, …) | Upset lattice in `get_upsets_lattice`; graph export via `latex.get_graph_from_poset` |
+
+**`heyting_from_poset.py`** does not import `org.latdraw`; it calls `posets.InputPoset` and therefore needs the same classpath.
+
+**In this repo**
+
+- **`jars/LatDraw.jar`** is vendored and used by parity tooling (e.g. `tools/generate_golden_data.py`, `tests/parity/io/generate_special_algebra_fixtures.py`). It is **not** bundled next to the PhD scripts under `tests/jython_scripts/phd/`; the porting harness should add `jars/LatDraw.jar` (and `uacalc.jar`) like Jamie's `sys.path.append("LatDraw.jar")`.
+- **`org.latdraw.*` is not part of `org.uacalc`**; the Java sources in-tree only *reference* latdraw from UI code (`org.uacalc.ui.LatDrawer`, `LatDrawPanel`, etc.). `parity_inventory.yaml` tracks **`org.uacalc`** packages, not `org.latdraw`.
+- **`org.uacalc` Python wrapper (CPython):** `org.uacalc.lat.OrderedSet.from_filters(...)` in `uacalc_lib` covers **filter lists**, not `.lat` file parsing. There is **no** `InputLattice` or `.lat` reader in the wrapper today. Parity tests use `org.latdraw.orderedset.OrderedSet` on Jython and `OrderedSet.from_filters` on CPython for the same mathematical input (`tests/parity/lat/test_cases/lattices_cases.py`, case `ordered_set_from_filters`).
+- **Porting implication:** to run `posets.py` / `heyting_from_poset.py` unchanged on Jython, keep **LatDraw.jar** on the classpath. To run on CPython without Java, something must either parse `.lat` into filter lists and call `OrderedSet.from_filters`, or expose a small `.lat` parser shim.
+
 ## Path layout (two conventions)
 
 | Convention | Scripts | Reads | Writes |
