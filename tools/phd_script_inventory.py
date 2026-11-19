@@ -74,7 +74,13 @@ def should_skip_path(path: Path) -> bool:
     return False
 
 
-def copy_phd_tree(dest: Path, *, full: bool = False, link_input: bool = True) -> None:
+def copy_phd_tree(
+    dest: Path,
+    *,
+    full: bool = False,
+    link_input: bool = True,
+    copy_root_artifacts: bool = False,
+) -> None:
     """Copy Jamie tree into dest. Default: top-level .py + jars + junction/symlink input."""
     dest.mkdir(parents=True, exist_ok=True)
     for py in SRC.glob("*.py"):
@@ -83,14 +89,15 @@ def copy_phd_tree(dest: Path, *, full: bool = False, link_input: bool = True) ->
         jar = SRC / name
         if jar.is_file() and jar.stat().st_size <= MAX_FILE:
             shutil.copy2(jar, dest / name)
-    for f in SRC.iterdir():
-        if not f.is_file() or f.suffix == ".py":
-            continue
-        if should_skip_path(f) or f.stat().st_size > MAX_FILE:
-            continue
-        if f.name in ("uacalc.jar", "LatDraw.jar"):
-            continue
-        shutil.copy2(f, dest / f.name)
+    if copy_root_artifacts:
+        for f in SRC.iterdir():
+            if not f.is_file() or f.suffix == ".py":
+                continue
+            if should_skip_path(f) or f.stat().st_size > MAX_FILE:
+                continue
+            if f.name in ("uacalc.jar", "LatDraw.jar"):
+                continue
+            shutil.copy2(f, dest / f.name)
     inp_dest = dest / "input"
     if not full and link_input and (SRC / "input").is_dir():
         if inp_dest.exists():
@@ -277,7 +284,7 @@ def main() -> int:
     rows = []
     with tempfile.TemporaryDirectory(prefix="phd_master_") as td:
         master = Path(td)
-        copy_phd_tree(master)
+        copy_phd_tree(master, copy_root_artifacts=True)
         scripts = _scripts()
         if args.only is not None:
             only = set(args.only)
