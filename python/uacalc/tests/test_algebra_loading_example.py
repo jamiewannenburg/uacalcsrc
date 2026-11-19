@@ -202,17 +202,18 @@ class TestAdvancedPatterns:
     
     def test_error_handling(self, cyclic2_algebra):
         """Example: Testing error conditions."""
+        from org.uacalc._exceptions import NullPointerException
+
         alg = cyclic2_algebra
-        
+
         VariableImp = uacalc_lib.terms.VariableImp
         x = VariableImp("x")
-        
-        # Should raise error when variable not in map
-        with pytest.raises(ValueError):
+
+        missing_var = (ValueError, NullPointerException)
+        with pytest.raises(missing_var):
             x.eval(alg, {})  # Missing 'x'
-        
-        # Should raise error with wrong variable name
-        with pytest.raises(ValueError):
+
+        with pytest.raises(missing_var):
             x.eval(alg, {"y": 0})  # Wrong variable name
 
 

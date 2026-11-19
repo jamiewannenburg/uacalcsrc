@@ -14,6 +14,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VENDOR = Path(__file__).resolve().parent / "_vendor"
+CPYTHON_SUPPORT = Path(__file__).resolve().parent / "cpython_support"
 PHD_ROOT = Path(__file__).resolve().parent / "phd_runtime"
 GOLDENS_ROOT = Path(__file__).resolve().parent / "phd" / "goldens"
 
@@ -98,11 +99,50 @@ def convert_print_statements_to_function(source: str) -> str:
     return "".join(lines)
 
 
+def prepare_jython2_source(source: str) -> str:
+    """Print statements, dict iterators, and legacy except syntax for CPython 3."""
+    out_lines: list[str] = []
+    for line in source.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("print ") and not stripped.startswith("print("):
+            indent = line[: len(line) - len(stripped)]
+            body = stripped[6:]
+            comment = ""
+            if "#" in body:
+                body, _, comment = body.partition("#")
+                comment = "#" + comment
+            line = f"{indent}print({body.strip()}){comment}"
+        out_lines.append(line)
+    source = "\n".join(out_lines)
+    if source and not source.endswith("\n"):
+        source += "\n"
+    source = source.replace(".iteritems()", ".items()")
+    source = source.replace(".iterkeys()", ".keys()")
+    source = source.replace(".itervalues()", ".values()")
+    source = re.sub(
+        r"^(\s*)except\s+(\w+)\s*,\s*(\w+)\s*:",
+        r"\1except \2 as \3:",
+        source,
+        flags=re.MULTILINE,
+    )
+    return source
+
+
+def _prime_cpython_imports() -> None:
+    scripts_dir = str(Path(__file__).resolve().parent)
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    from cpython_support.load_dmm import ensure_dmm_loaded  # noqa: WPS433
+
+    ensure_dmm_loaded()
+
+
 def phd_sys_path() -> list[str]:
     return [
         str(REPO_ROOT / "python"),
         str(REPO_ROOT / "python" / "uacalc_lib"),
         str(VENDOR),
+        str(CPYTHON_SUPPORT),
         str(PHD_ROOT),
     ]
 
@@ -117,11 +157,10 @@ def run_phd_script_cpython(
     if not script.is_file():
         raise FileNotFoundError(script)
     cwd = cwd or PHD_ROOT
-    source = script.read_text(encoding="utf-8", errors="replace")
-    if "from __future__ import print_function" not in source:
-        source = convert_print_statements_to_function(source)
+    source = prepare_jython2_source(script.read_text(encoding="utf-8", errors="replace"))
 
     saved_path = list(sys.path)
+    saved_modules = dict(sys.modules)
     saved_argv = sys.argv[:]
     saved_cwd = os.getcwd()
     out_buf = io.StringIO()
@@ -129,10 +168,11 @@ def run_phd_script_cpython(
     old_stdout, old_stderr = sys.stdout, sys.stderr
     try:
         os.chdir(str(cwd))
-        sys.path = phd_sys_path() + saved_path
+        sys.path = phd_sys_path() + [p for p in saved_path if p not in phd_sys_path()]
         sys.argv = [str(script)] + list(argv_suffix or [])
         sys.stdout = out_buf
         sys.stderr = err_buf
+        _prime_cpython_imports()
         code = compile(source, str(script), "exec")
         glob: dict[str, Any] = {"__name__": "__main__", "__file__": str(script)}
         exec(code, glob, glob)
@@ -149,6 +189,9 @@ def run_phd_script_cpython(
         sys.argv = saved_argv
         sys.path = saved_path
         os.chdir(saved_cwd)
+        for name, mod in list(sys.modules.items()):
+            if name not in saved_modules:
+                del sys.modules[name]
     return rc, out_buf.getvalue(), err_buf.getvalue()
 
 

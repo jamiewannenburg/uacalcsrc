@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -15,6 +16,12 @@ def _repo_root() -> Path:
 
 def run_pytest(cwd: Path, junit_path: Path, python_exe: str) -> int:
     junit_path.parent.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    py_src = cwd / "python"
+    if py_src.is_dir():
+        env["PYTHONPATH"] = os.pathsep.join([str(py_src), env.get("PYTHONPATH", "")]).strip(
+            os.pathsep
+        )
     cmd = [
         python_exe,
         "-m",
@@ -26,7 +33,7 @@ def run_pytest(cwd: Path, junit_path: Path, python_exe: str) -> int:
         "-q",
         f"--junitxml={junit_path}",
     ]
-    return subprocess.run(cmd, cwd=cwd, check=False).returncode
+    return subprocess.run(cmd, cwd=cwd, check=False, env=env).returncode
 
 
 def parse_failures(junit_path: Path) -> list[str]:

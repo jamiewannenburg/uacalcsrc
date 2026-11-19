@@ -12,20 +12,14 @@
       "argv": [
         "C-5-*.ua"
       ],
-      "slow": false,
-      "xfail_cpython": {
-        "reason": "line count jython=9 cpython=0"
-      }
+      "slow": false
     },
     {
       "path": "add_arrow_and_meet.py",
       "argv": [
         "b2"
       ],
-      "slow": false,
-      "xfail_cpython": {
-        "reason": "line count jython=1 cpython=0"
-      }
+      "slow": false
     },
     {
       "path": "associativity_of_iff.py",
@@ -193,10 +187,7 @@
     {
       "path": "isomorphism.py",
       "argv": [],
-      "slow": false,
-      "xfail_cpython": {
-        "reason": "exit code 1"
-      }
+      "slow": false
     },
     {
       "path": "jep_check.py",
@@ -248,10 +239,7 @@
     {
       "path": "riger_nishinora.py",
       "argv": [],
-      "slow": false,
-      "xfail_cpython": {
-        "reason": "line count jython=122 cpython=0"
-      }
+      "slow": false
     },
     {
       "path": "rigorous_extension.py",
@@ -284,10 +272,7 @@
     {
       "path": "structural_completeness.py",
       "argv": [],
-      "slow": false,
-      "xfail_cpython": {
-        "reason": "line count jython=6 cpython=0"
-      }
+      "slow": false
     },
     {
       "path": "sugihara.py",

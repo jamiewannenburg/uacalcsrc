@@ -68,13 +68,17 @@ Regenerate from inventory: `python tools/update_phd_manifest_from_inventory.py`
 
 | Script | Jython golden | CPython vs golden |
 |--------|---------------|-------------------|
-| `probes/nullary_string_to_term.py` | yes | **xfail** (`e()` parser) |
-| `2subalgebras.py` | yes | **xfail** (CPython stdout empty — harness / algebra load) |
-| `add_arrow_and_meet.py` | yes | **xfail** (same) |
-| `isomorphism.py` | yes | **xfail** (exit 1 under CPython) |
-| `riger_nishinora.py` | yes | **xfail** (CPython stdout empty) |
-| `rigorous_extension.py` | yes | **pass** |
-| `structural_completeness.py` | yes | **xfail** (CPython stdout empty) |
+| `2subalgebras.py` | yes | **pass** |
+| `add_arrow_and_meet.py` | yes | **pass** |
+| `isomorphism.py` | yes | **pass** (library import, empty stdout) |
+| `riger_nishinora.py` | yes | **pass** |
+| `rigorous_extension.py` | yes | **pass** (silent stdout) |
+| `structural_completeness.py` | yes | **pass** |
+| `probes/nullary_string_to_term.py` | yes | **xfail** — `line 2: jython='parse_fail|e()|empty string' cpython='parse_ok|e()|term:e()'` |
+
+CPython harness: Jython2 `print` rewrite, `dmm` via `cpython_support/load_dmm.py`, stub `posets` for `riger_nishinora`.
+
+**pytest:** `6 passed, 1 xfailed, 38 skipped`
 
 Auto-xfail reasons: `python tools/apply_phd_cpython_xfails.py`
 
