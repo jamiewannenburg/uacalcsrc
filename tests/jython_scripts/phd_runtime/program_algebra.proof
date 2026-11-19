@@ -1,0 +1,65 @@
+============================== prooftrans ============================
+Prover9 (32) version Dec-2007, Dec 2007.
+Process 28560 was started by jamie on JamiePC,
+Mon Apr 25 22:34:47 2022
+The command was "/cygdrive/c/Program Files (x86)/Prover9-Mace4/bin-win32/prover9".
+============================== end of head ===========================
+
+============================== end of input ==========================
+
+============================== PROOF =================================
+
+% -------- Comments from original proof --------
+% Proof 1 at 151.94 (+ 18.22) seconds.
+% Length of proof is 45.
+% Level of proof is 10.
+% Maximum clause weight is 48.
+% Given clauses 6270.
+
+5 e = x + e & y * x = y + (y * x) -> x = c(y) + x # label(non_clause).  [assumption].
+6 c(x) = c(y) + c(x) <-> t * c(x) = y + (t * c(x)) # label(non_clause) # label(goal).  [goal].
+10 x + y = y + x.  [assumption].
+11 (x + y) + z = x + (y + z).  [assumption].
+12 (x * y) * z = x * (y * z).  [assumption].
+13 x * e = x.  [assumption].
+14 e * x = x.  [assumption].
+15 x * (y + z) = (x * y) + (x * z).  [assumption].
+16 (x + y) * z = (x * z) + (y * z).  [assumption].
+17 x + x = x.  [assumption].
+32 c(x + y) = c(x) + c(y).  [assumption].
+33 x + (x * c(x)) = x * c(x).  [assumption].
+34 x + e != e | y * x != y + (y * x) | c(y) + x = x.  [clausify(5)].
+35 x + e != e | y + (y * x) != y * x | c(y) + x = x.  [copy(34),flip(b)].
+36 t = t + x.  [assumption].
+37 t + x = t.  [copy(36),flip(a)].
+38 c(c1) = c(c2) + c(c1) | t * c(c1) = c2 + (t * c(c1)).  [deny(6)].
+39 c(c1) + c(c2) = c(c1) | c2 + (t * c(c1)) = t * c(c1).  [copy(38),rewrite([10(7)]),flip(a),flip(b)].
+40 c(c1) != c(c2) + c(c1) | t * c(c1) != c2 + (t * c(c1)).  [deny(6)].
+41 c(c1) + c(c2) != c(c1) | c2 + (t * c(c1)) != t * c(c1).  [copy(40),rewrite([10(7)]),flip(a),flip(b)].
+100 x + e != e | y + (z + ((y * x) + (z * x))) != (y * x) + (z * x) | c(y) + (c(z) + x) = x.  [para(11(a,1),35(b,1)),rewrite([16(6),16(11),32(15),11(17)])].
+101 x + e != e | (y * z) + (y * (z * x)) != y * (z * x) | c(y * z) + x = x.  [para(12(a,1),35(b,1,2)),rewrite([12(10)])].
+102 e + c(x) = e.  [para(13(a,1),35(b,1,2)),rewrite([17(3),17(4),13(5),10(7)]),xx(a),xx(b)].
+113 (t * x) + (y * x) = t * x.  [para(37(a,1),16(a,1,1)),flip(a)].
+122 c2 + (t * c(c1)) = t * c(c1) | (x * c(c1)) + (x * c(c2)) = x * c(c1).  [para(39(a,1),15(a,1,2)),flip(b)].
+137 e + (c(x) + y) = e + y.  [para(102(a,1),11(a,1,1)),flip(a)].
+138 x + (x * c(y)) = x.  [para(102(a,1),15(a,1,2)),rewrite([13(2),13(2)]),flip(a)].
+139 x + (c(y) * x) = x.  [para(102(a,1),16(a,1,1)),rewrite([14(2),14(2)]),flip(a)].
+142 x * c(x) = x.  [back_rewrite(33),rewrite([138(3)]),flip(a)].
+167 x * (c(x) * y) = x * y.  [para(142(a,1),12(a,1,1)),flip(a)].
+216 (x * y) + (x * (y * c(z))) = x * y.  [para(12(a,1),138(a,1,2))].
+243 c(x) * c(x) != c(x) | c(x) + c(c(x)) = c(x).  [para(139(a,1),35(b,1)),rewrite([10(3),102(3),10(12)]),flip(b),xx(a)].
+245 c(x) + c(c(x)) = c(c(x)).  [para(142(a,1),139(a,1,2)),rewrite([10(4)])].
+247 c(x) * c(x) != c(x) | c(c(x)) = c(x).  [back_rewrite(243),rewrite([245(9)])].
+789 e + (c(x) * c(y)) = e.  [para(138(a,1),137(a,1,2)),rewrite([102(3)]),flip(a)].
+1620 e + (c(x) * y) != e | x + (z + ((x * y) + (z * (c(x) * y)))) != (x * y) + (z * (c(x) * y)) | c(x) + (c(z) + (c(x) * y)) = c(x) * y.  [para(167(a,1),100(b,1,2,2,1)),rewrite([10(4),167(16)])].
+1736 c(x) + c(y * x) = c(x).  [para(142(a,1),101(b,1,2,2)),rewrite([10(3),102(3),17(6),142(6),10(10)]),xx(a),xx(b)].
+1967 x + (t * x) = t * x.  [para(14(a,1),113(a,1,2)),rewrite([10(3)])].
+1988 c(t * x) = c(x).  [para(1967(a,1),32(a,1,1)),rewrite([1736(8)])].
+2336 c2 + (t * c(c1)) = t * c(c1) | c2 * c(c1) = c2.  [para(142(a,1),122(b,1,2)),rewrite([10(17),138(17)]),flip(b)].
+42998 c(x) * c(x) = c(x).  [para(216(a,1),1620(b,1,2,2)),rewrite([789(5),142(5),17(4),17(4),142(5),167(7),142(5),17(4),138(10),17(7)]),flip(c),xx(a),xx(b)].
+43000 c(c(x)) = c(x).  [back_rewrite(247),rewrite([42998(3)]),xx(a)].
+45393 c2 + (t * c(c1)) = t * c(c1).  [para(2336(b,1),113(a,1,2)),rewrite([10(17)]),merge(b)].
+45394 c(c1) + c(c2) != c(c1).  [back_rewrite(41),rewrite([45393(14)]),xx(b)].
+45398 $F.  [para(45393(a,1),32(a,1,1)),rewrite([1988(5),43000(3),1988(9),43000(7),10(7)]),flip(a),unit_del(a,45394)].
+
+============================== end of proof ==========================

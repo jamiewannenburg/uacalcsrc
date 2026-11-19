@@ -756,11 +756,15 @@ def _install(op_globals: dict) -> None:
             values = []
             import uacalc_lib
 
+            _checkpoint_force = getattr(
+                uacalc_lib, "checkpoint_force", uacalc_lib.checkpoint
+            )
+
             for idx in range(total):
                 if idx % 64 == 0:
                     uacalc_lib.poll_cancel()
-                    uacalc_lib.checkpoint_force()
-                elif idx % 1024 == 0:
+                    _checkpoint_force()
+                if idx % 1024 == 0:
                     uacalc_lib.checkpoint()
                 args = []
                 remaining = idx

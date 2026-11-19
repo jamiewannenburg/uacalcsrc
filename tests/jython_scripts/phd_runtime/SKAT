@@ -1,0 +1,92 @@
+% Saved by Prover9-Mace4 Version 0.5, December 2007.
+
+set(ignore_option_dependencies). % GUI handles dependencies
+
+% Language Options
+
+op(499, infix_left, "+").
+op(496, infix, "\").
+op(495, infix, "/").
+op(490, infix_left, ";").
+op(480, postfix, "*").
+
+if(Prover9). % Options for Prover9
+  assign(max_seconds, 200).
+end_if.
+
+if(Mace4).   % Options for Mace4
+  assign(max_seconds, 100).
+end_if.
+
+if(Prover9). % Additional input for Prover9
+assign(max_seconds, -1).
+end_if.
+
+formulas(assumptions).
+
+%%% Kleene algebra, Kozen (1994)%%%
+(x+y)+z = x+(y+z).
+x+y = y+x.
+x+x = x.
+x+0 = x.
+(x;y);z = x;(y;z).
+x;1 = x.
+1;x = x.
+x;(y+z) = (x;y) + (x;z).  
+(x+y);z = (x;z) + (y;z). 
+x;0 = 0.
+0;x = 0.
+(x <= y) <-> (x+y = y).
+%1 + x;x* <= x*.
+%1 + x*;x <= x*.
+%y + x;z <= z -> x*;y <= z.
+%y + z;x <= z -> y;x* <= z. 
+
+%%% Right-residuation %%%
+
+x;y <= z <-> x <= y\z.
+
+%%% Test %%%
+% t(0) = 0. % (t0)
+% t(1) = 1. % (t1) 
+% t(x)+t(y) = t(t(x)+t(y)).  % (t wadd)
+                   % Follows from (t add), (t multi)
+t(x);t(y) = t(t(x);t(y)). % (t multi)
+% t(x);t(x) = t(x). % (t idem)
+t(x) <= 1.  % (t negcone)
+% 1 <= T(t(x)) + t(x).
+% T(t(x));t(x) <= 0.
+% T(t(x)) = t(T(t(x))).
+
+%%% Test residual %%%
+1 = t(t(x)\0) + t(x).  % (r lem)
+% T(x);t(x) <= 0.    % (r ecq)
+
+%%% Additional assumptions %%%
+x <= e(t(x)). % (t Galois1)
+t(e(x)) <= x. % (t Galois2)
+x <= x;t(x). % (t rp)
+t(x+y) = t(x)+t(y). % (t add)
+%e(x+y) = e(x)+e(y). % (e add)no
+e(x)<=e(x+y).
+t(x\y) <= x\(x;t(y)). % (t imp)
+
+%%% Lemmas (already proven to follow from the above)%%%
+%x <= e(y) -> t(x) <= y. 
+%t(x) <= y -> x <= e(y). % derivable in SKAT
+%t(0) = 0. % OneKAT axiom derivable in SKAT
+%t(1) = 1. % OneKAT axiom derivable in SKAT
+%t(t(x)) = t(x).
+%t(x;y) <= t(t(x);y).
+%t(x;y) <= t(y).
+%t(x);t(x) = t(x). % OneKAT axiom derivable in SKAT
+%x <= x;t(y) -> t(x) <= t(y).
+
+end_of_list.
+
+formulas(goals).
+
+e(x+y) = e(x)+e(y).
+
+end_of_list.
+

@@ -1,0 +1,27 @@
+interpretation( 3, [number = 1,seconds = 0], [
+    relation(<=(_,_), [
+        1,0,0,
+        1,1,0,
+        1,1,1]),
+    function(*(_,_), [
+        0,1,2,
+        1,1,2,
+        2,2,2]),
+    function(\(_,_), [
+        0,1,2,
+        0,0,2,
+        0,0,0]),
+    function(^(_,_), [
+        0,1,2,
+        1,1,2,
+        2,2,2]),
+    function(v(_,_), [
+        0,0,0,
+        0,1,1,
+        0,1,2]),
+    function(e, [0]),
+    function(f, [1]),
+    function(c1, [1]),
+    function(c2, [2]),
+    function(d(_), [0,1,1]),
+    function(~(_), [1,0,0])]).

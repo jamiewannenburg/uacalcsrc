@@ -1,0 +1,35 @@
+% Saved by Prover9-Mace4 Version 0.5, December 2007.
+
+set(ignore_option_dependencies). % GUI handles dependencies
+
+if(Prover9). % Options for Prover9
+  assign(max_seconds, 120).
+end_if.
+
+if(Mace4).   % Options for Mace4
+  assign(end_size, 6).
+  set(skolems_last).
+  assign(max_seconds, 60).
+end_if.
+
+formulas(assumptions).
+
+R(0,x,y)<->x=y.
+% density
+R(x,x,x).
+% total symmetry
+R(x,y,z)->R(y,x,z).
+R(x,y,z)->R(x,z,y).
+% Pasch's postulate
+%(R(x,y,z) & R(z,u,v))->(exists w (R(x,u,w) & R(w,y,v))).
+(exists x (R(v,w,x)&R(x,y,z)))->(exists u (R(v,u,z)&R(w,y,u))).
+
+end_of_list.
+
+formulas(goals).
+
+% 3-potent
+(exists x1 exists x2 R(x,x,x2) & R(x,x2,x1) & R(x,x1,y)) -> (exists x1 R(x,x,x1) & R(x,x1,y)).
+
+end_of_list.
+

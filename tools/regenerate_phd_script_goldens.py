@@ -10,9 +10,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-PHD = REPO / "tests" / "jython_scripts" / "phd"
-GOLDENS = PHD / "goldens"
-MANIFEST = PHD / "manifest.json"
+RUNTIME = REPO / "tests" / "jython_scripts" / "phd_runtime"
+GOLDENS = REPO / "tests" / "jython_scripts" / "phd" / "goldens"
+MANIFEST = REPO / "tests" / "jython_scripts" / "phd" / "manifest.json"
 
 
 def load_entries() -> list[dict]:
@@ -22,12 +22,23 @@ def load_entries() -> list[dict]:
 
 def run_jython(script: Path, argv: list[str], cwd: Path) -> tuple[int, str, str]:
     jython = os.environ.get("JYTHON", "jython")
+    if jython == "jython" and sys.platform == "win32":
+        candidates = [
+            Path(r"C:\Users\u28409265\AppData\Local\Programs\Jython\bin\jython.exe"),
+            Path(r"C:\Users\u28409265\AppData\Local\Programs\jython\bin\jython.exe"),
+        ]
+        for c in candidates:
+            if c.is_file():
+                jython = str(c)
+                break
     default_jar = (REPO / "jars" / "uacalc.jar").resolve()
     cp = os.environ.get("CLASSPATH", str(default_jar))
     vendor = REPO / "tests" / "jython_scripts" / "_vendor"
+    v2 = RUNTIME / "_vendor_pyparsing"
+    pp = os.pathsep.join([str(v2), str(vendor)])
     env = os.environ.copy()
     env["CLASSPATH"] = cp
-    env["PYTHONPATH"] = str(vendor)
+    env["PYTHONPATH"] = pp
     proc = subprocess.run(
         [jython, str(script), *argv],
         cwd=str(cwd),
@@ -50,12 +61,15 @@ def main() -> int:
             continue
         if args.only and rel not in args.only:
             continue
-        script = PHD / rel
+        script = RUNTIME / rel
         if not script.is_file():
             print(f"missing {script}", file=sys.stderr)
             return 2
         argv = list(entry.get("argv") or [])
-        rc, out, err = run_jython(script, argv, PHD)
+        cwd = RUNTIME
+        if entry.get("cwd_model"):
+            cwd = RUNTIME
+        rc, out, err = run_jython(script, argv, cwd)
         if rc != 0:
             print(f"WARN {rel} exit {rc}", file=sys.stderr)
             if err:

@@ -14,7 +14,8 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VENDOR = Path(__file__).resolve().parent / "_vendor"
-PHD_ROOT = Path(__file__).resolve().parent / "phd"
+PHD_ROOT = Path(__file__).resolve().parent / "phd_runtime"
+GOLDENS_ROOT = Path(__file__).resolve().parent / "phd" / "goldens"
 
 # Normalisations applied when comparing stdout (documented in PHD_SCRIPT_COMPARISONS.md).
 ADDRESS_RE = re.compile(r"\b(?:0x)?[0-9a-f]{8,}\b", re.I)

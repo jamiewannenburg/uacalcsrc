@@ -1,0 +1,71 @@
+% Saved by Prover9-Mace4 Version 0.5, December 2007.
+
+set(ignore_option_dependencies). % GUI handles dependencies
+
+if(Prover9). % Options for Prover9
+  assign(max_seconds, 60).
+end_if.
+
+if(Mace4).   % Options for Mace4
+  assign(domain_size, 9).
+  assign(start_size, 9).
+  assign(end_size, 9).
+  assign(max_seconds, 60).
+end_if.
+
+if(Mace4).   % Additional input for Mace4
+% Additional input for Mace4
+assign(max_models, -1).
+  assign(max_seconds, -1).
+end_if.
+
+formulas(assumptions).
+
+0<1.
+1<2.
+2<3.
+3<4.
+4<5.
+5<6.
+6<7.
+7<8.
+~(0)=8.
+~(1)=7.
+~(2)=6.
+~(3)=5.
+~(4)=4.
+~(5)=3.
+~(6)=2.
+~(7)=1.
+~(8)=0.
+e=1.
+~(e)*~(e)=~(0).
+%all x ((x!=0 & x!=1 & x!=~(1) & x!=~(0) & x!=2 ) -> (exists y exists z (x!=y & x!=z) -> x=y*z)).
+
+((x<y)&(y<z)) -> x<z.
+-(x<x).
+(x<y)->(-(y<x)).
+x^x=x.
+x^y=y^x.
+(x<y)->(x^y=x).
+
+%(x ^ y = z) <-> ( (z=x & x<y) | (z=y & y<x) ).
+%(x = x^y) <-> (x=y | x<y).
+
+x*y = y*x.
+e*x=x.
+x*(y*z)=(x*y)*z.
+x<x*x | x=x*x.
+x\y = ~(x*~(y)).
+x = y\(y*x) | x < y\(y*x).
+x*(x\y) = y | x*(x\y) < y.
+%(y<z)->().
+x*(y^z) = (x*y)^(x*z) | x*(y^z) < (x*y)^(x*z).
+(x\y)^(x\z) = x\(y^z).
+
+end_of_list.
+
+formulas(goals).
+
+end_of_list.
+

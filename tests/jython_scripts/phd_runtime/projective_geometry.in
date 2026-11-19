@@ -1,0 +1,37 @@
+% Saved by Prover9-Mace4 Version 0.5, December 2007.
+
+set(ignore_option_dependencies). % GUI handles dependencies
+
+if(Prover9). % Options for Prover9
+  assign(max_seconds, 60).
+end_if.
+
+if(Mace4).   % Options for Mace4
+  assign(start_size, 8).
+  assign(max_seconds, -1).
+end_if.
+
+formulas(assumptions).
+
+%C0: [ABA]
+L(x,y,x).
+%C1: If A and B are distinct points such that [ABC] and [ABD] then [BDC]
+(x != y & L(x,y,u) & L(x,y,v))->(L(y,v,u)).
+%C2: If A and B are distinct points then there exists a third distinct point C such that [ABC]
+(x != y) -> (exists z (z != x & z != y & L(x,y,z))).
+%C3: If A and C are distinct points, and B and D are distinct points, 
+%    with [BCE] and [ADE] but not [ABE], 
+%    then there is a point F such that [ACF] and [BDF].
+%A = x, B = y, C = u, D = v, E = z, F = w
+(x != u & y != v & L(y,u,z) & L(x,v,z) & -L(x,y,z)) -> (exists w (L(x,u,w)&L(y,v,w))).
+% at least dimension 1 has at least 2 points
+%exists x exists y (x != y).
+% at least dimension 2 has at least 3 non-collinear points
+exists x exists y exists z (x != y & x != z & y!=z & -L(x,y,z)).
+
+end_of_list.
+
+formulas(goals).
+
+end_of_list.
+

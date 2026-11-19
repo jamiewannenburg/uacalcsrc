@@ -74,9 +74,47 @@ def should_skip_path(path: Path) -> bool:
     return False
 
 
-def copy_phd_tree(dest: Path) -> None:
-    """Copy all small files from Jamie's tree (read-only source)."""
+def copy_phd_tree(dest: Path, *, full: bool = False, link_input: bool = True) -> None:
+    """Copy Jamie tree into dest. Default: top-level .py + jars + junction/symlink input."""
     dest.mkdir(parents=True, exist_ok=True)
+    for py in SRC.glob("*.py"):
+        shutil.copy2(py, dest / py.name)
+    for name in ("uacalc.jar", "LatDraw.jar"):
+        jar = SRC / name
+        if jar.is_file() and jar.stat().st_size <= MAX_FILE:
+            shutil.copy2(jar, dest / name)
+    for f in SRC.iterdir():
+        if not f.is_file() or f.suffix == ".py":
+            continue
+        if should_skip_path(f) or f.stat().st_size > MAX_FILE:
+            continue
+        if f.name in ("uacalc.jar", "LatDraw.jar"):
+            continue
+        shutil.copy2(f, dest / f.name)
+    inp_dest = dest / "input"
+    if not full and link_input and (SRC / "input").is_dir():
+        if inp_dest.exists():
+            if inp_dest.is_symlink() or inp_dest.is_dir():
+                pass
+            else:
+                inp_dest.unlink()
+        if not inp_dest.exists():
+            try:
+                os.symlink(SRC / "input", inp_dest, target_is_directory=True)
+            except OSError:
+                subprocess.run(
+                    ["cmd", "/c", "mklink", "/J", str(inp_dest), str(SRC / "input")],
+                    check=False,
+                    capture_output=True,
+                )
+    if not full:
+        if VENDOR.is_dir():
+            vendor_dest = dest / "_vendor_pyparsing"
+            vendor_dest.mkdir(exist_ok=True)
+            for p in VENDOR.glob("*.py"):
+                shutil.copy2(p, vendor_dest / p.name)
+        (dest / "output").mkdir(exist_ok=True)
+        return
     for root, dirnames, filenames in os.walk(SRC):
         root_path = Path(root)
         dirnames[:] = [
@@ -151,31 +189,50 @@ def _run_jython(
             shutil.copy2(old, tmp / "uacalc.jar")
     cmd = [jython, str(tmp / script_name), *argv]
     t0 = time.perf_counter()
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(tmp),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=env,
+    )
+    stdout = ""
+    stderr = ""
     try:
-        proc = subprocess.run(
-            cmd,
-            cwd=str(tmp),
-            capture_output=True,
-            text=True,
-            env=env,
-            timeout=TIMEOUT,
-        )
+        stdout, stderr = proc.communicate(timeout=TIMEOUT)
         elapsed = time.perf_counter() - t0
         return {
             "exit": proc.returncode,
             "seconds": round(elapsed, 3),
-            "stdout_len": len(proc.stdout),
-            "stdout_head": proc.stdout[:300],
-            "stderr": proc.stderr[:1200],
+            "stdout_len": len(stdout),
+            "stdout_head": stdout[:300],
+            "stderr": stderr[:1200],
             "timed_out": False,
         }
     except subprocess.TimeoutExpired as exc:
+        subprocess.run(
+            ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+            capture_output=True,
+        )
+        try:
+            stdout, stderr = proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            stdout, stderr = proc.communicate()
+        out = stdout or (exc.stdout or "")
+        err = stderr or (exc.stderr or "")
+        if isinstance(out, bytes):
+            out = out.decode("utf-8", errors="replace")
+        if isinstance(err, bytes):
+            err = err.decode("utf-8", errors="replace")
+        elapsed = time.perf_counter() - t0
         return {
             "exit": -1,
-            "seconds": TIMEOUT,
-            "stdout_len": len(exc.stdout or ""),
-            "stdout_head": (exc.stdout or b"").decode("utf-8", errors="replace")[:300],
-            "stderr": (exc.stderr or b"").decode("utf-8", errors="replace")[:1200],
+            "seconds": round(elapsed, 3),
+            "stdout_len": len(out),
+            "stdout_head": out[:300],
+            "stderr": err[:1200],
             "timed_out": True,
         }
 
@@ -194,82 +251,112 @@ def status_for(imports: dict, run: dict | None) -> str:
     return "fast-ok"
 
 
+def _strip_run_artifacts(root: Path) -> None:
+    out = root / "output"
+    if out.is_dir():
+        shutil.rmtree(out, ignore_errors=True)
+    for pattern in ("*_re.ua", "s*.ua", "sa*.ua"):
+        for p in root.glob(pattern):
+            if p.name not in {"sugihara.py"} and p.suffix == ".ua":
+                try:
+                    p.unlink()
+                except OSError:
+                    pass
+
+
 def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--only", nargs="*", metavar="SCRIPT", default=None)
+    args = parser.parse_args()
     argv_map = json.loads(ARGV_MANIFEST.read_text(encoding="utf-8"))
     repo_jar = (REPO / "jars" / "uacalc.jar").resolve()
     old_jar = (SRC / "uacalc.jar").resolve()
 
-    with tempfile.TemporaryDirectory(prefix="phd_full_") as td:
-        full_tree = Path(td)
-        copy_phd_tree(full_tree)
-
     rows = []
-    for script in _scripts():
-        text = script.read_text(encoding="utf-8", errors="replace")
-        imports = _classify_imports(text)
-        argv = argv_map.get(script.name, [])
-        entry = {
-            "script": script.name,
-            "imports": imports,
-            "needs_argv": "sys.argv" in text,
-            "argv_default": argv,
-            "input_refs": _input_refs(text),
-            "local_deps": sorted(_local_imports(text)),
-        }
-        if not imports["org_uacalc"] and not imports["dmm"]:
-            entry["status"] = "not-applicable"
-            entry["run_repo_jar"] = None
-            rows.append(entry)
-            continue
-        if imports.get("py3_print"):
-            entry["status"] = "syntax-jython2"
-            entry["error_category"] = "syntax-jython2-vs-py3"
-            entry["run_repo_jar"] = None
-            rows.append(entry)
-            continue
+    with tempfile.TemporaryDirectory(prefix="phd_master_") as td:
+        master = Path(td)
+        copy_phd_tree(master)
+        scripts = _scripts()
+        if args.only is not None:
+            only = set(args.only)
+            scripts = [s for s in scripts if s.name in only]
+        for idx, script in enumerate(scripts, 1):
+            print(f"[{idx}/{len(scripts)}] {script.name}", flush=True)
+            text = script.read_text(encoding="utf-8", errors="replace")
+            imports = _classify_imports(text)
+            argv = argv_map.get(script.name, [])
+            entry = {
+                "script": script.name,
+                "imports": imports,
+                "needs_argv": "sys.argv" in text,
+                "argv_default": argv,
+                "input_refs": _input_refs(text),
+                "local_deps": sorted(_local_imports(text)),
+            }
+            if not imports["org_uacalc"] and not imports["dmm"]:
+                entry["status"] = "not-applicable"
+                entry["run_repo_jar"] = None
+                rows.append(entry)
+                continue
+            if imports.get("py3_print"):
+                entry["status"] = "syntax-jython2"
+                entry["error_category"] = "syntax-jython2-vs-py3"
+                entry["run_repo_jar"] = None
+                rows.append(entry)
+                continue
 
-        with tempfile.TemporaryDirectory(prefix="phd_run_") as td:
-            tmp = Path(td)
-            copy_phd_tree(tmp)
+            _strip_run_artifacts(master)
             run_repo = _run_jython(
-                tmp,
+                master,
                 script.name,
                 argv,
                 jar=repo_jar,
                 use_repo_jar_for_syspath=True,
             )
-        entry["run_repo_jar"] = run_repo
-        entry["status"] = status_for(imports, run_repo)
-        if entry["status"] == "jython-error":
-            entry["error_category"] = _categorize_error(
-                run_repo.get("stderr", ""),
-                run_repo.get("stdout_head", ""),
-                imports,
-            )
-            with tempfile.TemporaryDirectory(prefix="phd_old_") as td:
-                tmp = Path(td)
-                copy_phd_tree(tmp)
+            entry["run_repo_jar"] = run_repo
+            entry["status"] = status_for(imports, run_repo)
+            if entry["status"] == "jython-error":
+                entry["error_category"] = _categorize_error(
+                    run_repo.get("stderr", ""),
+                    run_repo.get("stdout_head", ""),
+                    imports,
+                )
+                _strip_run_artifacts(master)
                 run_old = _run_jython(
-                    tmp,
+                    master,
                     script.name,
                     argv,
                     jar=old_jar,
                     use_repo_jar_for_syspath=False,
                 )
-            entry["run_old_jar"] = run_old
-            if run_old["exit"] == 0 and run_repo["exit"] != 0:
-                entry["error_category"] = (
-                    entry["error_category"] + "+api-drift-old-jar-works"
-                )
-            elif run_old["exit"] != 0 and run_repo["exit"] != 0:
-                if run_old.get("stderr", "")[:80] == run_repo.get("stderr", "")[:80]:
-                    entry["error_category"] = entry["error_category"] + "+same-on-old-jar"
-        else:
-            entry["error_category"] = None
-        rows.append(entry)
+                entry["run_old_jar"] = run_old
+                if run_old["exit"] == 0 and run_repo["exit"] != 0:
+                    entry["error_category"] = (
+                        entry["error_category"] + "+api-drift-old-jar-works"
+                    )
+                elif run_old["exit"] != 0 and run_repo["exit"] != 0:
+                    if run_old.get("stderr", "")[:80] == run_repo.get("stderr", "")[:80]:
+                        entry["error_category"] = (
+                            entry["error_category"] + "+same-on-old-jar"
+                        )
+            else:
+                entry["error_category"] = None
+            rows.append(entry)
 
     out = REPO / "tools" / "phd_inventory.json"
-    out.write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    if args.only is not None and out.is_file():
+        existing = json.loads(out.read_text(encoding="utf-8"))
+        by_name = {e["script"]: e for e in existing}
+        for r in rows:
+            by_name[r["script"]] = r
+        order = [e["script"] for e in existing]
+        for name in by_name:
+            if name not in order:
+                order.append(name)
+        rows = [by_name[name] for name in order]
+    out.write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
     counts: dict[str, int] = {}
     cats: dict[str, int] = {}
     for r in rows:

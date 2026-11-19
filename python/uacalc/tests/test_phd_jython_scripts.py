@@ -11,9 +11,9 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tests" / "jython_scripts"))
 from harness import normalize_phd_output, run_phd_script_cpython  # noqa: E402
 
-PHD = REPO / "tests" / "jython_scripts" / "phd"
-MANIFEST = PHD / "manifest.json"
-GOLDENS = PHD / "goldens"
+PHD = REPO / "tests" / "jython_scripts" / "phd_runtime"
+MANIFEST = REPO / "tests" / "jython_scripts" / "phd" / "manifest.json"
+GOLDENS = REPO / "tests" / "jython_scripts" / "phd" / "goldens"
 
 
 def _entries():

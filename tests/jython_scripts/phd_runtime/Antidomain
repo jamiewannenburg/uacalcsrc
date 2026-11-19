@@ -1,0 +1,72 @@
+% Saved by Prover9-Mace4 Version 0.5, December 2007.
+
+set(ignore_option_dependencies). % GUI handles dependencies
+
+% Language Options
+
+op(499, infix_left, "+").
+op(490, infix_left, ";").
+op(480, postfix, "*").
+
+if(Prover9). % Options for Prover9
+  assign(max_seconds, -1).
+end_if.
+
+if(Mace4).   % Options for Mace4
+  assign(max_seconds, 60).
+end_if.
+
+formulas(assumptions).
+
+%%% Kleene algebra, Kozen (1994)%%%
+(x+y)+z = x+(y+z).
+x+y = y+x.
+x+x = x.
+x+0 = x.
+(x;y);z = x;(y;z).
+x;1 = x.
+1;x = x.
+x;(y+z) = (x;y) + (x;z).  
+(x+y);z = (x;z) + (y;z). 
+x;0 = 0.
+0;x = 0.
+%(x <= y) <-> (x+y = y).
+%1 + x;x* <= x*.
+1 + x;x* + x* = x*.
+%1 + x*;x <= x*.
+1 + x*;x + x* = x*.
+%y + x;z <= z -> x*;y <= z.
+y + x;z + z = z -> x*;y + z = z.
+%y + z;x <= z -> y;x* <= z. 
+y + z;x + z = z -> y;x* + z = z. 
+
+%%% antidomain %%%
+a(x);x=0.
+%a(x;y)+a(x;a(a(y)))=a(x;a(a(y))).
+a(x)+a(a(x))=1.
+a(x;y)=a(x;a(a(y))). %derivable (assuming idempotence)
+%% domain
+%d(x)=a(a(x)).
+%c(x)=c(c(x)).
+%provable
+%a(x)+1=1.
+%a(0)=1.
+%a(x+y)=a(x);a(y).
+%(all z (d(x;z)=d(y;z))) -> x=y.
+
+%d(x*;d(y))=d(y)+d(x*;a(y);d(x;d(y))).
+%a(a(x*;a(a(y))))=a(a(y))+a(a(x*;a(y);a(a(x;a(a(y)))))).
+%a(a(x*;y))=a(a(y))+a(a(x*;a(y);x;y)).
+
+%d(y) + d(x;d(z)) + d(z) = d(z) -> d(x*;d(y)) + d(z) = d(z).
+%a(a(y)) + a(a(x;a(a(z)))) + a(a(z)) = a(a(z)) -> a(a(x*;a(a(y)))) + a(a(z)) = a(a(z)).
+%a(a(y)) + a(a(x;z)) + a(a(z)) = a(a(z)) -> a(a(x*;y)) + a(a(z)) = a(a(z)).
+
+end_of_list.
+
+formulas(goals).
+
+a(a(a(y);((x;y))))=0.
+
+end_of_list.
+

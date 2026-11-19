@@ -1,0 +1,17 @@
+interpretation( 3, [number = 1,seconds = 0], [
+    function(*(_,_), [
+        0,1,2,
+        1,1,1,
+        2,1,2]),
+    function(e, [0]),
+    function(c1, [0]),
+    function(c2, [1]),
+    function(c3, [2]),
+    relation(Q(_,_), [
+        1,0,0,
+        0,1,1,
+        0,1,1]),
+    relation(R(_,_), [
+        1,0,1,
+        0,1,0,
+        1,0,1])]).

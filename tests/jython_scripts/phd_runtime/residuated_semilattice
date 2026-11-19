@@ -1,0 +1,64 @@
+% Saved by Prover9-Mace4 Version 0.5, December 2007.
+
+set(ignore_option_dependencies). % GUI handles dependencies
+
+if(Prover9). % Options for Prover9
+  assign(max_seconds, 200).
+end_if.
+
+if(Mace4).   % Options for Mace4
+  assign(max_seconds, 60).
+end_if.
+
+formulas(assumptions).
+
+% semiring
+x+y=y+x.
+x+b=x.
+(x+y)+z=x+(y+z).
+(x*y)*z=x*(y*z).
+x*e=x.
+e*x=x.
+x*(y+z)=(x*y)+(x*z).
+(y+z)*x =(y*x)+(z*x).
+% idempotent (diod, semilattice)
+x+x = x.
+%(x<=y)<->(x+y=y).
+% residuated semilattice
+%% inequality quasi-equations
+%(x*y <= z)<->(y <= x\z).
+%(x*y <= z)<->(x <= z/y).
+%% quasi-equations
+%(z=z+(x*y))<->(x\z=y+(x\z)).
+%(z=z+(x*y))<->(z/y=x+(z/y)).
+%% inequations
+%x*(x\y)<=y.
+%y<=x\(x*y).
+%(y/x)*x<=y.
+%y<=(y*x)/x.
+%x\y<=x\(y+z).
+%(x+z)\y<=x\y.
+%x/y<=(x+z)/y.
+%x/(y+z)<=x/y.
+%x*y<=(x+z)*y.
+%x*y<=x*(y+z).
+%% equations
+y=y+(x*(x\y)).
+x\(x*y)=y+(x\(x*y)).
+y=y+((y/x)*x).
+(y*x)/x=y+((y*x)/x).
+x\(y+z)=(x\y)+(x\(y+z)).
+x\y=((x+z)\y)+(x\y).
+(x+z)/y=(x/y)+((x+z)/y).
+x/y=(x/(y+z))+(x/y).
+(x+z)*y=(x*y)+((x+z)*y).
+x*(y+z)=(x*y)+(x*(y+z)).
+
+end_of_list.
+
+formulas(goals).
+
+(z=z+(x*y))<->(z/y=x+(z/y)).
+
+end_of_list.
+

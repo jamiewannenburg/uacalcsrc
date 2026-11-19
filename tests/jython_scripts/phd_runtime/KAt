@@ -1,0 +1,194 @@
+% Saved by Prover9-Mace4 Version 0.5, December 2007.
+
+set(ignore_option_dependencies). % GUI handles dependencies
+
+if(Prover9). % Options for Prover9
+  assign(max_seconds, -1).
+end_if.
+
+if(Mace4).   % Options for Mace4
+  assign(max_seconds, 120).
+end_if.
+
+formulas(assumptions).
+
+% semiring
+x+b=x.
+x*b=b.
+b*x=b.
+x+y=y+x.
+(x+y)+z=x+(y+z).
+(x*y)*z=x*(y*z).
+x*e=x.
+e*x=x.
+x*(y+z)=(x*y)+(x*z).
+(y+z)*x =(y*x)+(z*x).
+% idempotent (diod, semilattice)
+x+x = x.
+%(x<=y)<->(x+y=y). % should be uncommented if inqualities are used below
+
+% residuated semilattice
+%% inequality quasi-equations
+%(x*y <= z)<->(y <= x\z).
+%(x*y <= z)<->(x <= z/y).
+%% quasi-equations
+(z=z+(x*y))<->(x\z=y+(x\z)).
+(z=z+(x*y))<->(z/y=x+(z/y)).
+%% inequations
+%x*(x\y)<=y.
+%y<=x\(x*y).
+%(y/x)*x<=y.
+%y<=(y*x)/x.
+%x\y<=x\(y+z).
+%(x+z)\y<=x\y.
+%x/y<=(x+z)/y.
+%x/(y+z)<=x/y.
+%x*y<=(x+z)*y.
+%x*y<=x*(y+z).
+%% equations
+%y=y+(x*(x\y)).
+%x\(x*y)=y+(x\(x*y)).
+%y=y+((y/x)*x).
+%(y*x)/x=y+((y*x)/x).
+%x\(y+z)=(x\y)+(x\(y+z)).
+%x\y=((x+z)\y)+(x\y).
+%(x+z)/y=(x/y)+((x+z)/y).
+%x/y=(x/(y+z))+(x/y).
+%(x+z)*y=(x*y)+((x+z)*y).
+%x*(y+z)=(x*y)+(x*(y+z)).
+
+% Kleene star 
+e+(x+((x')*(x')))=x'.
+(y=x+y)->(y'=(x')+(y')). % a usefull  [tool]
+%% quasi-inequations (from Jipson/Igor)
+%(x*y <= y)->((x')*y = y).
+%(y*x <= y)->(y*(x') = y).
+%% quasi-inequations (from Desharnais)
+%e+(x*(x')) <= x'.
+%e+((x')*x) <= x'.
+%(y+(x*z) <= z)->((x')*y <= z).
+%(y+(z*x) <= z)->(y*(x') <= z).
+%% quasi-equations (from Jipson/Igor)
+(y=(x*y)+y)->((x')*y = y).
+(y=(y*x)+y)->(y*(x') = y).
+%% inequations
+%x'<=(x+y)'.
+%(y/y)'<=y/y.
+%% equations
+(x+y)'=(x')+((x+y)'). % completes using [tool]
+y/y=((y/y)')+(y/y).
+
+% codomain
+%% quasi-inequalities
+%(c(x)<=y)->(x<=x*y).
+%(y<=e & x<=x*y)->(c(x)<=y).
+%(c(x)<=y)<->(x<=ci(y)).
+%% quasiequations
+c(b)=b.
+c(x+y)=c(x)+c(y).
+x+(x*c(x))=x*c(x).
+(e=y+e & x*y=x+(x*y))->(y=c(x)+y).
+
+%% Galois connection
+%(y=y+c(x))<->(ci(y)=x+ci(y)). 
+%% inequations for Galois connection
+%c(ci(x))<=x.
+%x<=ci(c(x)).
+%c(x)<=c(x+y).
+%ci(x)<=ci(x+y).
+%% equations for Galois connection
+%x=c(ci(x))+x.
+%ci(c(x))=x+ci(c(x)).
+%c(x+y)=c(x)+c(x+y).
+%ci(x+y)=ci(x)+ci(x+y).
+
+%% codomain (2 sorted)
+%x*c(x)=(x*c(x))+x.
+%c(x)=c(x)+c(y*c(x)).
+%c(x*y)=c(x*y)+c(x*c(y)). %fails in A3
+
+%% codomain
+%x+(x*c(x))=x*c(x).
+%c(b)=b.
+%c(x+y)=c(x)+c(y).
+%c(x)+e=e.
+%c(x*y)=c(c(x)*y). %fails in A3
+
+%% equations trying to axiomatize program algebras 
+%% (all provable but not sufficient)
+%% (all provable in B3)
+%(y=c(x)+y)->(x*y=x+(x*y)). % this already follows from the equations below
+(y=x+y)->(c(y)=c(x)+c(y)). % helpfull
+%c(e)=e.
+%x=x*c(x).
+(c(y)=c(x)+c(y))<->((b\b)*c(y)=x+((b\b)*c(y))).
+(x=x*x & e=e+x)->(c(x)=x).
+%c(x)=(c(x)*c(y))+c(x).
+%x*c(x\x)=x.
+%x*c(x/x)=x.
+%c(x)*c(x)=c(x).
+%c(x)*c(y)=c(c(x)*c(y)).
+%c(c(x))=c(x).
+%c(c(x)*y)=c(x*y)+(c(c(x)*y)).
+%c(x)*c(y)=c(y)*c(x).
+%c(y)=c(x*y)+c(y).
+%% some true things about the Galois connection
+%ci(b)=b.
+%ci(ci(x))=ci(x).
+%(y=x+y)->(ci(y)=ci(x)+ci(y)). % helpfull
+
+%% classical program algebras
+%x\(x*c(y))=c(x\y)+(x\(x*c(y))).
+%x+(c(x)\b)=e+(x+(c(x)\b)). 
+
+%% connection
+%a(x)=c(x\b).
+%c(x)*a(c(x))=b.
+%c(x)+a(c(x))=e.
+%a(a(x))=c(x).
+%% axioms of anticodomain
+%x*a(x)=b.
+%a(a(x))+a(x)=e.
+%a(x*y)+a(a(a(x))*y)=a(a(a(x))*y). % this is OK in the classical case..
+%% distinguished top
+%t=t+x.
+
+%% a congruence relation
+%R(x,x).
+%R(x,y)<->R(y,x).
+%(R(x,y)&R(y,z))->(R(x,z)).
+%(R(u,v)&R(w,x))->(R(u*w,v*x)).
+%(R(u,v)&R(w,x))->(R(u+w,v+x)).
+%R(x,y)->R(c(x),c(y)).
+%R(x,y)->R(x',y').
+%(R(u,v)&R(w,x))->(R(u/w,v/x)).
+%(R(u,v)&R(w,x))->(R(u\w,v\x)).
+% onto B3
+%a!=e.
+%a!=b.
+%a+e=e.
+%R(x,e)|R(x,b)|R(x,a).
+%R(a,a*a).
+%R(a+e,e).
+%R(c(a),e).
+%-R(a,e).
+%-R(a,b).
+% some constants for printing
+%d(x)=c(x\b).
+%f(x)=e/x.
+%g(x)=b/x.
+%h(x)=x\e.
+%i(x)=e/(x\e).
+%% goal
+%(R(e,y+e) & R(x*y,x+(x*y)))->(R(y,c(x)+y)).
+%(R(x,x*x) & R(e,e+x))->(R(c(x),x)).
+%(R(e,y+e) & R(x*y,x+(x*y)))->(R(y,c(x)+y)). % goal
+
+end_of_list.
+
+formulas(goals).
+
+(y=c(x)+y)<->((b\b)*y=x+((b\b)*y)).
+
+end_of_list.
+
