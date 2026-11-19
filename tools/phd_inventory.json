@@ -1,0 +1,1286 @@
+[
+  {
+    "script": "2subalgebras.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "C-5-*.ua"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "dmm",
+      "glob",
+      "latex",
+      "org",
+      "os",
+      "re",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 0,
+      "seconds": 25.162,
+      "stdout_len": 441,
+      "stdout_head": "C-5-*.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-1.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-2.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-3.ua\nC:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-4.ua\nC:\\",
+      "stderr": "",
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
+  },
+  {
+    "script": "add_arrow_and_meet.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 0,
+      "seconds": 18.466,
+      "stdout_len": 32,
+      "stdout_head": "Created meet and arrow for B_2.\n",
+      "stderr": "",
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
+  },
+  {
+    "script": "associativity_of_iff.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "b2.ua",
+      "s3.ua",
+      "s8.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 17.534,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\associativity_of_iff.py\", line 34, in <module>\n    s8 = get_sugihara_monoid(8)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sugihara.py\", line 70, in get_sugihara_monoid\n    return add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)\n\n\tat java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)\n\n\tat java.base/java.lang.ref",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 19.003,
+      "stdout_len": 312,
+      "stdout_head": "S_8 is not associative as ((((x->y)^(y->x))->z)^(z->((x->y)^(y->x))))=((x->((y->z)^(z->y)))^(((y->z)^(z->y))->x)) fails at {x: 0, y: 0, z: 1}.\niff is associative in B_2\nS_3 is not associative as ((((x->y)^(y->x))->z)^(z->((x->y)^(y->x))))=((x->((y->z)^(z->y)))^(((y->z)^(z->y))->x)) fails at {x: 0, y",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_andrew.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 23.988,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 36, in <module>\n    check_andrew(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 27, in check_andrew\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "api-java-termoperationimp-varlist+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 18.678,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 36, in <module>\n    check_andrew(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_andrew.py\", line 27, in check_andrew\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:89)\n\n\tat org.uacalc.terms.NonVariableTerm.intEval(NonVariableTerm.java:93)\n\n\tat org.uacalc.terms.NonVariableTerm$1.intValueAt(NonVariableTerm.java:144)\n\n\tat org.uacalc.alg.op.Operations.findDifference(Operations.java:249)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:69)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.NullPointerException: java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.Operation.arity()\" because \"op\" is null\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_crl.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 20.689,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_crl.py\", line 18, in <module>\n    if check_crl(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 559, in check_crl\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 19.045,
+      "stdout_len": 13,
+      "stdout_head": "B_2 is a crl\n",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_dunn.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 18.057,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_dunn.py\", line 14, in <module>\n    if check_dunn(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 548, in check_dunn\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 20.545,
+      "stdout_len": 21,
+      "stdout_head": "B_2 is a Dunn monoid\n",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_heyting.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 23.945,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_heyting.py\", line 45, in <module>\n    if check_heyting(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 604, in check_heyting\n    return check_brouwerian(alg,example)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 583, in check_brouwerian\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 22.13,
+      "stdout_len": 25,
+      "stdout_head": "B_2 is a Heyting algebra\n",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "check_m.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 24.032,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\check_m.py\", line 21, in <module>\n    if check_m(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 537, in check_m\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "api-java-termoperationimp-varlist",
+    "run_old_jar": {
+      "exit": -1,
+      "seconds": 36.974,
+      "stdout_len": 56,
+      "stdout_head": "B_2 is not in M as (xv(-e.-e))=(-e.-e) fails at {x: 1}.\n",
+      "stderr": "",
+      "timed_out": true
+    }
+  },
+  {
+    "script": "dmm.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": true,
+      "dmm": false,
+      "other_java": true,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 27.71,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 640, in <module>\n    if check_dmm(alg):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 526, in check_dmm\n    result = eq.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 27.024,
+      "stdout_len": 27,
+      "stdout_head": "B_2 is a De Morgan monoid.\n",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "draw.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "input/KR-8-expl.json"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "json",
+      "os",
+      "pygraphviz",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run_repo_jar": null
+  },
+  {
+    "script": "draw_chains.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/C-7-*.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "glob",
+      "latex",
+      "org",
+      "os",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 25.337,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\draw_chains.py\", line 95, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/SevenElementSimples.tex'\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 27.401,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\draw_chains.py\", line 95, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/SevenElementSimples.tex'\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "draw_rn.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "KR-8.model"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "json",
+      "matplotlib",
+      "networkx",
+      "os",
+      "pygraphviz",
+      "re",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run_repo_jar": null
+  },
+  {
+    "script": "ez_setup.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "install"
+    ],
+    "input_refs": [],
+    "local_deps": [],
+    "status": "not-applicable",
+    "run_repo_jar": null
+  },
+  {
+    "script": "filter2sa_mace4.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": true,
+      "dmm": true,
+      "other_java": true,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "KR-1gen"
+    ],
+    "input_refs": [
+      "%s-%d.ua",
+      "S-%d-%s.ua",
+      "{}.model"
+    ],
+    "local_deps": [
+      "org",
+      "os",
+      "pyparsing",
+      "re",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 20.406,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\filter2sa_mace4.py\", line 142, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.modelall\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "missing-input-or-args+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 21.893,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\filter2sa_mace4.py\", line 142, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.modelall\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "find_chains_neg_cone.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "5"
+    ],
+    "input_refs": [
+      "%s-%d-%d.ua",
+      "%s-%d-%s.ua",
+      "-*.ua",
+      "b2xs3_reflection.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": -1,
+      "seconds": 31.405,
+      "stdout_len": 15,
+      "stdout_head": "Finding chains\n",
+      "stderr": "",
+      "timed_out": true
+    },
+    "status": "slow",
+    "error_category": null
+  },
+  {
+    "script": "find_covers.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/S-*-*.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": -1,
+      "seconds": 31.301,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": true
+    },
+    "status": "slow",
+    "error_category": null
+  },
+  {
+    "script": "find_dots.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "5"
+    ],
+    "input_refs": [
+      "-*.ua",
+      "C-%d-%d.ua",
+      "Y-%d-%s.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 24.04,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_dots.py\", line 251, in <module>\n    map(lambda x: build_and_check_alg(cardinality,x), make_dots(cardinality))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_dots.py\", line 251, in <lambda>\n    map(lambda x: build_and_check_alg(cardinality,x), make_dots(cardinality))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_dots.py\", line 215, in build_and_check_alg\n    alg = add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.in",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception",
+    "run_old_jar": {
+      "exit": -1,
+      "seconds": 31.36,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": true
+    }
+  },
+  {
+    "script": "find_simple_chains.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "5"
+    ],
+    "input_refs": [
+      "-*.ua",
+      "C-%d-%d.ua",
+      "C-%d-%s.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 23.457,
+      "stdout_len": 41,
+      "stdout_head": "Finding simple chains with cardinality 5\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains.py\", line 261, in <module>\n    map(lambda x: build_and_check_alg(n,x), make_dots(n))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains.py\", line 261, in <lambda>\n    map(lambda x: build_and_check_alg(n,x), make_dots(n))\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains.py\", line 214, in build_and_check_alg\n    alg = add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.internal.reflec",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 22.639,
+      "stdout_len": 1553,
+      "stdout_head": "Finding simple chains with cardinality 5\nfound example 244\nfound example 344\nC-{5}-{1} deleting C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-1.ua\nC-{5}-{2} deleting C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\input\\C-5-2.ua\nC-{5}-{3} deleting C:\\Users\\U28409~1\\AppD",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "find_simple_chains_powers.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/simple_chains_power5_*-*.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 28.569,
+      "stdout_len": 1711,
+      "stdout_head": "simple_chains_power5_09^{1} 2\nsimple_chains_power5_10^{1} 1\nsimple_chains_power5_11^{1} 2\nsimple_chains_power5_11^{2} 1\nsimple_chains_power5_11^{3} 1\nsimple_chains_power5_11^{4} 2\nsimple_chains_power5_11^{5} 2\nsimple_chains_power5_11^{6} 2\nsimple_chains_power5_11^{7} 1\nsimple_chains_power5_11^{8} 2\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains_powers.py\", line 100, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/ManyPowers5.tex'\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 20.184,
+      "stdout_len": 1711,
+      "stdout_head": "simple_chains_power5_09^{1} 2\nsimple_chains_power5_10^{1} 1\nsimple_chains_power5_11^{1} 2\nsimple_chains_power5_11^{2} 1\nsimple_chains_power5_11^{3} 1\nsimple_chains_power5_11^{4} 2\nsimple_chains_power5_11^{5} 2\nsimple_chains_power5_11^{6} 2\nsimple_chains_power5_11^{7} 1\nsimple_chains_power5_11^{8} 2\n",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\find_simple_chains_powers.py\", line 100, in <module>\n    the_string += \"\"\"\nIOError: [Errno 13] Permission denied: 'C:\\\\Users\\\\U28409~1\\\\AppData\\\\Local\\\\Temp\\\\phd_master_x_yerd6p\\\\output/ManyPowers5.tex'\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "free_algebras.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua",
+      "{}_F1.ua",
+      "{}_S.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 21.555,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "org.uacalc.alg.FreeAlgebra INFO free algebra size = 4\nTraceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\free_algebras.py\", line 88, in <module>\n    tex += r\"\\end{tabular}\"+'\\n\\n\\n'\nIOError: [Errno 13] Permission denied: 'output\\\\b2_subalgebra.tex'\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 22.112,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "org.uacalc.alg.FreeAlgebra INFO free algebra size = 4\nTraceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\free_algebras.py\", line 88, in <module>\n    tex += r\"\\end{tabular}\"+'\\n\\n\\n'\nIOError: [Errno 13] Permission denied: 'output\\\\b2_subalgebra.tex'\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "get_idempotents.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "c4.ua",
+      "c4_weaved.ua",
+      "s3_reflection.ua",
+      "s3_weaved.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": -1,
+      "seconds": 31.302,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": true
+    },
+    "status": "slow",
+    "error_category": null
+  },
+  {
+    "script": "get_subreducts.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "dot",
+      "-f",
+      "group.in"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "isomorphism",
+      "itertools",
+      "mace4",
+      "org",
+      "os",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 19.787,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\get_subreducts.py\", line 50, in <module>\n    models_handle = open(models_file_name)\nIOError: [Errno 2] No such file or directory: 'group.in'\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "missing-input-or-args+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 20.706,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\get_subreducts.py\", line 50, in <module>\n    models_handle = open(models_file_name)\nIOError: [Errno 2] No such file or directory: 'group.in'\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "heyting_from_poset.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "t3.model"
+    ],
+    "input_refs": [
+      "{}_dual.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 22.8,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\heyting_from_poset.py\", line 35, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\t3.model.lat\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "missing-input-or-args+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 21.465,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\heyting_from_poset.py\", line 35, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\t3.model.lat\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "isomorphism.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 0,
+      "seconds": 14.424,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
+  },
+  {
+    "script": "jep_check.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "/C-*-*.ua",
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": -1,
+      "seconds": 31.642,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": true
+    },
+    "status": "slow",
+    "error_category": null
+  },
+  {
+    "script": "KR_pretty_print.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": true,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "KR-1gen"
+    ],
+    "input_refs": [
+      "{}.model"
+    ],
+    "local_deps": [
+      "itertools",
+      "numpy",
+      "os",
+      "powerset",
+      "pyparsing",
+      "re",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run_repo_jar": null
+  },
+  {
+    "script": "latex.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "json",
+      "os",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 21.882,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\latex.py\", line 173, in <module>\n    graph_dict = get_graph(alg)\nIOError: [Errno 13] Permission denied: 'output\\\\b2.json'\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 21.126,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\latex.py\", line 173, in <module>\n    graph_dict = get_graph(alg)\nIOError: [Errno 13] Permission denied: 'output\\\\b2.json'\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "mace4.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": true,
+      "dmm": true,
+      "other_java": true,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "KR-1gen"
+    ],
+    "input_refs": [
+      "%s-%d.ua",
+      "S-%d-%s.ua",
+      "{}.model"
+    ],
+    "local_deps": [
+      "org",
+      "os",
+      "pyparsing",
+      "re",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 19.374,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\mace4.py\", line 156, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.model\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "missing-input-or-args+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 15.802,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\mace4.py\", line 156, in <module>\n    raise Exception(\"Could not find: {}\".format(alg_file_name))\nException: Could not find: KR-1gen.model\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "posets.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "KR-8.model"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "dmm",
+      "itertools",
+      "json",
+      "latex",
+      "org",
+      "os",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 17.881,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\posets.py\", line 97, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\KR-8.model.lat\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "missing-input-or-args+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 18.335,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\posets.py\", line 97, in <module>\n    raise Exception(\"Could not find: {}\".format(po_file_name))\nException: Could not find: input\\KR-8.model.lat\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "powerset.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "3"
+    ],
+    "input_refs": [],
+    "local_deps": [
+      "itertools",
+      "numpy",
+      "sys"
+    ],
+    "status": "not-applicable",
+    "run_repo_jar": null
+  },
+  {
+    "script": "riger_nishinora.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "_dual.json",
+      "{}_dual.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "heyting_from_poset",
+      "json",
+      "latex",
+      "os",
+      "posets",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 0,
+      "seconds": 17.945,
+      "stdout_len": 2596,
+      "stdout_head": "\n\\begin{picture}(126,178)\n%\n%% RN\n%\n\\put(69,5){\\circle*{4}}\n\\put(69,5){\\line(1,1){12}}\n\\put(69,5){\\line(-1,1){12}}\n\\put(81,17){\\circle*{4}}\n\\put(81,17){\\line(-1,1){12}}\n\\put(57,17){\\circle*{4}}\n\\put(57,17){\\line(1,1){12}}\n\\put(69,29){\\circle*{4}}\n\\put(75,3){$\\bot$}\n\\put(63,15){$w_0$}\n\\put(87,15){$w_",
+      "stderr": "",
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
+  },
+  {
+    "script": "rigorous_extension.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": true,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "b2"
+    ],
+    "input_refs": [
+      "{}.ua",
+      "{}_re.ua"
+    ],
+    "local_deps": [
+      "org",
+      "os",
+      "re",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 0,
+      "seconds": 11.625,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
+  },
+  {
+    "script": "sc_joins_of_covers.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": -1,
+      "seconds": 31.374,
+      "stdout_len": 1521,
+      "stdout_head": "S(R(B_2)^- \\times R(S_3)^-) has size 14 and 4 subalgebras\nR(B_2) and R(S_3) embedds into S(R(B_2)^- \\times R(S_3)^-)\nS(R(B_2)^- \\times W(S_3)^-) has size 14 and 4 subalgebras\nR(B_2) and W(S_3) embedds into S(R(B_2)^- \\times W(S_3)^-)\nS(R(B_2)^- \\times W(C_4)^-) has size 18 and 4 subalgebras\nR(B_2) a",
+      "stderr": "",
+      "timed_out": true
+    },
+    "status": "slow",
+    "error_category": null
+  },
+  {
+    "script": "search_c4.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [],
+    "local_deps": [],
+    "status": "not-applicable",
+    "run_repo_jar": null
+  },
+  {
+    "script": "skew_reflection.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "s3_reflection"
+    ],
+    "input_refs": [
+      "{}.ua",
+      "{}_{}.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "os",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 17.333,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\skew_reflection.py\", line 143, in <module>\n    raise Exception(\"Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\")\nException: Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+same-on-old-jar",
+    "run_old_jar": {
+      "exit": 1,
+      "seconds": 17.841,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\skew_reflection.py\", line 143, in <module>\n    raise Exception(\"Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\")\nException: Algebra must have monus operation or specify the type in second argument, e.g. reflection or weaved.\n",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "structural_completeness.py",
+    "imports": {
+      "org_uacalc": true,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 0,
+      "seconds": 17.233,
+      "stdout_len": 80,
+      "stdout_head": "Checking arrow\nChecking dot\nChecking join\nChecking meet\nChecking neg\nChecking e\n",
+      "stderr": "",
+      "timed_out": false
+    },
+    "status": "fast-ok",
+    "error_category": null
+  },
+  {
+    "script": "sugihara.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "4"
+    ],
+    "input_refs": [
+      "s%s.ua",
+      "sa%s.ua"
+    ],
+    "local_deps": [
+      "dmm",
+      "os",
+      "sys"
+    ],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 17.212,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sugihara.py\", line 136, in <module>\n    alg = get_sugihara_monoid(n)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sugihara.py\", line 70, in get_sugihara_monoid\n    return add_arrow_and_meet(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 256, in add_arrow_and_meet\n    alg = add_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 324, in add_dual_lattice_operation\n    op = get_dual_lattice_operation(alg)\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\dmm.py\", line 288, in get_dual_lattice_operation\n    op = TermOperationImp(dual_sym,term,[Variable.x,Variable.y],alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.alg.op.TermOperationImp.<init>(TermOperationImp.java:33)\n\n\tat java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)\n\n\tat java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)\n\n\tat java.base/java.lang.reflect.Const",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "script-or-data-exception+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 17.079,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "sums.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": true,
+      "other_java": false,
+      "py3_print": false
+    },
+    "needs_argv": true,
+    "argv_default": [
+      "KR-8.model"
+    ],
+    "input_refs": [
+      "A_brouwerian.ua",
+      "Br2+A_brouwerian.ua",
+      "Br2.ua",
+      "Br2xBr2.ua",
+      "{}.ua"
+    ],
+    "local_deps": [],
+    "run_repo_jar": {
+      "exit": 1,
+      "seconds": 17.284,
+      "stdout_len": 0,
+      "stdout_head": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\U28409~1\\AppData\\Local\\Temp\\phd_master_x_yerd6p\\sums.py\", line 121, in <module>\n    result = peirce.findFailureMap(alg)\n\tat org.uacalc.terms.NonVariableTerm.interpretation(NonVariableTerm.java:104)\n\n\tat org.uacalc.eq.Equation.findFailure(Equation.java:67)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:86)\n\n\tat org.uacalc.eq.Equation.findFailureMap(Equation.java:74)\n\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\njava.lang.IllegalArgumentException: java.lang.IllegalArgumentException: varlist must have all the variable of the term\n",
+      "timed_out": false
+    },
+    "status": "jython-error",
+    "error_category": "api-java-termoperationimp-varlist+api-drift-old-jar-works",
+    "run_old_jar": {
+      "exit": 0,
+      "seconds": 16.726,
+      "stdout_len": 115,
+      "stdout_head": "Br2+Prod of Br3 x Br2-basic is does not satisfy Peirce's law as ((y->x)v(((x->y)->x)->x))=e fails at {x: 2, y: 4}.\n",
+      "stderr": "",
+      "timed_out": false
+    }
+  },
+  {
+    "script": "twist.py",
+    "imports": {
+      "org_uacalc": false,
+      "pyparsing": false,
+      "dmm": false,
+      "other_java": false,
+      "py3_print": true
+    },
+    "needs_argv": false,
+    "argv_default": [],
+    "input_refs": [],
+    "local_deps": [
+      "itertools"
+    ],
+    "status": "not-applicable",
+    "run_repo_jar": null
+  }
+]

@@ -1,0 +1,300 @@
+{
+  "scripts": [
+    {
+      "path": "probes/nullary_string_to_term.py",
+      "argv": [],
+      "xfail_cpython": {
+        "reason": "line 2: jython='parse_fail|e()|empty string' cpython='parse_ok|e()|term:e()'"
+      }
+    },
+    {
+      "path": "2subalgebras.py",
+      "argv": [
+        "C-5-*.ua"
+      ],
+      "slow": false
+    },
+    {
+      "path": "add_arrow_and_meet.py",
+      "argv": [
+        "b2"
+      ],
+      "slow": false
+    },
+    {
+      "path": "associativity_of_iff.py",
+      "argv": [],
+      "skip_cpython": "jython-error: script-or-data-exception+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: script-or-data-exception+api-drift-old-jar-works"
+    },
+    {
+      "path": "check_andrew.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+same-on-old-jar",
+      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+same-on-old-jar"
+    },
+    {
+      "path": "check_crl.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+    },
+    {
+      "path": "check_dunn.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+    },
+    {
+      "path": "check_heyting.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+    },
+    {
+      "path": "check_m.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: api-java-termoperationimp-varlist",
+      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist"
+    },
+    {
+      "path": "dmm.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+    },
+    {
+      "path": "draw.py",
+      "argv": [
+        "input/KR-8-expl.json"
+      ],
+      "skip_cpython": "not-applicable",
+      "skip_jython_golden": "not-applicable"
+    },
+    {
+      "path": "draw_chains.py",
+      "argv": [],
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
+    },
+    {
+      "path": "draw_rn.py",
+      "argv": [
+        "KR-8.model"
+      ],
+      "skip_cpython": "not-applicable",
+      "skip_jython_golden": "not-applicable"
+    },
+    {
+      "path": "ez_setup.py",
+      "argv": [
+        "install"
+      ],
+      "skip_cpython": "not-applicable",
+      "skip_jython_golden": "not-applicable"
+    },
+    {
+      "path": "filter2sa_mace4.py",
+      "argv": [
+        "KR-1gen"
+      ],
+      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
+      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+    },
+    {
+      "path": "find_chains_neg_cone.py",
+      "argv": [
+        "5"
+      ],
+      "slow": true,
+      "skip_cpython": "jython probe exceeded 30s",
+      "skip_jython_golden": "jython probe exceeded 30s"
+    },
+    {
+      "path": "find_covers.py",
+      "argv": [],
+      "slow": true,
+      "skip_cpython": "jython probe exceeded 30s",
+      "skip_jython_golden": "jython probe exceeded 30s"
+    },
+    {
+      "path": "find_dots.py",
+      "argv": [
+        "5"
+      ],
+      "skip_cpython": "jython-error: script-or-data-exception",
+      "skip_jython_golden": "jython-error: script-or-data-exception"
+    },
+    {
+      "path": "find_simple_chains.py",
+      "argv": [
+        "5"
+      ],
+      "skip_cpython": "jython-error: script-or-data-exception+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: script-or-data-exception+api-drift-old-jar-works"
+    },
+    {
+      "path": "find_simple_chains_powers.py",
+      "argv": [],
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
+    },
+    {
+      "path": "free_algebras.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
+    },
+    {
+      "path": "get_idempotents.py",
+      "argv": [],
+      "slow": true,
+      "skip_cpython": "jython probe exceeded 30s",
+      "skip_jython_golden": "jython probe exceeded 30s"
+    },
+    {
+      "path": "get_subreducts.py",
+      "argv": [
+        "dot",
+        "-f",
+        "group.in"
+      ],
+      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
+      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+    },
+    {
+      "path": "heyting_from_poset.py",
+      "argv": [
+        "t3.model"
+      ],
+      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
+      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+    },
+    {
+      "path": "isomorphism.py",
+      "argv": [],
+      "slow": false
+    },
+    {
+      "path": "jep_check.py",
+      "argv": [],
+      "slow": true,
+      "skip_cpython": "jython probe exceeded 30s",
+      "skip_jython_golden": "jython probe exceeded 30s"
+    },
+    {
+      "path": "KR_pretty_print.py",
+      "argv": [
+        "KR-1gen"
+      ],
+      "skip_cpython": "not-applicable",
+      "skip_jython_golden": "not-applicable"
+    },
+    {
+      "path": "latex.py",
+      "argv": [
+        "b2"
+      ],
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
+    },
+    {
+      "path": "mace4.py",
+      "argv": [
+        "KR-1gen"
+      ],
+      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
+      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+    },
+    {
+      "path": "posets.py",
+      "argv": [
+        "KR-8.model"
+      ],
+      "skip_cpython": "jython-error: missing-input-or-args+same-on-old-jar",
+      "skip_jython_golden": "jython-error: missing-input-or-args+same-on-old-jar"
+    },
+    {
+      "path": "powerset.py",
+      "argv": [
+        "3"
+      ],
+      "skip_cpython": "not-applicable",
+      "skip_jython_golden": "not-applicable"
+    },
+    {
+      "path": "riger_nishinora.py",
+      "argv": [],
+      "slow": false
+    },
+    {
+      "path": "rigorous_extension.py",
+      "argv": [
+        "b2"
+      ],
+      "slow": false
+    },
+    {
+      "path": "sc_joins_of_covers.py",
+      "argv": [],
+      "slow": true,
+      "skip_cpython": "jython probe exceeded 30s",
+      "skip_jython_golden": "jython probe exceeded 30s"
+    },
+    {
+      "path": "search_c4.py",
+      "argv": [],
+      "skip_cpython": "not-applicable",
+      "skip_jython_golden": "not-applicable"
+    },
+    {
+      "path": "skew_reflection.py",
+      "argv": [
+        "s3_reflection"
+      ],
+      "skip_cpython": "jython-error: script-or-data-exception+same-on-old-jar",
+      "skip_jython_golden": "jython-error: script-or-data-exception+same-on-old-jar"
+    },
+    {
+      "path": "structural_completeness.py",
+      "argv": [],
+      "slow": false
+    },
+    {
+      "path": "sugihara.py",
+      "argv": [
+        "4"
+      ],
+      "skip_cpython": "jython-error: script-or-data-exception+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: script-or-data-exception+api-drift-old-jar-works"
+    },
+    {
+      "path": "sums.py",
+      "argv": [
+        "KR-8.model"
+      ],
+      "skip_cpython": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works",
+      "skip_jython_golden": "jython-error: api-java-termoperationimp-varlist+api-drift-old-jar-works"
+    },
+    {
+      "path": "twist.py",
+      "argv": [],
+      "skip_cpython": "not-applicable",
+      "skip_jython_golden": "not-applicable"
+    }
+  ]
+}

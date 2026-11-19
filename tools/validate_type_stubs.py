@@ -119,7 +119,14 @@ def extract_runtime_exports() -> Optional[Dict[str, Set[str]]]:
     except ImportError:
         return None
     skip = {"general_algebra"}  # historical pyi module name, not a real submodule
-    exports: Dict[str, Set[str]] = {}
+    exports: Dict[str, Set[str]] = {"uacalc_lib": set()}
+    for name in dir(uacalc_lib):
+        if name.startswith("_"):
+            continue
+        obj = getattr(uacalc_lib, name)
+        if callable(obj) and not inspect.ismodule(obj):
+            exports["uacalc_lib"].add(name)
+            continue
     for name in dir(uacalc_lib):
         if name.startswith("_"):
             continue
@@ -149,15 +156,20 @@ def extract_names_from_pyi() -> Dict[str, Set[str]]:
     with open(pyi_file, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    exports: Dict[str, Set[str]] = {}
+    exports: Dict[str, Set[str]] = {"uacalc_lib": set()}
     current_module = None
-    
+    top_level_def = re.compile(r"^def (\w+)\(")
+
     # Pattern to match module class definitions
     module_pattern = re.compile(r'^class (\w+):')
     class_pattern = re.compile(r'^\s+class (\w+)(?:\(|:)')
     function_pattern = re.compile(r'^\s+def (\w+)\(')
     
     for line in content.split('\n'):
+        match = top_level_def.match(line)
+        if match:
+            exports["uacalc_lib"].add(match.group(1))
+            continue
         # Check for module class
         match = module_pattern.match(line)
         if match:
