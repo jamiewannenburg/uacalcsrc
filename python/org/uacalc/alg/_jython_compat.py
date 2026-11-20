@@ -3198,6 +3198,12 @@ def _install(alg_module_globals: dict) -> None:
     def subproductGetUniverseOrder(self: Any) -> Any:
         import sys
 
+        fn = getattr(self, "get_universe_order", None)
+        if callable(fn):
+            order = fn()
+            if order is not None:
+                return order
+
         lst = subproductUniverseListBound(self)
         if lst is None:
             return None
