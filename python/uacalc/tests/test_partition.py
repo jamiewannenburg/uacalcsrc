@@ -614,10 +614,6 @@ class TestPartition:
         # Different partitions should have different hashes (with high probability)
         assert hash(partition1) != hash(partition3)
     
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Wrapper bug: Rust Partition accepts empty block array; Java rejects",
-    )
     def test_error_handling(self):
         """Test error handling for invalid inputs."""
         # Test invalid array

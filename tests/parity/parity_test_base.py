@@ -210,7 +210,16 @@ def serialize_for_golden(obj: Any) -> Any:
     if isinstance(obj, dict):
         if obj.get("__type__") in ("file", "algebra", "lattice", "term"):
             return obj
-        return {str(k): serialize_for_golden(v) for k, v in obj.items()}
+        out: dict[str, Any] = {}
+        for k, v in obj.items():
+            sk = serialize_for_golden(k)
+            key = str(sk) if isinstance(sk, dict) else str(k)
+            out[key] = serialize_for_golden(v)
+        return out
+
+    inner_map = getattr(obj, "_map", None)
+    if inner_map is not None and type(obj).__name__ == "_JavaIntArrayMap":
+        return serialize_for_golden(dict(inner_map))
 
     class_name = type(obj).__name__
     if class_name.startswith("Py") and len(class_name) > 2 and class_name[2].isupper():
@@ -261,6 +270,14 @@ def serialize_for_golden(obj: Any) -> Any:
             "symbols": symbols,
             "arities": arities,
             "tables": tables,
+        }
+
+    if class_name in ("IntArray",) or class_name == "PyIntArray":
+        text = str(obj)
+        return {
+            "__type__": "IntArray",
+            "string": text,
+            "__repr__": text,
         }
 
     # BasicSet (before Lattice: SubalgebraLattice is a lattice)

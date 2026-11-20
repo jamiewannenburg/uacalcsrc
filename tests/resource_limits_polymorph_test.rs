@@ -1,10 +1,11 @@
 //! Polymorphism search resource limits.
 
 use uacalc::alg::conlat::partition::Partition;
-use uacalc::resource::{reset_all_limits, set_element_limit, set_memory_limit, ComputationScope};
+use uacalc::resource::{test_isolation_guard, reset_all_limits, set_element_limit, set_memory_limit, ComputationScope};
 
 #[test]
 fn unary_polymorphisms_element_limit() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let pars = vec![Partition::zero(3), Partition::one(3)];
     set_element_limit(Some(4));
@@ -21,6 +22,7 @@ fn unary_polymorphisms_element_limit() {
 
 #[test]
 fn binary_polymorphisms_memory_limit() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let pars = vec![Partition::zero(4), Partition::one(4)];
     set_memory_limit(Some(32));

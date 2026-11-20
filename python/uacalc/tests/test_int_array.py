@@ -252,23 +252,21 @@ class TestIntArray:
         assert result == False
         assert java_result["data"]["status"] == False
     
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Wrapper bug: Rust IntArray accepts size 0; Java rejects",
-    )
     def test_error_handling_invalid_size(self):
-        """Test error handling for invalid size."""
-        with pytest.raises(Exception):
-            IntArray(0)
-    
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Known Java bug: Java IntArray rejects empty arrays; Rust currently accepts (parity TBD)",
-    )
+        """Size zero matches Java IntArray(int): empty universe, size 0."""
+        java_result = run_java_wrapper("new", ["--size", "0"])
+        array = IntArray(0)
+        assert array.universe_size() == 0
+        assert array.to_array() == []
+        assert java_result["data"]["status"] == "created"
+
     def test_error_handling_empty_array(self):
-        """Test error handling for empty array."""
-        with pytest.raises(Exception):
-            IntArray.from_array([])
+        """Empty from_array matches Java IntArray(int[])."""
+        java_result = run_java_wrapper("from_array", ["--array", "[]"])
+        array = IntArray.from_array([])
+        assert array.universe_size() == 0
+        assert array.to_array() == []
+        assert java_result["data"]["status"] == "created"
     
     def test_error_handling_invalid_string(self):
         """Test error handling for invalid string."""

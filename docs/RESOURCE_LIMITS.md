@@ -82,3 +82,7 @@ Stress helpers (`_stress_sg_close_power`, `_stress_sub_universe`) remain for foc
 ## Python GIL and cross-thread `cancel()`
 
 `cancel()` sets a **global** flag honored at checkpoints (including on parallel worker threads when a shared budget is attached). Phase 3+ releases the GIL on long-running **`Closer`** closure methods and, in phase 4, on **`SubalgebraLattice` universe/cardinality/filter** and **`CongruenceLattice.universe`** so another Python thread can call `cancel()` while lattice work runs.
+
+## Rust integration tests
+
+`cancel()` and `reset_all_limits()` touch **process-global** state. Cargo runs each `tests/resource_limits_*.rs` binary in parallel, so those tests must take `resource::test_isolation_guard()` for their full duration; otherwise one test can call `reset_all_limits()` and clear cancel while another’s `*_stress` loop is still running (flake or hang).

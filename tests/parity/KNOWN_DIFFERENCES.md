@@ -123,6 +123,15 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
   xfail (Java golden still records last-only C3)
 - **Owner vs shim**: Known Java bug. Not a shim issue and not a library issue.
 
+### PhD probe `Terms.stringToTerm` / nullary `e()` (known Java bug)
+
+- **Java**: `stringToTerm("e()")` fails with `IllegalArgumentException: empty string` (constant
+  nullary op syntax is not parsed the same as bare `e`).
+- **Python**: `string_to_term("e()")` succeeds and yields a constant term (`e()`).
+- **Status**: Known Java bug — Jamie acknowledged; strict xfail on CPython PhD probe
+  `probes/nullary_string_to_term.py` only (not fixed in Rust).
+- **Tests**: `tests/jython_scripts/phd/manifest.json` (`xfail_cpython`).
+
 ---
 
 ## org.uacalc.terms

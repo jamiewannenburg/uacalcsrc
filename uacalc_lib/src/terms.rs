@@ -164,12 +164,12 @@ impl PyVariableImp {
     
     /// Python hash function
     fn __hash__(&self) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-        
-        let mut hasher = DefaultHasher::new();
-        self.inner.hash(&mut hasher);
-        hasher.finish()
+        self.inner.java_hash_code() as u64
+    }
+
+    /// Java ``VariableImp.hashCode()``.
+    fn hash_code(&self) -> i32 {
+        self.inner.java_hash_code()
     }
 
     /// Leading operation symbol; always ``None`` for a variable (Java returns null).
@@ -429,11 +429,12 @@ impl PyNonVariableTerm {
     }
 
     fn __hash__(&self) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-        let mut hasher = DefaultHasher::new();
-        format!("{}", self.inner).hash(&mut hasher);
-        hasher.finish()
+        self.inner.java_hash_code() as u64
+    }
+
+    /// Java ``NonVariableTerm.hashCode()``.
+    fn hash_code(&self) -> i32 {
+        self.inner.java_hash_code()
     }
 }
 

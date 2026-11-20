@@ -7,11 +7,12 @@ use uacalc::alg::op::operations::{make_int_operation_str, make_random_operations
 use uacalc::alg::op::{OperationSymbol, SimilarityType};
 use uacalc::alg::{Algebra, BasicAlgebra, BigProductAlgebra, Closer, SmallAlgebra};
 use uacalc::io::algebra_io::read_algebra_file;
-use uacalc::resource::{reset_all_limits, set_memory_limit, ComputationScope, UaError};
+use uacalc::resource::{test_isolation_guard, reset_all_limits, set_memory_limit, ComputationScope, UaError};
 use uacalc::util::int_array::IntArray;
 
 #[test]
 fn lazy_product_make_table_memory_limit_and_recovery() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let path = Path::new("resources/algebras/m4.ua");
     let m4 = read_algebra_file(path).expect("m4.ua");
@@ -36,6 +37,7 @@ fn lazy_product_make_table_memory_limit_and_recovery() {
 
 #[test]
 fn random_operations_batch_memory_limit() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let sim = SimilarityType::new(vec![
         OperationSymbol::new_safe("f", 2, false).unwrap(),
@@ -52,6 +54,7 @@ fn random_operations_batch_memory_limit() {
 
 #[test]
 fn closer_close_power_under_scope() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let path = Path::new("resources/algebras/m4.ua");
     let m4 = read_algebra_file(path).expect("m4");
@@ -72,6 +75,7 @@ fn closer_close_power_under_scope() {
 
 #[test]
 fn make_int_operation_recovery_after_table_limit() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     set_memory_limit(Some(100));
     let _scope = ComputationScope::enter();

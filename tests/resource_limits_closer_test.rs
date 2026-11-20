@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 use uacalc::alg::op::operations::make_int_operation_str;
 use uacalc::alg::{BasicAlgebra, BigProductAlgebra, Closer, SmallAlgebra};
 use uacalc::io::algebra_io::read_algebra_file;
-use uacalc::resource::{
+use uacalc::resource::{test_isolation_guard, 
     checkpoint_force, request_cancel, reset_all_limits, set_element_limit, set_memory_limit,
     set_time_limit, try_charge_element, ComputationScope, UaError,
 };
@@ -43,6 +43,7 @@ fn heavy_m4_closer() -> Closer<i32> {
 
 #[test]
 fn memory_limit_on_make_int_operation() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     set_memory_limit(Some(64));
     let err = make_int_operation_str("t", 2, 200, vec![0; 200 * 200]).unwrap_err();
@@ -53,6 +54,7 @@ fn memory_limit_on_make_int_operation() {
 
 #[test]
 fn element_limit_via_try_charge_element() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     set_element_limit(Some(1));
     let _scope = ComputationScope::enter();
@@ -67,6 +69,7 @@ fn element_limit_via_try_charge_element() {
 #[test]
 #[serial]
 fn cancel_is_consumed_at_checkpoint() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     request_cancel();
     assert!(matches!(checkpoint_force(), Err(UaError::Interrupted)));
@@ -77,6 +80,7 @@ fn cancel_is_consumed_at_checkpoint() {
 #[test]
 #[serial]
 fn cancel_during_sg_close_power_from_other_thread() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let (ready_tx, ready_rx) = sync_channel::<()>(0);
     let outcome: Arc<Mutex<Option<Result<(), UaError>>>> = Arc::new(Mutex::new(None));
@@ -106,6 +110,7 @@ fn cancel_during_sg_close_power_from_other_thread() {
 #[test]
 #[serial]
 fn time_limit_on_sg_close_power() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     set_time_limit(Some(Duration::ZERO));
     assert!(matches!(
@@ -119,6 +124,7 @@ fn time_limit_on_sg_close_power() {
 #[test]
 #[serial]
 fn time_limit_realistic_on_stress_closure() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     set_time_limit(Some(Duration::from_millis(200)));
     let start = Instant::now();

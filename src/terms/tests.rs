@@ -179,6 +179,18 @@ fn test_non_variable_term_creation() {
 }
 
 #[test]
+fn test_non_variable_term_java_hash_code() {
+    use crate::terms::{java_term_hash_code, NonVariableTerm, Term, VariableImp};
+
+    let plus = OperationSymbol::new("+", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let fxy = NonVariableTerm::new(plus, vec![x, y]);
+    assert_eq!(fxy.java_hash_code(), 4847);
+    assert_eq!(java_term_hash_code(&fxy), 4847);
+}
+
+#[test]
 fn test_non_variable_term_depth() {
     let op_sym = OperationSymbol::new("f", 2, false);
     let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;

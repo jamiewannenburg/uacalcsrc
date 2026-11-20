@@ -1,6 +1,6 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::PyAny;
+use pyo3::types::{PyAny, PyDict};
 use uacalc::alg::{Algebra, SmallAlgebra};
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 
@@ -125,8 +125,18 @@ impl PySubProductAlgebra {
             .collect()
     }
 
-    fn get_universe_order(&self) -> Option<Vec<i32>> {
-        None
+    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+        let order = PyDict::new_bound(py);
+        for (element, index) in self.inner.get_universe_order() {
+            let key = Py::new(
+                py,
+                PyIntArray {
+                    inner: element.clone(),
+                },
+            )?;
+            order.set_item(key, *index)?;
+        }
+        Ok(Some(order.to_object(py)))
     }
 
     fn get_product_algebra(&self) -> PyBigProductAlgebra {

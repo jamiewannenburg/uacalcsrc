@@ -137,6 +137,9 @@ def _install(g: dict) -> None:
         return self == other
 
     def hashCode(self):
+        fn = getattr(self, "hash_code", None)
+        if fn is not None:
+            return fn()
         return hash(self)
 
     def toString(self):

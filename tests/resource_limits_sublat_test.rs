@@ -12,7 +12,7 @@ use uacalc::alg::sublat::SubalgebraLattice;
 use uacalc::io::algebra_io::read_algebra_file;
 use uacalc::resource::{
     checkpoint_force, request_cancel, reset_all_limits, set_element_limit, set_memory_limit,
-    set_time_limit, ComputationScope, UaError,
+    set_time_limit, test_isolation_guard, ComputationScope, UaError,
 };
 use serial_test::serial;
 
@@ -33,6 +33,7 @@ fn lyndon_con_lat() -> CongruenceLattice<i32> {
 
 #[test]
 fn sublattice_memory_limit_universe() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     set_memory_limit(Some(64));
@@ -46,6 +47,7 @@ fn sublattice_memory_limit_universe() {
 
 #[test]
 fn sublattice_element_limit_universe() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     set_element_limit(Some(4));
@@ -61,6 +63,7 @@ fn sublattice_element_limit_universe() {
 #[test]
 #[serial]
 fn sublattice_time_limit_universe() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     set_time_limit(Some(Duration::ZERO));
@@ -72,6 +75,7 @@ fn sublattice_time_limit_universe() {
 #[test]
 #[serial]
 fn sublattice_cancel_during_stress_universe() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let (ready_tx, ready_rx) = sync_channel::<()>(0);
     let outcome: Arc<Mutex<Option<Result<usize, UaError>>>> = Arc::new(Mutex::new(None));
@@ -98,6 +102,7 @@ fn sublattice_cancel_during_stress_universe() {
 
 #[test]
 fn con_lattice_memory_limit_universe_lyndon() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut con = lyndon_con_lat();
     set_memory_limit(Some(128));
@@ -113,6 +118,7 @@ fn con_lattice_memory_limit_universe_lyndon() {
 
 #[test]
 fn con_lattice_element_limit_universe_lyndon_recovery() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let expected = {
         let mut con = lyndon_con_lat();
@@ -135,6 +141,7 @@ fn con_lattice_element_limit_universe_lyndon_recovery() {
 
 #[test]
 fn partition_join_closure_respects_memory_limit() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let p = Partition::from_string("|0 1|2|").unwrap();
     let q = Partition::from_string("|0|1 2|").unwrap();
@@ -150,6 +157,7 @@ fn partition_join_closure_respects_memory_limit() {
 #[test]
 #[serial]
 fn sublattice_no_stale_cache_after_limit_failure() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     set_memory_limit(Some(64));
@@ -163,6 +171,7 @@ fn sublattice_no_stale_cache_after_limit_failure() {
 #[test]
 #[serial]
 fn sublattice_checked_paths_usable_after_cancelled_universe() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let (ready_tx, ready_rx) = sync_channel::<()>(0);
     let outcome: Arc<Mutex<Option<Result<usize, UaError>>>> = Arc::new(Mutex::new(None));
@@ -194,6 +203,7 @@ fn sublattice_checked_paths_usable_after_cancelled_universe() {
 
 #[test]
 fn sublattice_join_irreducibles_then_filter_same_lattice() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     let _scope = ComputationScope::enter();
@@ -207,6 +217,7 @@ fn sublattice_join_irreducibles_then_filter_same_lattice() {
 /// Nested checked calls on one lattice: `join_irreducibles` then explicit `universe`.
 #[test]
 fn sublattice_join_irreducibles_then_universe_same_lattice() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     let _scope = ComputationScope::enter();
@@ -218,6 +229,7 @@ fn sublattice_join_irreducibles_then_universe_same_lattice() {
 /// Filter populates universe-related caches; a follow-up `universe` must succeed on the same lattice.
 #[test]
 fn sublattice_filter_then_universe_same_lattice() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     let _scope = ComputationScope::enter();
@@ -230,6 +242,7 @@ fn sublattice_filter_then_universe_same_lattice() {
 /// `join_irreducibles_checked` builds on one-generated data; `cardinality_checked` needs `universe`.
 #[test]
 fn sublattice_join_irreducibles_then_cardinality_same_lattice() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     let _scope = ComputationScope::enter();
@@ -241,6 +254,7 @@ fn sublattice_join_irreducibles_then_cardinality_same_lattice() {
 /// Filter without a cached universe walks one-generated / closure paths (exercises universe hooks).
 #[test]
 fn sublattice_filter_then_cardinality_same_lattice() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut lat = m4_sub_lat();
     let _scope = ComputationScope::enter();
@@ -253,6 +267,7 @@ fn sublattice_filter_then_cardinality_same_lattice() {
 /// Mirrors the `Arc<Mutex<SubalgebraLattice>>` Python wrapper: universe on one thread, filter on another (no deadlock).
 #[test]
 fn sublattice_arc_mutex_universe_then_filter_on_other_thread() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let lat = Arc::new(Mutex::new(m4_sub_lat()));
     let (ready_tx, ready_rx) = sync_channel::<()>(0);
@@ -281,6 +296,7 @@ fn sublattice_arc_mutex_universe_then_filter_on_other_thread() {
 #[test]
 #[serial]
 fn cancel_consumed_at_checkpoint_force() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     request_cancel();
     assert!(matches!(checkpoint_force(), Err(UaError::Interrupted)));
