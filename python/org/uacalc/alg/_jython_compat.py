@@ -3209,7 +3209,11 @@ def _install(alg_module_globals: dict) -> None:
             return len(self._map)
 
         def __str__(self) -> str:
-            parts = ["%s: %s" % (str(k), int(v)) for k, v in self._map.items()]
+            def _key_tuple(key: Any) -> Tuple[int, ...]:
+                return tuple(int(x) for x in _int_array_values(key))
+
+            ordered = sorted(self._map.items(), key=lambda item: (_key_tuple(item[0]), int(item[1])))
+            parts = ["%s: %s" % (str(k), int(v)) for k, v in ordered]
             return "{" + ", ".join(parts) + "}"
 
     def subproductGetUniverseOrder(self: Any) -> Any:
