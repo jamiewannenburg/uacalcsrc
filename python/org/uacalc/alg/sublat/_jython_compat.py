@@ -178,17 +178,13 @@ def _install(sublat_globals: dict) -> None:
         return _ORIG_BS_INTER(a, b)
 
     def union(self_or_a: Any, other: Any) -> Any:
-        # Java BasicSet.union uses ``lst.contains(i)`` on the *index*, not the
-        # element (known Java bug). Match that for behavioral parity.
         if self_or_a is None or other is None:
             _raise_npe()
-        set1 = self_or_a if _is_basic_set(self_or_a) else BasicSet(_as_int_list(self_or_a))
-        set2 = other if _is_basic_set(other) else BasicSet(_as_int_list(other))
-        lst = [int(get(set1, i)) for i in range(universeSize(set1))]
-        for i in range(universeSize(set2)):
-            if i not in lst:
-                lst.append(int(get(set2, i)))
-        return _LibBasicSet(lst)
+        if _is_basic_set(self_or_a) and _is_basic_set(other):
+            return _ORIG_BS_UNION(self_or_a, other)
+        a = BasicSet(_as_int_list(self_or_a)) if not _is_basic_set(self_or_a) else self_or_a
+        b = BasicSet(_as_int_list(other)) if not _is_basic_set(other) else other
+        return _ORIG_BS_UNION(a, b)
 
     def contains(self: Any, element: Any) -> bool:
         if element is None:

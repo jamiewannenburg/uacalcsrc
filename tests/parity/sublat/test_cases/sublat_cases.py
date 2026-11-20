@@ -45,9 +45,15 @@ _SET = dict(skip_string_check=True, notes="BasicSet identity toString vs Python;
 _DIAGRAM_XFAIL = (
     "getDiagram() returns a latdraw Diagram; Swing/latdraw GUI is out of scope."
 )
+_UNION_INDEX_XFAIL = (
+    "Known Java bug: BasicSet.union uses lst.contains(i) on the loop index, not "
+    "set2.get(i), so {0,2} ∪ {1,3} is [0,2,3] (drops 1). Python returns "
+    "[0,1,2,3]. Java golden values are left unchanged."
+)
 _UNION_DUP_XFAIL = (
-    "Java BasicSet.normalize only sorts, so union can keep duplicate values "
-    "([5, 5, 6]); uacalc_lib BasicSet::new dedupes. Owner: keep library sets unique."
+    "Known Java bug: BasicSet.union uses lst.contains(i) on the index; combined "
+    "with normalize() only sorting, union({5,6},{5}) is [5,5,6]. uacalc_lib "
+    "dedupes to [5,6]. Java golden values are left unchanged."
 )
 
 TEST_CASES = [
@@ -183,6 +189,7 @@ TEST_CASES = [
         setup=_SETUP,
         call="s02.union(s13)",
         description="Java union uses contains(index); {0,2} u {1,3} drops 1",
+        xfail_reason=_UNION_INDEX_XFAIL,
     ),
     TestCaseSpec(
         id="bs_union_static",
