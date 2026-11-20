@@ -33,7 +33,9 @@ non-zero subprocess exit.
 from __future__ import annotations
 
 import argparse
+import copy
 import difflib
+import json
 import os
 import re
 import subprocess
@@ -132,12 +134,48 @@ def filter_lines(text: str, ignore_rules: list[str]) -> list[str]:
     return lines
 
 
+def _delete_json_path(data: object, path: str) -> None:
+    parts = path.split(".")
+    if not parts:
+        return
+    cur = data
+    for key in parts[:-1]:
+        if not isinstance(cur, dict) or key not in cur:
+            return
+        cur = cur[key]
+    last = parts[-1]
+    if isinstance(cur, dict):
+        cur.pop(last, None)
+
+
+def _json_compare_ignoring_paths(
+    jython_out: str,
+    python_out: str,
+    ignore_json_paths: list[str],
+) -> bool | None:
+    """Return match result when both stdout blobs are JSON; None if not applicable."""
+    if not ignore_json_paths:
+        return None
+    try:
+        j_data = json.loads(jython_out.strip())
+        p_data = json.loads(python_out.strip())
+    except json.JSONDecodeError:
+        return None
+    j_copy = copy.deepcopy(j_data)
+    p_copy = copy.deepcopy(p_data)
+    for path in ignore_json_paths:
+        _delete_json_path(j_copy, path)
+        _delete_json_path(p_copy, path)
+    return json.dumps(j_copy, sort_keys=True) == json.dumps(p_copy, sort_keys=True)
+
+
 def compare_outputs(
     jython_out: str,
     python_out: str,
     *,
     ignore_rules: list[str] | None = None,
     ignore_universe_line: bool = False,
+    ignore_json_paths: list[str] | None = None,
 ) -> tuple[bool, str, str]:
     """
     Returns (match, normalized_jython, normalized_python) for optional diff printing.
@@ -148,12 +186,21 @@ def compare_outputs(
     rules = list(ignore_rules or [])
     if ignore_universe_line and "Universe:" not in rules:
         rules.append("Universe:")
-    if not rules:
-        return False, jython_out, python_out
 
     j_norm = "\n".join(filter_lines(jython_out, rules))
     p_norm = "\n".join(filter_lines(python_out, rules))
-    return j_norm == p_norm, j_norm, p_norm
+    if j_norm == p_norm:
+        return True, j_norm, p_norm
+
+    json_match = _json_compare_ignoring_paths(jython_out, python_out, list(ignore_json_paths or []))
+    if json_match is True:
+        return True, j_norm, p_norm
+    if json_match is False:
+        return False, j_norm, p_norm
+
+    if not rules and not ignore_json_paths:
+        return False, jython_out, python_out
+    return False, j_norm, p_norm
 
 
 def parse_args(repo: Path) -> argparse.Namespace:
@@ -240,13 +287,30 @@ def compare_one_script(
     args: argparse.Namespace,
     ignore_rules: list[str] | None = None,
 ) -> bool:
+    try:
+        from jython_contracts.comparison_allowlist import (
+            script_comparison_overrides,
+        )
+    except ImportError:
+        script_comparison_overrides = None  # type: ignore[assignment,misc]
+
+    overrides = None
+    if script_comparison_overrides is not None:
+        overrides = script_comparison_overrides(script, repo)
+
     ignore_u = not args.no_ignore_universe
     rules = list(DEFAULT_IGNORE_LINE_PATTERNS)
     for p in ignore_rules or []:
         if p not in rules:
             rules.append(p)
+    if overrides is not None:
+        for pattern in overrides.ignore_line_patterns:
+            if pattern not in rules:
+                rules.append(pattern)
     if ignore_u and "Universe:" not in rules:
         rules.append("Universe:")
+
+    ignore_json_paths = list(overrides.ignore_json_paths) if overrides else []
 
     jython_env = os.environ.copy()
     jython_env["CLASSPATH"] = args.classpath
@@ -282,6 +346,7 @@ def compare_one_script(
         python_out,
         ignore_rules=rules,
         ignore_universe_line=False,
+        ignore_json_paths=ignore_json_paths,
     )
     ok = j_code == 0 and p_code == 0 and match
 
@@ -289,10 +354,13 @@ def compare_one_script(
         print("\n--- COMPARISON ---")
     if ok:
         if not args.quiet:
-            print(
-                "SUCCESS: Outputs match"
-                + ("" if jython_out == python_out else " (ignored prefixes excluded)!")
-            )
+            suffix = ""
+            if jython_out != python_out:
+                if overrides and (overrides.ignore_line_patterns or overrides.ignore_json_paths):
+                    suffix = f" (Known difference: {overrides.reason})"
+                else:
+                    suffix = " (ignored prefixes excluded)"
+            print("SUCCESS: Outputs match" + suffix)
         return True
 
     if args.diff and j_code == 0 and p_code == 0 and not match:
@@ -318,19 +386,12 @@ def compare_one_script(
             file=sys.stderr,
         )
 
-    try:
-        from jython_contracts.comparison_allowlist import known_difference_reason
-    except ImportError:
-        known_difference_reason = None  # type: ignore[assignment,misc]
-
-    if known_difference_reason is not None:
-        reason = known_difference_reason(script, repo)
-        if reason:
-            note = f"ALLOWLISTED: {reason}"
-            print(note, file=sys.stderr)
-            if not args.quiet:
-                print(note)
-            return True
+    if overrides is not None and overrides.allow_remaining_mismatch:
+        note = f"ALLOWLISTED: {overrides.reason}"
+        print(note, file=sys.stderr)
+        if not args.quiet:
+            print(note)
+        return True
 
     return False
 
