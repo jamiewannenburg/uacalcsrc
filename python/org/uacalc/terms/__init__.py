@@ -83,34 +83,13 @@ else:
     VariableImp = _terms.VariableImp
     Variable = VariableImp
 
-    class _CallableSingleton:
-        """Java ``Variable.x`` literals plus ``VariableImp.x()`` factories on one name."""
-
-        __slots__ = ("_factory", "_inst")
-
-        def __init__(self, factory):
-            self._factory = factory
-            self._inst = factory()
-
-        def __call__(self):
-            return self._factory()
-
-        def __getattr__(self, name):
-            return getattr(self._inst, name)
-
-        def __repr__(self):
-            return repr(self._inst)
-
-        def __eq__(self, other):
-            return self._inst == other
-
-        def __hash__(self):
-            return hash(self._inst)
-
     for _vname in ("x", "y", "z"):
-        _factory = getattr(VariableImp, _vname)
-        if callable(_factory):
-            setattr(VariableImp, _vname, _CallableSingleton(_factory))
+        _attr = getattr(VariableImp, _vname, None)
+        if callable(_attr):
+            try:
+                setattr(VariableImp, _vname, _attr())
+            except TypeError:
+                pass
 
     class Term(object):
         """Java ``org.uacalc.terms.Term`` interface surface for contracts."""

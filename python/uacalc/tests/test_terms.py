@@ -43,9 +43,9 @@ class TestTermEvaluation(unittest.TestCase):
         """Test predefined variables x, y, z."""
         VariableImp = uacalc_lib.terms.VariableImp
         
-        x = VariableImp.x()
-        y = VariableImp.y()
-        z = VariableImp.z()
+        x = VariableImp("x")
+        y = VariableImp("y")
+        z = VariableImp("z")
         
         self.assertEqual(x.get_name(), "x")
         self.assertEqual(y.get_name(), "y")

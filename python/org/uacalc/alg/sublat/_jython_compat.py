@@ -179,12 +179,9 @@ def _install(sublat_globals: dict) -> None:
 
     def union(self_or_a: Any, other: Any) -> Any:
         # Java BasicSet.union uses ``lst.contains(i)`` on the *index*, not the
-        # element (a real Java bug). Match that for list overloads; two native
-        # BasicSet operands keep the Rust implementation (suite isolation).
+        # element (known Java bug). Match that for behavioral parity.
         if self_or_a is None or other is None:
             _raise_npe()
-        if _is_basic_set(self_or_a) and _is_basic_set(other):
-            return _ORIG_BS_UNION(self_or_a, other)
         set1 = self_or_a if _is_basic_set(self_or_a) else BasicSet(_as_int_list(self_or_a))
         set2 = other if _is_basic_set(other) else BasicSet(_as_int_list(other))
         lst = [int(get(set1, i)) for i in range(universeSize(set1))]
