@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::{PyAny, PyDict, PyList};
+use pyo3::types::{PyAny, PyList};
 use uacalc::alg::*;
 use crate::util::PyIntArray;
 
@@ -107,20 +107,9 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     Dict[int, int]: The universe order mapping
-    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
-        let order = PyDict::new_bound(py);
-        if let Some(map) = &self.element_map {
-            for (index, label) in map.labels().iter().enumerate() {
-                if order.set_item(label.bind(py), index).is_err() {
-                    return Ok(None);
-                }
-            }
-        } else {
-            for (element, index) in self.inner.get_universe_order().unwrap_or_default() {
-                order.set_item(element, index)?;
-            }
-        }
-        Ok(Some(order.to_object(py)))
+    fn get_universe_order(&self, _py: Python<'_>) -> PyResult<Option<PyObject>> {
+        // Java ReductAlgebra.getUniverseOrder() returns null.
+        Ok(None)
     }
     
     /// Get an element by its index.

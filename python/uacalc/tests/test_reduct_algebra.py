@@ -260,19 +260,11 @@ class TestReductAlgebra(unittest.TestCase):
             self.assertEqual(reduct.element_index(elem), idx)
     
     def test_get_universe_order(self):
-        """Test get_universe_order method."""
+        """Java ReductAlgebra.getUniverseOrder() returns null."""
         super_alg = self.BasicAlgebra("Super", [0, 1, 2], [])
         reduct = self.ReductAlgebra(super_alg, [])
-        
-        order = reduct.get_universe_order()
-        self.assertIsNotNone(order)
-        self.assertEqual(len(order), 3)
-        # Java getUniverseList() is null; walk elements by index.
-        card = reduct.cardinality()
-        for idx in range(card):
-            elem = reduct.get_element(idx)
-            self.assertIn(elem, order)
-            self.assertEqual(order[elem], idx)
+
+        self.assertIsNone(reduct.get_universe_order())
     
     def test_operations_count(self):
         """Test operations_count method."""

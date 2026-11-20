@@ -922,17 +922,14 @@ impl Algebra for MatrixPowerAlgebra {
     }
 
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Recreate the matrix operations since we can't clone Box<dyn Operation>
+        // Java: powerAlgebra.operations() plus left shift and diagonal.
         use crate::alg::op::operations::{make_left_shift, make_matrix_diagonal_op};
 
-        let mut operations = Vec::new();
+        let mut operations = self.power_algebra.operations();
 
-        // Recreate left shift operation
         if let Ok(left_shift) = make_left_shift(self.power as i32, self.root_size) {
             operations.push(left_shift);
         }
-
-        // Recreate matrix diagonal operation
         if let Ok(matrix_diagonal) = make_matrix_diagonal_op(self.power as i32, self.root_size) {
             operations.push(matrix_diagonal);
         }
@@ -1032,11 +1029,10 @@ impl SmallAlgebra for MatrixPowerAlgebra {
     }
 
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
-        // Return matrix operations (they are the operations of this algebra)
-        self.matrix_operations
-            .iter()
-            .map(|op| op.as_ref())
-            .collect()
+        // Java setOperations is the power-algebra operations plus shift and diagonal.
+        let mut ops = self.power_algebra.get_operations_ref();
+        ops.extend(self.matrix_operations.iter().map(|op| op.as_ref()));
+        ops
     }
 
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
@@ -1971,15 +1967,20 @@ impl ReductAlgebra {
     ///
     /// # Returns
     /// A reference to the congruence lattice
+    /// Algebra Java passes to `CongruenceLattice` / `SubalgebraLattice`: this
+    /// reduct, not the super algebra. An empty term list has no operations.
+    fn lattice_carrier(&self) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
+        let ops = Algebra::operations(self);
+        let basic = BasicAlgebra::new(self.name.clone(), self.universe.clone(), ops);
+        Box::new(SmallAlgebraWrapper::<i32>::new(
+            Box::new(basic) as Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        ))
+    }
+
     pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<i32> {
         if self.con.is_none() {
-            // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
-            use crate::alg::SmallAlgebraWrapper;
-            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(
-                self.super_algebra.clone_box(),
-            ));
             self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(
-                wrapper,
+                self.lattice_carrier(),
             )));
         }
         self.con.as_ref().unwrap()
@@ -1991,12 +1992,8 @@ impl ReductAlgebra {
     /// A reference to the subalgebra lattice
     pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
-            // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
-            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(
-                self.super_algebra.clone_box(),
-            ));
             self.sub = Some(Box::new(
-                crate::alg::sublat::SubalgebraLattice::new_safe(wrapper).unwrap(),
+                crate::alg::sublat::SubalgebraLattice::new_safe(self.lattice_carrier()).unwrap(),
             ));
         }
         self.sub.as_ref().unwrap()
@@ -2228,7 +2225,8 @@ impl SmallAlgebra for ReductAlgebra {
     }
 
     fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
-        self.super_algebra.get_universe_order()
+        // Java ReductAlgebra.getUniverseOrder() returns null.
+        None
     }
 
     fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {

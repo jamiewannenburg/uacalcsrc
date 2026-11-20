@@ -2816,6 +2816,9 @@ def _install(alg_module_globals: dict) -> None:
         if callable(fn):
             return fn(term)
         terms = getTerms(self)
+        # The 3-arg constructor leaves terms null. Java then NPEs on
+        # terms.length; getTerm already returns null. That NPE is a missing
+        # null check (Known Java bug), so return null here.
         if not terms:
             return None
         for i, t in enumerate(list(terms)):
@@ -3454,10 +3457,25 @@ def _install(alg_module_globals: dict) -> None:
         return IntArray([int(x) for x in list(self.get_element(int(index)))])
 
     def matrixElementIndex(self: Any, obj: Any) -> int:
-        if obj is None:
-            _raise_npe()
-        coords = _as_universe_indices(obj)
+        # Java MatrixPowerAlgebra.elementIndex delegates to PowerAlgebra.elementIndex.
+        # A bare int (and any non int[] / IntArray) hits the unsupported-type
+        # branch and returns -1. int[] / IntArray lookup is a separate Java bug:
+        # the product universe iterator yields ArrayLists, so the IntArray
+        # search never matches. Do not invent that -1 for a real vector.
+        if obj is None or isinstance(obj, bool) or isinstance(obj, int):
+            return -1
+        if not _is_int_array(obj) and not isinstance(obj, (list, tuple)):
+            return -1
+        try:
+            coords = _as_universe_indices(obj)
+        except TypeError:
+            return -1
         return int(self.element_index(coords))
+
+    def matrixGetUniverseList(self: Any) -> Any:
+        # Java copies powerAlgebra.universe(). ProductAlgebra's iterator yields
+        # ArrayLists of factor elements, which serialize as nested int lists.
+        return [list(self.get_element(i)) for i in range(int(self.cardinality()))]
 
     _MATRIX_EXTRA = {
         "getRoot": matrixGetRoot,
@@ -3465,9 +3483,7 @@ def _install(alg_module_globals: dict) -> None:
         "getPowerAlgebra": matrixGetPowerAlgebra,
         "getElement": matrixGetElement,
         "elementIndex": matrixElementIndex,
-        "getUniverseList": lambda self: [
-            matrixGetElement(self, i) for i in range(int(self.cardinality()))
-        ],
+        "getUniverseList": matrixGetUniverseList,
         "getUniverseOrder": lambda self: None,
         "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
         "parent": lambda self: self.get_root(),
@@ -3476,6 +3492,12 @@ def _install(alg_module_globals: dict) -> None:
     }
     for camel, impl in _MATRIX_EXTRA.items():
         _bind(_LibMatrixPowerAlgebra, camel, impl)
+
+    # Java ReductAlgebra.getUniverseOrder() is null, and convertToDefaultValueOps
+    # throws. The shared algebra patch no-ops the converter and the Rust order
+    # map is the super algebra's, so override both after that patch.
+    _bind(_LibReductAlgebra, "getUniverseOrder", lambda self: None)
+    _bind(_LibReductAlgebra, "convertToDefaultValueOps", convertToDefaultValueOps_uoe)
 
     def polinGetElement(self: Any, index: Any) -> Any:
         # Java PolinLikeAlgebra.getElement is a stub that always returns null.
