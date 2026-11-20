@@ -13,10 +13,7 @@
         "C-5-*.ua"
       ],
       "slow": false,
-      "compare_stdout": true,
-      "xfail_cpython": {
-        "reason": "line 12: jython=(end of golden) cpython='...\\\\phd_runtime\\\\input\\\\C-5-11.ua' (extra glob hit printed on CPython only)"
-      }
+      "compare_stdout": true
     },
     {
       "path": "add_arrow_and_meet.py",
@@ -163,9 +160,7 @@
       ],
       "slow": false,
       "compare_stdout": true,
-      "xfail_cpython": {
-        "reason": "stdout line 2 jython='found example 244' cpython='C-{5}-{1} deleting ...\\\\input\\\\C-5-1.ua' (diagnostic delete path vs Jython search message)"
-      }
+      "use_fixture_copy": true
     },
     {
       "path": "find_simple_chains_powers.py",

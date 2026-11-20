@@ -31,6 +31,13 @@ def _jython2_patches(source: str) -> str:
     )
     source = re.sub(r"=\s*map\(([^)\n]+)\)", r"= list(map(\1))", source)
     source = re.sub(r"\+\s*map\(([^)\n]+)\)", r"+ list(map(\1))", source)
+    # Py2/Jython: bare ``map(...)`` as a statement ran eagerly (list map); Py3 map is lazy.
+    source = re.sub(
+        r"^(\s*)map\((.+)\)\s*$",
+        r"\1list(map(\2))",
+        source,
+        flags=re.MULTILINE,
+    )
     return source
 
 
