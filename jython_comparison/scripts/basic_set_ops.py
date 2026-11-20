@@ -27,7 +27,7 @@ def test():
     _show("contains9", a.contains(9))
     _show("leq", a.leq(BasicSet([0, 1, 2, 3])))
     _show("inter", a.intersection(b))
-    _show("union_bug", BasicSet([0, 2]).union(BasicSet([1, 3])))
+    _show("union", BasicSet([0, 2]).union(BasicSet([1, 3])))
     _show("diff", a.setDifference(BasicSet([1])))
     _show("cmp", a.compareTo(b))
     _show("toString", a.toString() if hasattr(a, "toString") else str(a))

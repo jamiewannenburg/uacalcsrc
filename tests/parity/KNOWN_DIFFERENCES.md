@@ -676,20 +676,16 @@ the org shim's `leftSide` / `rightSide` return term objects via
 ### BasicSet.union index bug
 
 - **Java**: `union` loops `if (!lst.contains(i)) lst.add(set2.get(i))` using the
-  *index* `i`, not the element. `{0,2} ∪ {1,3}` is `{0,2,3}` (drops 1).
-- **Python**: org shim reproduces that Java loop. `uacalc_lib` still does a
-  correct set-union.
-- **Status**: Matched in the shim
-- **Tests**: `bs_union_index_bug` passes
-- **Owner vs shim**: Shim — `python/org/uacalc/alg/sublat/_jython_compat.py`
-
-### BasicSet.union duplicate-preserving normalize
-
-- **Java**: `normalize()` only sorts, so `union({5,6}, {5})` is `[5, 5, 6]`.
-- **Python**: `BasicSet::new` dedupes to `[5, 6]`.
-- **Status**: Strict xfail (library keeps unique sets)
-- **Tests**: `bs_union_keeps_dups`
-- **Owner vs shim**: Owner/library — do not teach `BasicSet` to store duplicates.
+  *index* `i`, not the element. `{0,2} ∪ {1,3}` is `[0,2,3]` (drops 1);
+  `{1,3} ∪ {3}` can be `[1,3,3]` (duplicates via the same typo).
+- **Python**: org shim and `uacalc_lib` compute sorted, deduplicated set union.
+  `java_wrapper` `MockBasicSet` matches the correct behaviour (not real Java).
+- **Status**: Known Java bug — intentional difference; Python is the desired
+  behavior
+- **Tests**: `bs_union_index_bug`, `bs_union_keeps_dups` strict xfail (Java
+  golden values unchanged). Random parity snapshots skip `basicset.union` via
+  `LIBRARY_BUG_PREFIXES` in `random_parity_config.py`.
+- **Owner vs shim**: Known Java bug. Not a shim issue and not a library issue.
 
 ### SubalgebraLattice.meet / join(List) / atoms / coatoms / meetIrreducibles
 

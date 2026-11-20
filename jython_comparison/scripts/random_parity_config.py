@@ -37,9 +37,11 @@ KNOWN_JAVA_NPE_PATHS = (
     "malcev.malcevTerm",
 )
 
-# Prefixes skipped in extra live-Java sweeps (unknown extra seeds).
-# CI seeds that hit this bug are listed in XFAILS (strict).
-LIBRARY_BUG_PREFIXES = {}
+# Prefixes skipped when Python is intentionally correct vs Java golden snapshots.
+# Covers all CI seeds that exercise BasicSet.union({0},{1}) etc.
+LIBRARY_BUG_PREFIXES = {
+    "basicset.union",
+}
 
 
 def family_for_seed(seed):

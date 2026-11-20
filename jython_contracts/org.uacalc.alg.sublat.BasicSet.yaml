@@ -4,9 +4,9 @@ status: implemented
 java_source: org/uacalc/alg/sublat/BasicSet.java
 notes: |
   Sorted integer sets used as elements of SubalgebraLattice. Extends IntArray;
-  toString matches IntArray ([0, 1]). Java union uses lst.contains(i) on the
-  loop index (not the element); the org shim reproduces that. Duplicate-preserving
-  union after normalize is a library xfail (BasicSet::new dedupes).
+  toString matches IntArray ([0, 1]). Real Java union uses lst.contains(i) on the
+  loop index (known bug); shim and uacalc_lib compute correct set union. See
+  KNOWN_DIFFERENCES.md (bs_union_index_bug, bs_union_keeps_dups strict xfails).
 ignore_reason: null
 surface:
   package_export: true
