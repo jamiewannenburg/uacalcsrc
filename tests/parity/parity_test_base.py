@@ -217,6 +217,10 @@ def serialize_for_golden(obj: Any) -> Any:
             out[key] = serialize_for_golden(v)
         return out
 
+    inner_map = getattr(obj, "_map", None)
+    if inner_map is not None and type(obj).__name__ == "_JavaIntArrayMap":
+        return serialize_for_golden(dict(inner_map))
+
     class_name = type(obj).__name__
     if class_name.startswith("Py") and len(class_name) > 2 and class_name[2].isupper():
         class_name = class_name[2:]

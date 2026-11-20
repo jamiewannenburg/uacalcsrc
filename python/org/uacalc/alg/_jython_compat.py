@@ -6,7 +6,7 @@ Library logic stays in ``uacalc_lib``.
 
 from __future__ import annotations
 
-from typing import Any, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 from org.uacalc._exceptions import (
     ArrayIndexOutOfBoundsException,
@@ -3181,19 +3181,36 @@ def _install(alg_module_globals: dict) -> None:
         univ = _orig(self)
         return None if univ is None else [_int_array(row) for row in univ]
 
-    class _SubProductUniverseOrder(object):
-        """Java HashMap-style ``toString`` for universe index maps."""
+    class _JavaIntArrayMap(object):
+        """IntArray-keyed map whose ``str()`` matches Java/Jython HashMap output."""
 
-        def __init__(self, entries: List[Tuple[List[int], int]]) -> None:
-            self._entries = entries
+        def __init__(self, mapping: Dict[Any, int]) -> None:
+            self._map = dict(mapping)
+
+        def __getitem__(self, key: Any) -> int:
+            return self._map[key]
+
+        def get(self, key: Any, default: Any = None) -> Any:
+            return self._map.get(key, default)
+
+        def items(self) -> Any:
+            return self._map.items()
+
+        def keys(self) -> Any:
+            return self._map.keys()
+
+        def values(self) -> Any:
+            return self._map.values()
+
+        def __iter__(self) -> Any:
+            return iter(self._map)
+
+        def __len__(self) -> int:
+            return len(self._map)
 
         def __str__(self) -> str:
-            parts = []
-            for key, idx in self._entries:
-                parts.append(
-                    "[%s]: %d" % (",".join(str(x) for x in key), int(idx))
-                )
-            return "{" + ",".join(parts) + "}"
+            parts = ["%s: %s" % (str(k), int(v)) for k, v in self._map.items()]
+            return "{" + ", ".join(parts) + "}"
 
     def subproductGetUniverseOrder(self: Any) -> Any:
         import sys
@@ -3204,13 +3221,13 @@ def _install(alg_module_globals: dict) -> None:
             if order is not None and isinstance(order, dict):
                 from org.uacalc.util import IntArray
 
-                out = {}
+                out: Dict[Any, int] = {}
                 for key, idx in order.items():
                     if isinstance(key, IntArray):
                         out[key] = int(idx)
                     else:
                         out[_int_array(_int_array_values(key))] = int(idx)
-                return out
+                return _JavaIntArrayMap(out)
 
         lst = subproductUniverseListBound(self)
         if lst is None:
@@ -3226,7 +3243,10 @@ def _install(alg_module_globals: dict) -> None:
             for key, idx in entries:
                 m.put(array([int(x) for x in key], "i"), idx)
             return m
-        return _SubProductUniverseOrder(entries)
+        fallback: Dict[Any, int] = {}
+        for key, idx in entries:
+            fallback[_int_array(key)] = idx
+        return _JavaIntArrayMap(fallback)
 
     def transpose(lst: Any) -> Any:
         """Java ``SubProductAlgebra.transpose(List<IntArray>)``."""
