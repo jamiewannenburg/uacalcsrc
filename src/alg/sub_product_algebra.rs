@@ -10,6 +10,8 @@ use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
 use std::sync::Arc;
 use crate::alg::{Algebra, SmallAlgebra, AlgebraType, BigProductAlgebra};
+use crate::alg::conlat::partition::Partition;
+use crate::resource::{checkpoint, UaError};
 use crate::alg::algebra::ProgressMonitor;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::alg::op::operation::boxed_arc_op;
@@ -820,6 +822,48 @@ where
     /// Get the cardinality of this algebra.
     pub fn cardinality(&self) -> i32 {
         self.univ.len() as i32
+    }
+
+    /// Kernel of the coordinate projection at `k` (Java `projectionKernel`).
+    ///
+    /// Universe indices follow `get_element(i)` / the stored universe list order.
+    pub fn projection_kernel(&self, k: i32) -> Result<Partition, UaError> {
+        let n = self.cardinality() as usize;
+        let mut kern = Partition::zero(n);
+
+        if k < 0 {
+            return Err(UaError::message(format!("Index {} out of bounds", k)));
+        }
+        let k = k as usize;
+
+        for i in 0..n {
+            let elem_i = self
+                .get_element(i)
+                .ok_or_else(|| UaError::message(format!("element index {} out of range", i)))?;
+            let vi = elem_i
+                .get(k)
+                .ok_or_else(|| UaError::message(format!("Index {} out of bounds", k)))?;
+
+            for j in (i + 1)..n {
+                checkpoint()?;
+                let elem_j = self
+                    .get_element(j)
+                    .ok_or_else(|| UaError::message(format!("element index {} out of range", j)))?;
+                let vj = elem_j
+                    .get(k)
+                    .ok_or_else(|| UaError::message(format!("Index {} out of bounds", k)))?;
+
+                if vi == vj {
+                    let r = kern.representative(i);
+                    let s = kern.representative(j);
+                    if r != s {
+                        kern.join_blocks(r, s);
+                    }
+                }
+            }
+        }
+
+        Ok(kern)
     }
     
     /// Make operation tables for all operations.

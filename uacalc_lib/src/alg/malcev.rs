@@ -4,9 +4,14 @@
  */
 
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
+use pyo3::types::PyAny;
+use pyo3::Bound;
+use std::collections::BTreeSet;
 use crate::alg::PyBasicAlgebra;
+use crate::alg::algebra_extract::extract_basic_algebra;
 use uacalc::alg::malcev;
+use uacalc::resource::UaError;
 
 /// Python module for Malcev functions.
 ///
@@ -54,8 +59,28 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
     m.add_function(wrap_pyfunction!(fixed_k_edge_idempotent, m)?)?;
     m.add_function(wrap_pyfunction!(fixed_k_perm_idempotent, m)?)?;
     m.add_function(wrap_pyfunction!(perm_level_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(sd_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(cp_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(cube_term_blocker_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(type_set_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(types_in_sof_a_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(types_in_sof_a_strictly_simple_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(types_in_sof_a_i_robust_decompdempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(omitted_ideal_idempotent, m)?)?;
 
     Ok(())
+}
+
+fn ua_err_to_py(e: UaError) -> PyErr {
+    PyValueError::new_err(e.to_string())
+}
+
+fn btree_set_to_py(py: Python<'_>, set: BTreeSet<i32>) -> PyResult<PyObject> {
+    let py_set = pyo3::types::PySet::empty(py)?;
+    for v in set {
+        py_set.add(v)?;
+    }
+    Ok(py_set.into())
 }
 
 /// Find a Malcev term for the algebra.
@@ -617,6 +642,109 @@ fn fixed_k_perm_idempotent(algebra: &PyBasicAlgebra, level: usize) -> PyResult<b
 #[pyfunction]
 fn perm_level_idempotent(algebra: &PyBasicAlgebra) -> PyResult<i32> {
     malcev::perm_level_idempotent(&algebra.inner).map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn sd_idempotent(algebra: &Bound<'_, PyAny>) -> PyResult<Option<Vec<i32>>> {
+    let alg = extract_basic_algebra(algebra)?;
+    malcev::sd_idempotent(&alg).map_err(ua_err_to_py)
+}
+
+#[pyfunction]
+fn cp_idempotent(algebra: &Bound<'_, PyAny>) -> PyResult<Option<Vec<i32>>> {
+    let alg = extract_basic_algebra(algebra)?;
+    malcev::cp_idempotent(&alg).map_err(ua_err_to_py)
+}
+
+#[pyfunction]
+fn cube_term_blocker_idempotent(algebra: &Bound<'_, PyAny>) -> PyResult<Option<Vec<Vec<i32>>>> {
+    let mut alg = extract_basic_algebra(algebra)?;
+    match malcev::cube_term_blocker_idempotent(&mut alg).map_err(ua_err_to_py)? {
+        Some((c, d)) => Ok(Some(vec![
+            c.elements().clone(),
+            d.elements().clone(),
+        ])),
+        None => Ok(None),
+    }
+}
+
+#[pyfunction]
+fn type_set_idempotent(algebra: &Bound<'_, PyAny>) -> PyResult<Vec<Vec<i32>>> {
+    let mut alg = extract_basic_algebra(algebra)?;
+    let bounds = malcev::type_set_idempotent(&mut alg).map_err(ua_err_to_py)?;
+    Ok(bounds
+        .into_iter()
+        .map(|s| s.into_iter().collect())
+        .collect())
+}
+
+#[pyfunction]
+#[pyo3(signature = (algebra, types_found=None))]
+fn types_in_sof_a_idempotent(
+    algebra: &Bound<'_, PyAny>,
+    types_found: Option<Vec<i32>>,
+) -> PyResult<Vec<i32>> {
+    let mut alg = extract_basic_algebra(algebra)?;
+    let mut set = BTreeSet::new();
+    if let Some(found) = types_found {
+        set.extend(found);
+    }
+    malcev::types_in_sof_a_idempotent(&mut alg, &mut set).map_err(ua_err_to_py)?;
+    Ok(set.into_iter().collect())
+}
+
+#[pyfunction]
+#[pyo3(signature = (algebra, types_found=None))]
+fn types_in_sof_a_strictly_simple_idempotent(
+    algebra: &Bound<'_, PyAny>,
+    types_found: Option<Vec<i32>>,
+) -> PyResult<Vec<i32>> {
+    let mut alg = extract_basic_algebra(algebra)?;
+    let mut set = BTreeSet::new();
+    if let Some(found) = types_found {
+        set.extend(found);
+    }
+    malcev::types_in_sof_a_strictly_simple_idempotent(&mut alg, &mut set).map_err(ua_err_to_py)?;
+    Ok(set.into_iter().collect())
+}
+
+#[pyfunction]
+#[pyo3(signature = (algebra, types_found=None))]
+fn types_in_sof_a_i_robust_decompdempotent(
+    algebra: &Bound<'_, PyAny>,
+    types_found: Option<Vec<i32>>,
+) -> PyResult<Vec<i32>> {
+    let mut alg = extract_basic_algebra(algebra)?;
+    let mut set = BTreeSet::new();
+    if let Some(found) = types_found {
+        set.extend(found);
+    }
+    malcev::types_in_sof_a_i_robust_decompdempotent(&mut alg, &mut set).map_err(ua_err_to_py)?;
+    Ok(set.into_iter().collect())
+}
+
+#[pyfunction]
+#[pyo3(signature = (algebra, types_found=None))]
+fn omitted_ideal_idempotent(
+    py: Python<'_>,
+    algebra: &Bound<'_, PyAny>,
+    types_found: Option<Bound<'_, PyAny>>,
+) -> PyResult<PyObject> {
+    if let Some(found) = types_found {
+        let mut set = BTreeSet::new();
+        let iter = found.iter().map_err(|_| {
+            PyTypeError::new_err(
+                "omitted_ideal_idempotent: types_found must be an iterable of ints",
+            )
+        })?;
+        for item in iter {
+            set.insert(item?.extract::<i32>()?);
+        }
+        return btree_set_to_py(py, malcev::omitted_ideal_idempotent_from_types(&set));
+    }
+    let mut alg = extract_basic_algebra(algebra)?;
+    let ideal = malcev::omitted_ideal_idempotent(&mut alg).map_err(ua_err_to_py)?;
+    btree_set_to_py(py, ideal)
 }
 
 

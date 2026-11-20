@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyRuntimeError;
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::types::PyAny;
 
 use crate::alg::basic_algebra::PyBasicAlgebra;
@@ -514,6 +514,56 @@ impl PyCongruenceLattice {
             }
         }
         out
+    }
+
+    /// TCT type of join irreducible `beta` (Java `typeJI`).
+    fn type_ji(&mut self, py: Python<'_>, beta: &PyPartition) -> PyResult<i32> {
+        self.inner
+            .type_ji(&beta.inner)
+            .map_err(|e| crate::resource::limit_string_to_py(&e, py))
+    }
+
+    /// TCT type of interval `[alpha, beta]` (Java `type(beta, alpha)`).
+    fn type_interval(
+        &mut self,
+        py: Python<'_>,
+        beta: &PyPartition,
+        alpha: &PyPartition,
+    ) -> PyResult<i32> {
+        self.inner
+            .type_interval(&beta.inner, &alpha.inner)
+            .map_err(|e| crate::resource::limit_string_to_py(&e, py))
+    }
+
+    /// Set of TCT types of join irreducibles (Java `typeSet()`).
+    fn type_set(&mut self, py: Python<'_>) -> PyResult<std::collections::HashSet<i32>> {
+        self.inner
+            .type_set()
+            .map_err(|e| crate::resource::limit_string_to_py(&e, py))
+    }
+
+    /// Lazy `TypeFinder` for this congruence lattice (Java `getTypeFinder()`).
+    fn get_type_finder(&mut self) -> PyResult<crate::alg::conlat::type_finder::PyTypeFinder> {
+        self.inner
+            .get_type_finder()
+            .map_err(|e| PyValueError::new_err(e))?;
+        match uacalc::alg::conlat::TypeFinder::new(self.inner.alg.clone_box()) {
+            Ok(inner) => Ok(crate::alg::conlat::type_finder::PyTypeFinder::from_inner(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[pyo3(name = "getTypeFinder")]
+    fn get_type_finder_java(&mut self) -> PyResult<crate::alg::conlat::type_finder::PyTypeFinder> {
+        self.get_type_finder()
+    }
+
+    /// Java `coatoms()` — not implemented; raises like `UnsupportedOperationException`.
+    fn coatoms(&self) -> PyResult<Vec<PyPartition>> {
+        match self.inner.coatoms_unsupported() {
+            Ok(parts) => Ok(parts.into_iter().map(|p| PyPartition { inner: p }).collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
     }
 }
 

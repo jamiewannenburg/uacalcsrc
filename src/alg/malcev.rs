@@ -8,12 +8,21 @@
  * Based on org.uacalc.alg.Malcev.java
  */
 
-use crate::alg::{Algebra, SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicAlgebra, Closer};
+use crate::alg::{
+    Algebra, SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicAlgebra, Closer,
+    MaltsevProductDecomposition, QuotientAlgebra, SubProductAlgebra, Subalgebra,
+    quotient_element::QuotientElement,
+};
 use crate::alg::conlat::{BasicBinaryRelation, BinaryRelation};
+use crate::alg::conlat::congruence_lattice::CongruenceLattice;
+use crate::alg::conlat::partition::Partition;
+use crate::alg::op::Operation;
+use crate::alg::sublat::BasicSet;
 use crate::terms::{Term, VariableImp};
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::util::sequence_generator::SequenceGenerator;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use crate::resource::{checkpoint, UaError};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::sync::Arc;
 
 /// A module with static functions for Mal'cev conditions and term finding algorithms.
@@ -2485,6 +2494,488 @@ where
     Ok(None)
 }
 
+fn i32_algebra_box(
+    alg: &dyn SmallAlgebra<UniverseItem = i32>,
+) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, UaError> {
+    if alg.operations().is_empty() {
+        return Err(UaError::message("Algebra has no operations"));
+    }
+    Ok(alg.clone_box())
+}
+
+/// Java `Malcev.sdIdempotent`: witness `[x,y]` or `null`.
+pub fn sd_idempotent<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<Option<Vec<i32>>, UaError>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    let i32_alg = as_i32_algebra(alg).map_err(UaError::from)?;
+    let n = i32_alg.cardinality() as usize;
+    let alg_boxed: Box<dyn SmallAlgebra<UniverseItem = i32>> = Box::new(i32_alg);
+    let sq = BigProductAlgebra::new_power_safe(alg_boxed, 2).map_err(UaError::from)?;
+
+    for x in 0..n {
+        checkpoint()?;
+        for y in 0..n {
+            if x == y {
+                continue;
+            }
+            let a_arr = IntArray::from_array(vec![x as i32, x as i32]).map_err(UaError::from)?;
+            let b_arr = IntArray::from_array(vec![x as i32, y as i32]).map_err(UaError::from)?;
+            let c_arr = IntArray::from_array(vec![y as i32, x as i32]).map_err(UaError::from)?;
+            let gens = vec![a_arr.clone(), b_arr.clone(), c_arr.clone()];
+
+            let mut sub = SubProductAlgebra::new_safe(
+                "sdIdempotentSub".to_string(),
+                sq.clone(),
+                gens,
+                false,
+            )
+            .map_err(UaError::from)?;
+            sub.make_operation_tables();
+
+            let a_index = sub
+                .element_index(&a_arr)
+                .ok_or_else(|| UaError::message("element a not in subalgebra"))?;
+            let b_index = sub
+                .element_index(&b_arr)
+                .ok_or_else(|| UaError::message("element b not in subalgebra"))?;
+            let c_index = sub
+                .element_index(&c_arr)
+                .ok_or_else(|| UaError::message("element c not in subalgebra"))?;
+
+            use crate::alg::SmallAlgebraWrapper;
+            let alg_box = Box::new(sub.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
+            let mut con_lat = CongruenceLattice::new(wrapper);
+
+            let alpha = con_lat.cg(a_index, c_index);
+            let beta = con_lat.cg(a_index, b_index);
+            let gamma = con_lat.cg(b_index, c_index);
+            let meet_join = alpha
+                .meet(&beta)
+                .map_err(UaError::from)?
+                .join(&gamma)
+                .map_err(UaError::from)?;
+
+            if !meet_join.is_related(a_index, c_index) {
+                return Ok(Some(vec![x as i32, y as i32]));
+            }
+        }
+    }
+    Ok(None)
+}
+
+/// Java `Malcev.cpIdempotent`: witness `[x0,y0,x1,y1]` or `null`.
+pub fn cp_idempotent<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<Option<Vec<i32>>, UaError>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    let i32_alg = as_i32_algebra(alg).map_err(UaError::from)?;
+    let n = i32_alg.cardinality() as usize;
+    if n == 1 {
+        return Ok(None);
+    }
+    let alg_boxed: Box<dyn SmallAlgebra<UniverseItem = i32>> = Box::new(i32_alg);
+    let sq = BigProductAlgebra::new_power_safe(alg_boxed, 2).map_err(UaError::from)?;
+
+    for x0 in 0..n {
+        checkpoint()?;
+        for y0 in 0..n {
+            for x1 in 0..n {
+                for y1 in 0..n {
+                    let a_arr =
+                        IntArray::from_array(vec![x0 as i32, y0 as i32]).map_err(UaError::from)?;
+                    let b_arr =
+                        IntArray::from_array(vec![x0 as i32, y1 as i32]).map_err(UaError::from)?;
+                    let c_arr =
+                        IntArray::from_array(vec![x1 as i32, y1 as i32]).map_err(UaError::from)?;
+                    if a_arr == b_arr || a_arr == c_arr || b_arr == c_arr {
+                        continue;
+                    }
+                    let gens = vec![a_arr.clone(), b_arr.clone(), c_arr.clone()];
+
+                    let mut sub = SubProductAlgebra::new_safe(
+                        "cpIdempotentSub".to_string(),
+                        sq.clone(),
+                        gens,
+                        false,
+                    )
+                    .map_err(UaError::from)?;
+                    sub.make_operation_tables();
+
+                    let a_index = sub.element_index(&a_arr).ok_or_else(|| {
+                        UaError::message("element a not found in cp subalgebra")
+                    })?;
+                    let b_index = sub.element_index(&b_arr).ok_or_else(|| {
+                        UaError::message("element b not found in cp subalgebra")
+                    })?;
+                    let c_index = sub.element_index(&c_arr).ok_or_else(|| {
+                        UaError::message("element c not found in cp subalgebra")
+                    })?;
+
+                    use crate::alg::SmallAlgebraWrapper;
+                    let alg_box =
+                        Box::new(sub.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+                    let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
+                    let mut con_lat = CongruenceLattice::new(wrapper);
+
+                    let alpha = con_lat.cg(a_index, b_index);
+                    let beta = con_lat.cg(b_index, c_index);
+                    let composed = alpha
+                        .compose(&beta as &dyn BinaryRelation<IntArray>)
+                        .map_err(UaError::from)?;
+                    if !composed.is_related(c_index, a_index) {
+                        return Ok(Some(vec![
+                            x0 as i32,
+                            y0 as i32,
+                            x1 as i32,
+                            y1 as i32,
+                        ]));
+                    }
+                }
+            }
+        }
+    }
+    Ok(None)
+}
+
+/// Java prints debug in `cubeTermBlockerIdempotent(Operation, int, …)`; output does not affect the result.
+fn cube_term_blocker_at_op(
+    op: &dyn Operation,
+    j: usize,
+    c: &BasicSet,
+    d: &BasicSet,
+) -> Result<bool, UaError> {
+    let arity = op.arity();
+    if arity < 2 {
+        return Ok(true);
+    }
+    let arity = arity as usize;
+    let c_size = c.universe_size();
+    let d_size = d.universe_size();
+    let mut arr = vec![0i32; arity - 1];
+    let mut inc = SequenceGenerator::sequence_incrementor(
+        arr.as_mut_slice(),
+        d_size.saturating_sub(1) as i32,
+    );
+    loop {
+        let mut args = vec![0i32; arity];
+        let current = inc.get_current();
+        let d_elems = d.elements();
+        let c_elems = c.elements();
+        for k in 0..j {
+            args[k] = *d_elems
+                .get(current[k] as usize)
+                .ok_or_else(|| UaError::message("D index out of range"))?;
+        }
+        for k in (j + 1)..arity {
+            args[k] = *d_elems
+                .get(current[k - 1] as usize)
+                .ok_or_else(|| UaError::message("D index out of range"))?;
+        }
+        for i in 0..c_size {
+            args[j] = *c_elems
+                .get(i)
+                .ok_or_else(|| UaError::message("C index out of range"))?;
+            let val = op.int_value_at(&args).map_err(UaError::from)?;
+            if !c.contains(val) {
+                return Ok(false);
+            }
+        }
+        if !inc.increment() {
+            break;
+        }
+    }
+    Ok(true)
+}
+
+fn cube_term_blocker_op(
+    op: &dyn Operation,
+    c: &BasicSet,
+    d: &BasicSet,
+) -> Result<i32, UaError> {
+    let arity = op.arity() as usize;
+    for j in 0..arity {
+        if cube_term_blocker_at_op(op, j, c, d)? {
+            return Ok(j as i32);
+        }
+    }
+    Ok(-1)
+}
+
+fn cube_term_blocker_sets(
+    alg: &dyn SmallAlgebra<UniverseItem = i32>,
+    c: &BasicSet,
+    d: &BasicSet,
+) -> Result<bool, UaError> {
+    for op in alg.operations() {
+        if cube_term_blocker_op(op.as_ref(), c, d)? < 0 {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
+/// Java `Malcev.cubeTermBlockerIdempotent(SmallAlgebra, …)` (no stdout).
+pub fn cube_term_blocker_idempotent(
+    alg: &mut BasicAlgebra<i32>,
+) -> Result<Option<(BasicSet, BasicSet)>, UaError> {
+    let n = alg.cardinality() as usize;
+    for c in 0..n {
+        checkpoint()?;
+        let mut s: HashSet<i32> = HashSet::from([c as i32]);
+        while s.len() < n {
+            let mut ce: Option<BasicSet> = None;
+            for e in 0..n {
+                if s.contains(&(e as i32)) {
+                    continue;
+                }
+                let ce2 = alg.sub().sg(&[c as i32, e as i32]);
+                let ce2_set = BasicSet::new(ce2.elements().clone()).map_err(UaError::from)?;
+                if ce.is_none() || ce2_set.leq(ce.as_ref().unwrap()) {
+                    ce = Some(ce2_set);
+                }
+            }
+            let Some(ce) = ce else {
+                break;
+            };
+            let mut intersection = Vec::new();
+            for &x in ce.elements() {
+                if s.contains(&x) {
+                    intersection.push(x);
+                }
+            }
+            let c_set = BasicSet::new(intersection).map_err(UaError::from)?;
+            if cube_term_blocker_sets(alg, &c_set, &ce)? {
+                return Ok(Some((c_set, ce)));
+            }
+            for &x in ce.elements() {
+                s.insert(x);
+            }
+        }
+    }
+    Ok(None)
+}
+
+fn types_in_sof_a_strictly_simple_on_basic(
+    alg: &mut BasicAlgebra<i32>,
+    types_found: &mut BTreeSet<i32>,
+) -> Result<(), UaError> {
+    let n = alg.cardinality() as usize;
+    for a in 0..n {
+        checkpoint()?;
+        for b in (a + 1)..n {
+            let mut b_sub = alg.sub().sg_from_gens(&[a as i32, b as i32]);
+            let a_in_b = b_sub
+                .index(a as i32)
+                .ok_or_else(|| UaError::message("a not in subalgebra"))?;
+            let b_in_b = b_sub
+                .index(b as i32)
+                .ok_or_else(|| UaError::message("b not in subalgebra"))?;
+            let sub_box = Box::new(b_sub.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+            let mut con_lat = CongruenceLattice::new(sub_box);
+            let one = con_lat.one();
+            let cg_ab = con_lat.cg(a_in_b, b_in_b);
+            if cg_ab != one {
+                continue;
+            }
+            if !con_lat.join_irreducible(&one) {
+                continue;
+            }
+            types_found.insert(con_lat.type_ji(&one).map_err(UaError::from)?);
+        }
+    }
+    Ok(())
+}
+
+fn types_in_sof_a_strictly_simple_on_quotient(
+    alg: &mut QuotientAlgebra<i32>,
+    types_found: &mut BTreeSet<i32>,
+) -> Result<(), UaError> {
+    let n = alg.cardinality() as usize;
+    for a in 0..n {
+        checkpoint()?;
+        for b in (a + 1)..n {
+            let b_sub = alg.sub().sg_from_gens(&[a as i32, b as i32]);
+            let a_in_b = b_sub
+                .index(a as i32)
+                .ok_or_else(|| UaError::message("a not in quotient subalgebra"))?;
+            let b_in_b = b_sub
+                .index(b as i32)
+                .ok_or_else(|| UaError::message("b not in quotient subalgebra"))?;
+            let sub_box = Box::new(b_sub.clone())
+                as Box<dyn SmallAlgebra<UniverseItem = QuotientElement<i32>>>;
+            let mut con_lat = CongruenceLattice::new(sub_box);
+            let one = con_lat.one();
+            let cg_ab = con_lat.cg(a_in_b, b_in_b);
+            if cg_ab != one {
+                continue;
+            }
+            if !con_lat.join_irreducible(&one) {
+                continue;
+            }
+            types_found.insert(con_lat.type_ji(&one).map_err(UaError::from)?);
+        }
+    }
+    Ok(())
+}
+
+/// Java `typesInSofAStrictlySimpleIdempotent`.
+pub fn types_in_sof_a_strictly_simple_idempotent(
+    alg: &mut BasicAlgebra<i32>,
+    types_found: &mut BTreeSet<i32>,
+) -> Result<(), UaError> {
+    types_in_sof_a_strictly_simple_on_basic(alg, types_found)
+}
+
+/// Java `typesInSofAIdempotent`.
+pub fn types_in_sof_a_idempotent(
+    alg: &mut BasicAlgebra<i32>,
+    types_found: &mut BTreeSet<i32>,
+) -> Result<(), UaError> {
+    let super_box = i32_algebra_box(alg)?;
+    let mut con_lat = CongruenceLattice::new(super_box);
+    let decomp = con_lat.irredundant_meet_decomposition();
+    for th in decomp {
+        let mut quot =
+            QuotientAlgebra::new_safe(alg.clone_box(), th).map_err(UaError::from)?;
+        types_in_sof_a_strictly_simple_on_quotient(&mut quot, types_found)?;
+    }
+    Ok(())
+}
+
+/// Java `typesInSofAIRobustDecompdempotent` (no stdout).
+pub fn types_in_sof_a_i_robust_decompdempotent(
+    alg: &mut BasicAlgebra<i32>,
+    types_found: &mut BTreeSet<i32>,
+) -> Result<(), UaError> {
+    if alg.cardinality() == 1 {
+        return Ok(());
+    }
+    let mut con_lat = CongruenceLattice::new(i32_algebra_box(alg)?);
+    let zero = con_lat.zero();
+    let coatom = con_lat.find_coatom_above(&zero);
+    let decomp = MaltsevProductDecomposition::new_safe(alg.clone_box(), coatom)
+        .map_err(UaError::from)?;
+    let mut quot = decomp.get_quotient_algebra().clone();
+    types_in_sof_a_strictly_simple_on_quotient(&mut quot, types_found)?;
+    for blk in decomp.get_block_algebras() {
+        if blk.cardinality() > 1 {
+            let mut blk_mut = blk.clone();
+            types_in_sof_a_idempotent_on_subalgebra(&mut blk_mut, types_found)?;
+        }
+    }
+    Ok(())
+}
+
+fn types_in_sof_a_idempotent_on_subalgebra(
+    alg: &mut Subalgebra<i32>,
+    types_found: &mut BTreeSet<i32>,
+) -> Result<(), UaError> {
+    let super_box = Box::new(alg.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    let mut con_lat = CongruenceLattice::new(super_box);
+    let decomp = con_lat.irredundant_meet_decomposition();
+    for th in decomp {
+        let mut quot = QuotientAlgebra::new_safe(alg.clone_box(), th).map_err(UaError::from)?;
+        types_in_sof_a_strictly_simple_on_quotient(&mut quot, types_found)?;
+    }
+    Ok(())
+}
+
+/// Bounds on `typ(V(A))` for an idempotent algebra.
+///
+/// `types1` is `{1}`, `types2` is `{2}`, and `types12` is `{1, 2}`. Java
+/// `Malcev.typeSetIdempotent` calls `types1.add(2)` on the line after `types2`
+/// is created, so `types1` becomes `{1, 2}` and `types2` stays empty. The pure
+/// type-1 exit is then unreachable, and the pure type-2 exit compares against
+/// the empty set. This function adds `2` to `types2`.
+pub fn type_set_idempotent(
+    alg: &mut BasicAlgebra<i32>,
+) -> Result<Vec<BTreeSet<i32>>, UaError> {
+    let types12: BTreeSet<i32> = BTreeSet::from([1, 2]);
+    let types1: BTreeSet<i32> = BTreeSet::from([1]);
+    let types2: BTreeSet<i32> = BTreeSet::from([2]);
+
+    let mut con_lat = CongruenceLattice::new(alg.clone_box());
+    let types_of_a: BTreeSet<i32> = con_lat
+        .type_set()
+        .map_err(UaError::from)?
+        .into_iter()
+        .collect();
+    if types_of_a == types1 {
+        return Ok(vec![types1.clone(), types1]);
+    }
+    if types_of_a == types12 {
+        return Ok(vec![types12.clone(), types12]);
+    }
+    let mut types_found: BTreeSet<i32> = BTreeSet::new();
+    types_in_sof_a_idempotent(alg, &mut types_found)?;
+    if types_of_a == types2 {
+        if types_found.contains(&1) {
+            return Ok(vec![types12.clone(), types12]);
+        }
+        return Ok(vec![types2.clone(), types2]);
+    }
+    let mut possible_types: BTreeSet<i32> = BTreeSet::from([1, 2, 3, 4, 5]);
+    let mut types_found = types_found;
+    types_found.extend(types_of_a.iter().copied());
+    let mut ans = vec![types_found.clone()];
+    if types_found.contains(&1) {
+        ans.push(possible_types);
+        return Ok(ans);
+    }
+    possible_types.remove(&1);
+    if types_found.contains(&5) {
+        if types_found.contains(&2) {
+            ans.push(possible_types);
+            return Ok(ans);
+        }
+        possible_types.remove(&2);
+        ans.push(possible_types);
+        return Ok(ans);
+    }
+    possible_types.remove(&5);
+    if types_found.contains(&3) {
+        ans.push(types_found);
+        return Ok(ans);
+    }
+    let mut upper = types_found;
+    upper.insert(3);
+    ans.push(upper);
+    Ok(ans)
+}
+
+/// Java `omittedIdealIdempotent(alg, typesFound, …)` — `alg` is unused.
+pub fn omitted_ideal_idempotent_from_types(
+    types_found: &BTreeSet<i32>,
+) -> BTreeSet<i32> {
+    let mut ans = BTreeSet::new();
+    if !types_found.contains(&1) {
+        ans.insert(1);
+        if !types_found.contains(&2) {
+            ans.insert(2);
+        }
+        if !types_found.contains(&5) {
+            ans.insert(5);
+            if !types_found.contains(&4) {
+                ans.insert(4);
+            }
+        }
+    }
+    ans
+}
+
+/// Java `omittedIdealIdempotent(SmallAlgebra, ProgressReport)` overload.
+pub fn omitted_ideal_idempotent(alg: &mut BasicAlgebra<i32>) -> Result<BTreeSet<i32>, UaError> {
+    let mut types_found = BTreeSet::new();
+    types_in_sof_a_strictly_simple_idempotent(alg, &mut types_found)?;
+    Ok(omitted_ideal_idempotent_from_types(&types_found))
+}
+
 /// Test if an idempotent algebra is congruence distributive.
 ///
 /// Uses the polynomial-time algorithm from Freese-Valeriote:
@@ -4162,6 +4653,15 @@ mod tests {
     }
 
     #[test]
+    fn type_set_idempotent_cyclic2_is_exactly_type_2() {
+        // typ(C2) = {2} and HS(C2) adds no type 1, so both bounds are {2}.
+        // Java's types1.add(2) bug returns [[2], [2, 3]] on this algebra.
+        let mut alg = load_test_algebra("cyclic2").expect("resources/algebras/cyclic2.ua");
+        let bounds = type_set_idempotent(&mut alg).expect("type_set_idempotent");
+        assert_eq!(bounds, vec![BTreeSet::from([2]), BTreeSet::from([2])]);
+    }
+
+    #[test]
     fn test_malcev_term_with_cyclic2() {
         // Test with cyclic2 algebra
         if let Some(alg) = load_test_algebra("cyclic2") {
@@ -4380,6 +4880,32 @@ mod tests {
             // Trivial algebra should not have a Day quadruple
             assert!(quad.is_none(), "Trivial algebra should not have a Day quadruple");
         }
+    }
+
+    #[test]
+    fn test_sd_idempotent_with_trivial_algebra() {
+        let _guard = crate::resource::test_isolation_guard();
+        let alg = BasicAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new(),
+        );
+        let result = sd_idempotent(&alg);
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
+    }
+
+    #[test]
+    fn test_cp_idempotent_with_trivial_algebra() {
+        let _guard = crate::resource::test_isolation_guard();
+        let alg = BasicAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new(),
+        );
+        let result = cp_idempotent(&alg);
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
     }
 
     #[test]

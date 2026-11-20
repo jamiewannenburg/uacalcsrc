@@ -16,7 +16,7 @@ use crate::alg::{
 };
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::util::horner;
-use crate::alg::conlat::{Partition, BinaryRelation, BasicBinaryRelation};
+use crate::alg::conlat::{Partition, BinaryRelation, BasicBinaryRelation, Subtrace, TypeFinder};
 use crate::util::simple_list::SimpleList;
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::lat::{Lattice, Order};
@@ -142,6 +142,15 @@ where
     /// Cached BasicLattice view of this congruence lattice (for visualization)
     /// Only populated when T = Partition
     basic_lat: Option<crate::lat::BasicLattice<Partition>>,
+
+    /// Lazy `TypeFinder` (Java `getTypeFinder()`).
+    type_finder: Option<Box<TypeFinder<T>>>,
+
+    /// Join irreducible → subtrace cache (Java `joinIrredToSubtraceMap`).
+    join_irred_to_subtrace_map: Option<HashMap<Partition, Subtrace>>,
+
+    /// Cached set of TCT types in the lattice (Java `typeSet` field).
+    tct_type_set: Option<HashSet<i32>>,
 }
 
 impl<T> fmt::Debug for CongruenceLattice<T>
@@ -186,6 +195,9 @@ where
             size_computed: 0,
             principals_made: false,
             basic_lat: None,
+            type_finder: None,
+            join_irred_to_subtrace_map: None,
+            tct_type_set: None,
         }
     }
 }
@@ -274,6 +286,9 @@ where
             size_computed: 0,
             principals_made: false,
             basic_lat: None,
+            type_finder: None,
+            join_irred_to_subtrace_map: None,
+            tct_type_set: None,
         }
     }
 }
@@ -2142,51 +2157,103 @@ where
         })
     }
     
-    /// Find the TCT type of a join irreducible element (STUBBED).
-    ///
-    /// This method requires TypeFinder which is not yet implemented.
-    ///
-    /// # Arguments
-    /// * `beta` - A join irreducible partition
-    ///
-    /// # Returns
-    /// Type 0 as a default stub
-    pub fn type_ji(&self, _beta: &Partition) -> i32 {
-        0
+    /// Lazy `TypeFinder` (Java `getTypeFinder()`).
+    pub fn get_type_finder(&mut self) -> Result<&mut TypeFinder<T>, String> {
+        if self.type_finder.is_none() {
+            self.type_finder = Some(Box::new(TypeFinder::new(self.alg.clone_box())?));
+        }
+        Ok(self.type_finder.as_mut().unwrap().as_mut())
     }
-    
-    /// Find the TCT type of an interval (STUBBED).
-    ///
-    /// This method requires TypeFinder which is not yet implemented.
-    ///
-    /// # Arguments
-    /// * `beta` - The upper element
-    /// * `alpha` - The lower element
-    ///
-    /// # Returns
-    /// Type 0 as a default stub
-    pub fn type_interval(&self, _beta: &Partition, _alpha: &Partition) -> i32 {
-        0
+
+    fn join_irred_to_subtrace_map_mut(&mut self) -> &mut HashMap<Partition, Subtrace> {
+        if self.join_irred_to_subtrace_map.is_none() {
+            self.join_irred_to_subtrace_map = Some(HashMap::new());
+        }
+        self.join_irred_to_subtrace_map.as_mut().unwrap()
     }
-    
-    /// Get the type finder (STUBBED).
-    ///
-    /// This method requires TypeFinder which is not yet implemented.
-    ///
-    /// # Returns
-    /// Error indicating the method is not implemented
-    pub fn get_type_finder(&self) -> Result<(), String> {
-        Err("TypeFinder not implemented yet".to_string())
+
+    /// Find a subtrace for join irreducible `beta` (Java `subtrace(Partition beta)`).
+    pub fn subtrace(&mut self, beta: &Partition) -> Result<Subtrace, String> {
+        if self.join_irred_to_subtrace_map_mut().get(beta).is_none() {
+            let st = self.get_type_finder()?.find_subtrace(beta)?;
+            self.join_irred_to_subtrace_map_mut()
+                .insert(beta.clone(), st);
+        }
+        Ok(self
+            .join_irred_to_subtrace_map
+            .as_ref()
+            .unwrap()
+            .get(beta)
+            .unwrap()
+            .clone())
     }
-    
-    /// Get the set of all TCT types in the lattice (STUBBED).
+
+    /// Find the TCT type of join irreducible `beta` (Java `typeJI`).
+    pub fn type_ji(&mut self, beta: &Partition) -> Result<i32, String> {
+        self.subtrace(beta)?;
+        let needs_type = self
+            .join_irred_to_subtrace_map
+            .as_ref()
+            .unwrap()
+            .get(beta)
+            .unwrap()
+            .type_value()
+            <= 0;
+        if needs_type {
+            let st = self
+                .join_irred_to_subtrace_map
+                .as_ref()
+                .unwrap()
+                .get(beta)
+                .unwrap()
+                .clone();
+            // Java `findType` mutates the cached subtrace (type and matrix universe).
+            let typed = self.get_type_finder()?.find_type_from_subtrace(st)?;
+            self.join_irred_to_subtrace_map_mut()
+                .insert(beta.clone(), typed);
+        }
+        Ok(self
+            .join_irred_to_subtrace_map
+            .as_ref()
+            .unwrap()
+            .get(beta)
+            .unwrap()
+            .type_value())
+    }
+
+    /// Find the TCT type for `beta` over `alpha` (Java `type(beta, alpha)`).
     ///
-    /// This method requires TypeFinder which is not yet implemented.
-    ///
-    /// # Returns
-    /// Error indicating the method is not implemented
-    pub fn type_set(&self) -> Result<HashSet<i32>, String> {
-        Err("TypeFinder not implemented yet".to_string())
+    /// `beta` is assumed to cover `alpha`. Uses `find_join_irred(alpha, beta)`.
+    pub fn type_interval(
+        &mut self,
+        beta: &Partition,
+        alpha: &Partition,
+    ) -> Result<i32, String> {
+        let gamma = self
+            .find_join_irred(alpha, beta)
+            .ok_or_else(|| format!("no join irreducible between {} and {}", alpha, beta))?;
+        self.type_ji(&gamma)
+    }
+
+    /// Get the set of all TCT types in the lattice (Java `typeSet()`).
+    pub fn type_set(&mut self) -> Result<HashSet<i32>, String> {
+        if let Some(ref ts) = self.tct_type_set {
+            return Ok(ts.clone());
+        }
+        use crate::resource::checkpoint;
+        let jis = self.join_irreducibles().clone();
+        let mut type_set = HashSet::new();
+        for part in &jis {
+            checkpoint().map_err(|e| e.to_string())?;
+            type_set.insert(self.type_ji(part)?);
+        }
+        self.tct_type_set = Some(type_set.clone());
+        Ok(type_set)
+    }
+
+    /// Java `coatoms()` — always throws `UnsupportedOperationException`.
+    pub fn coatoms_unsupported(&self) -> Result<Vec<Partition>, String> {
+        Err("UnsupportedOperationException: Not implemented yet.".to_string())
     }
     
     /// The set M(S,T): subalgebra of A^4 generated by the diagonal, the

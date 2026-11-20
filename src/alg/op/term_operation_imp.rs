@@ -42,6 +42,9 @@ pub struct TermOperationImp {
     
     /// The size of the algebra
     alg_size: i32,
+
+    /// Horner table built by `make_table` when the inner interpretation has none.
+    cached_table: Option<Vec<i32>>,
 }
 
 impl TermOperationImp {
@@ -118,7 +121,34 @@ impl TermOperationImp {
             interpretation,
             symbol,
             alg_size,
+            cached_table: None,
         }
+    }
+
+    fn table_slice(&self) -> Option<&[i32]> {
+        if let Some(ref table) = self.cached_table {
+            return Some(table.as_slice());
+        }
+        self.interpretation.get_table()
+    }
+
+    /// Build and cache a Horner table via `int_value_at`, matching Java `makeTable`.
+    fn build_cached_table(&mut self) -> Result<(), String> {
+        use crate::resource::{alloc_i32_table, checkpoint, ComputationScope};
+        use crate::util::horner;
+
+        let _scope = ComputationScope::enter();
+        let arity = self.symbol.arity() as usize;
+        let size = self.alg_size;
+        let mut table =
+            alloc_i32_table(size as usize, arity as u32).map_err(|e| e.to_string())?;
+        for k in 0..table.len() {
+            checkpoint().map_err(|e| e.to_string())?;
+            let args = horner::horner_inv_same_size(k as i32, size, arity);
+            table[k] = self.interpretation.int_value_at(&args)?;
+        }
+        self.cached_table = Some(table);
+        Ok(())
     }
     
     /// Create a new TermOperationImp with proper error handling.
@@ -197,18 +227,15 @@ impl AbstractOperation for TermOperationImp {
     }
     
     fn has_value_table(&self) -> bool {
-        self.interpretation.get_table().is_some()
+        self.table_slice().is_some()
     }
     
     fn get_value_table(&self) -> Option<&[i32]> {
-        self.interpretation.get_table()
+        self.table_slice()
     }
     
     fn create_value_table(&mut self) -> Result<(), String> {
-        // Delegate to interpretation
-        // Note: This requires mutable access which we don't have
-        // For now, return an error
-        Err("Cannot create value table on immutable interpretation".to_string())
+        self.make_table()
     }
     
     fn compute_value(&self, args: &[i32]) -> Result<i32, String> {
@@ -247,17 +274,29 @@ impl Operation for TermOperationImp {
     }
     
     fn make_table(&mut self) -> Result<(), String> {
-        // We can't make a table on an immutable interpretation
-        Err("Cannot make table on immutable interpretation".to_string())
+        if self.cached_table.is_some() || self.interpretation.get_table().is_some() {
+            return Ok(());
+        }
+        let _ = self.interpretation.make_table();
+        if self.interpretation.get_table().is_some() {
+            return Ok(());
+        }
+        self.build_cached_table()
     }
     
     fn get_table(&self) -> Option<&[i32]> {
-        self.interpretation.get_table()
+        self.table_slice()
     }
     
-    fn get_table_force(&mut self, _make_table: bool) -> Result<&[i32], String> {
-        // We can't force table creation on an immutable interpretation
-        self.interpretation.get_table()
+    fn get_table_force(&mut self, make_table: bool) -> Result<&[i32], String> {
+        if make_table {
+            self.make_table()?;
+        }
+        if let Some(table) = self.cached_table.as_deref() {
+            return Ok(table);
+        }
+        self.interpretation
+            .get_table()
             .ok_or_else(|| "No table available".to_string())
     }
     
@@ -299,6 +338,7 @@ impl Operation for TermOperationImp {
             interpretation: self.interpretation.clone_box(),
             symbol: self.symbol.clone(),
             alg_size: self.alg_size,
+            cached_table: self.cached_table.clone(),
         })
     }
 }

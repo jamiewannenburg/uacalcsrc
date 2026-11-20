@@ -962,10 +962,24 @@ count match.
 ### alg.Malcev.typeSetIdempotent types1.add(2) bug
 
 - **Java**: `types1.add(2)` after `types1` was `{1}` makes `types1 == {1,2}`
-  and leaves `types2` empty. The `{1}`-only branch is unreachable.
-- **Python**: Matches Java, including the bug.
-- **Status**: Known Java bug, copied for parity.
-- **Tests**: `type_set_idem_c2`, `type_set_idem_lat2`, `type_set_idem_c3`
+  and leaves `types2` empty. The `{1}`-only exit is unreachable, and the
+  `{2}` exit compares `typ(A)` with the empty set. Algebras whose type set
+  is exactly `{1}` or `{2}` fall through to the general upper bound.
+- **Python / Rust**: `types1 = {1}` and `types2 = {2}`, which is what the
+  following branches test. `typ(A) = {1}` returns `[[1], [1]]`. `typ(A) = {2}`
+  returns `[[2], [2]]` when `HS(A)` has no type 1, and `[[1, 2], [1, 2]]`
+  when it does.
+- **Example**: `cyclic2.ua` has `typ(A) = {2}` and no type 1 in `HS(A)`.
+  Java returns `[[2], [2, 3]]`. Rust and Python return `[[2], [2]]`.
+  `cyclic3` is the same pair of results. The 3-element cyclic permutation
+  algebra has `typ(A) = {1}`: Java returns `[[1], [1, 2, 3, 4, 5]]`, and
+  Rust and Python return `[[1], [1]]`.
+- **Status**: Known Java bug. Parity tests that hit the bug are strict
+  xfails. Other type-set goldens (`lat2`, `n5`, `m3`, `ba2`, `sem2`) still
+  match because their type sets are not `{1}` or `{2}`.
+- **Tests**: strict xfail `type_set_idem_c2`, `type_set_idem_c3`,
+  `type_set_idem_unary3`. Correct result: `type_set_idempotent_cyclic2_is_exactly_type_2`
+  and `test_type_set_idempotent_cyclic2_is_exactly_affine`.
 
 ### alg.Malcev.makeCyclicGens shared-array copies
 
