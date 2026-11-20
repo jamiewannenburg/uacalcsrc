@@ -134,6 +134,26 @@ def filter_lines(text: str, ignore_rules: list[str]) -> list[str]:
     return lines
 
 
+def _extract_json_payload(text: str) -> object | None:
+    """Parse a JSON object from stdout that may include filtered debug lines."""
+    stripped = text.strip()
+    if not stripped:
+        return None
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError:
+        pass
+    for line in reversed(text.splitlines()):
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            return json.loads(line)
+        except json.JSONDecodeError:
+            continue
+    return None
+
+
 def _delete_json_path(data: object, path: str) -> None:
     parts = path.split(".")
     if not parts:
@@ -156,10 +176,9 @@ def _json_compare_ignoring_paths(
     """Return match result when both stdout blobs are JSON; None if not applicable."""
     if not ignore_json_paths:
         return None
-    try:
-        j_data = json.loads(jython_out.strip())
-        p_data = json.loads(python_out.strip())
-    except json.JSONDecodeError:
+    j_data = _extract_json_payload(jython_out)
+    p_data = _extract_json_payload(python_out)
+    if j_data is None or p_data is None:
         return None
     j_copy = copy.deepcopy(j_data)
     p_copy = copy.deepcopy(p_data)

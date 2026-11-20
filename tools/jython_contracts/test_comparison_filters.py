@@ -42,6 +42,33 @@ def test_random_parity_ignores_only_basicset_union_json_path():
     assert match
 
 
+def test_random_parity_union_ignored_with_jython_debug_prefix_lines():
+    """Jython may print Java progress lines before the JSON snapshot line."""
+    payload = {
+        "basicset": {
+            "union": {"elements": [0], "string": "[0]"},
+            "seed_marker": 0,
+        },
+        "seed": 0,
+    }
+    j_payload = dict(payload)
+    j_payload["basicset"] = {**payload["basicset"], "union": {"elements": [0], "string": "[0]"}}
+    p_payload = dict(payload)
+    p_payload["basicset"] = {
+        **payload["basicset"],
+        "union": {"elements": [0, 1], "string": "[0, 1]"},
+    }
+    j_out = "oneGenerated size = 2\n" + json.dumps(j_payload, sort_keys=True)
+    p_out = json.dumps(p_payload, sort_keys=True)
+    match, _, _ = compare_outputs(
+        j_out,
+        p_out,
+        ignore_rules=[r"^oneGenerated size = \d+$"],
+        ignore_json_paths=["basicset.union"],
+    )
+    assert match
+
+
 def test_random_parity_non_union_json_diff_still_fails():
     j_out = json.dumps(
         {
