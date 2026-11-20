@@ -3201,8 +3201,16 @@ def _install(alg_module_globals: dict) -> None:
         fn = getattr(self, "get_universe_order", None)
         if callable(fn):
             order = fn()
-            if order is not None:
-                return order
+            if order is not None and isinstance(order, dict):
+                from org.uacalc.util import IntArray
+
+                out = {}
+                for key, idx in order.items():
+                    if isinstance(key, IntArray):
+                        out[key] = int(idx)
+                    else:
+                        out[_int_array(_int_array_values(key))] = int(idx)
+                return out
 
         lst = subproductUniverseListBound(self)
         if lst is None:

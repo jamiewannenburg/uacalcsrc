@@ -1875,8 +1875,8 @@
       "result": {
         "return_type": "HashMap",
         "return_value": {
-          "{'string': '[0, 0]', '__type__': 'IntArray', '__repr__': u'[0, 0]'}": 0,
-          "{'string': '[1, 1]', '__type__': 'IntArray', '__repr__': u'[1, 1]'}": 1
+          "{'__type__': 'IntArray', 'string': '[0, 0]', '__repr__': '[0, 0]'}": 0,
+          "{'__type__': 'IntArray', 'string': '[1, 1]', '__repr__': '[1, 1]'}": 1
         },
         "string_repr": "{[0, 0]: 0, [1, 1]: 1}",
         "success": true
