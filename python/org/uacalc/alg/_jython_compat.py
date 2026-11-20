@@ -1873,11 +1873,11 @@ def _install(alg_module_globals: dict) -> None:
                     _malcev_fn("type_set_idempotent"), _as_basic_algebra(alg)
                 )
                 return [set(int(x) for x in part) for part in bounds]
-            # Match Java including the types1.add(2) bug that aliases {1,2}.
+            # Java calls types1.add(2) here, so types1 becomes {1, 2} and types2
+            # stays empty. The branches below are written for {1}, {2}, and {1, 2}.
             types12 = set([1, 2])
             types1 = set([1])
-            types2 = set()
-            types1.add(2)
+            types2 = set([2])
             types_of_a = set(int(x) for x in alg.con().typeSet())
             if types_of_a == types1:
                 return [set(types1), set(types1)]

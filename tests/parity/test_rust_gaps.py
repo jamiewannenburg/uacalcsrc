@@ -79,6 +79,24 @@ def test_rust_gap_type_set_idempotent():
     assert _malcev_missing("type_set_idempotent") or _malcev_missing("typeSetIdempotent")
 
 
+def test_type_set_idempotent_cyclic2_is_exactly_affine():
+    """typ(C2) is {2} and HS(C2) adds no type 1, so both bounds are {2}.
+
+    Java's types1.add(2) bug returns [[2], [2, 3]] on this algebra.
+    """
+    import sys
+
+    alg = _c2()
+    direct = uacalc_lib.alg.type_set_idempotent(alg)
+    assert [sorted(int(x) for x in part) for part in direct] == [[2], [2]]
+
+    sys.path.insert(0, str(REPO_ROOT / "python"))
+    from org.uacalc.alg import Malcev
+
+    got = Malcev.typeSetIdempotent(alg, None)
+    assert [sorted(s) for s in got] == [[2], [2]]
+
+
 def test_rust_gap_types_in_sof_a_idempotent():
     assert _malcev_missing("types_in_sof_a_idempotent") or _malcev_missing(
         "typesInSofAIdempotent"

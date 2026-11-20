@@ -108,7 +108,7 @@ Closed. `make_table` keeps an existing interpretation table or fills a Horner ca
 
 Closed on `uacalc_lib.alg` and delegated from `org.uacalc.alg.Malcev` when the Rust function is present: `sd_idempotent`, `cp_idempotent`, `cube_term_blocker_idempotent`, `type_set_idempotent`, `types_in_sof_a_idempotent`, `types_in_sof_a_strictly_simple_idempotent`, `types_in_sof_a_i_robust_decompdempotent`, `omitted_ideal_idempotent`.
 
-Outer loops call `resource::checkpoint`. Java's `types1.add(2)` (the line after `types2` is created, so `types2` stays empty) is preserved in `type_set_idempotent`. Java `System.out.println` traces in the cube-term and robust-decomposition methods are not printed. The method name `typesInSofAIRobustDecompdempotent` keeps Java's spelling.
+Outer loops call `resource::checkpoint`. `type_set_idempotent` uses `types1 = {1}` and `types2 = {2}`. Java's `types1.add(2)` (the line after `types2` is created) leaves `types2` empty; that divergence is a known Java bug, recorded in `tests/parity/KNOWN_DIFFERENCES.md`. On `cyclic2.ua` (`typ(A) = {2}`, no type 1 in `HS(A)`) Rust returns `[[2], [2]]` and Java returns `[[2], [2, 3]]`. Java `System.out.println` traces in the cube-term and robust-decomposition methods are not printed. The method name `typesInSofAIRobustDecompdempotent` keeps Java's spelling.
 
 ### MemoryMonitor placeholder
 

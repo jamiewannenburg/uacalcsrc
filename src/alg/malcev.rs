@@ -2886,15 +2886,19 @@ fn types_in_sof_a_idempotent_on_subalgebra(
     Ok(())
 }
 
-/// Java `typeSetIdempotent`.
+/// Bounds on `typ(V(A))` for an idempotent algebra.
+///
+/// `types1` is `{1}`, `types2` is `{2}`, and `types12` is `{1, 2}`. Java
+/// `Malcev.typeSetIdempotent` calls `types1.add(2)` on the line after `types2`
+/// is created, so `types1` becomes `{1, 2}` and `types2` stays empty. The pure
+/// type-1 exit is then unreachable, and the pure type-2 exit compares against
+/// the empty set. This function adds `2` to `types2`.
 pub fn type_set_idempotent(
     alg: &mut BasicAlgebra<i32>,
 ) -> Result<Vec<BTreeSet<i32>>, UaError> {
     let types12: BTreeSet<i32> = BTreeSet::from([1, 2]);
-    let mut types1: BTreeSet<i32> = BTreeSet::from([1]);
-    let types2: BTreeSet<i32> = BTreeSet::new();
-    // Java bug (Malcev.java): `types2` is created but `types1.add(2)` runs instead of `types2.add(2)`.
-    types1.insert(2);
+    let types1: BTreeSet<i32> = BTreeSet::from([1]);
+    let types2: BTreeSet<i32> = BTreeSet::from([2]);
 
     let mut con_lat = CongruenceLattice::new(alg.clone_box());
     let types_of_a: BTreeSet<i32> = con_lat
@@ -4646,6 +4650,15 @@ mod tests {
             // Should be variable x
             assert!(term.isa_variable());
         }
+    }
+
+    #[test]
+    fn type_set_idempotent_cyclic2_is_exactly_type_2() {
+        // typ(C2) = {2} and HS(C2) adds no type 1, so both bounds are {2}.
+        // Java's types1.add(2) bug returns [[2], [2, 3]] on this algebra.
+        let mut alg = load_test_algebra("cyclic2").expect("resources/algebras/cyclic2.ua");
+        let bounds = type_set_idempotent(&mut alg).expect("type_set_idempotent");
+        assert_eq!(bounds, vec![BTreeSet::from([2]), BTreeSet::from([2])]);
     }
 
     #[test]

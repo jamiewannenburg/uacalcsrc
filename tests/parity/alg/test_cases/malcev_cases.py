@@ -483,6 +483,12 @@ TEST_CASES = [
         setup=_SETUP,
         call="_sets(Malcev.typeSetIdempotent(c2, None))",
         description="typeSetIdempotent bounds on C2",
+        xfail_reason=(
+            "Known Java bug: Malcev.typeSetIdempotent calls types1.add(2) "
+            "instead of types2.add(2), so typ(A)={2} misses the pure affine "
+            "exit. On cyclic2 Java returns [[2], [2, 3]]; the intended bounds "
+            "are [[2], [2]]."
+        ),
         **_LIST
     ),
     TestCaseSpec(
@@ -499,6 +505,12 @@ TEST_CASES = [
         setup=_SETUP,
         call="_sets(Malcev.typeSetIdempotent(c3, None))",
         description="typeSetIdempotent bounds on C3",
+        xfail_reason=(
+            "Known Java bug: Malcev.typeSetIdempotent calls types1.add(2) "
+            "instead of types2.add(2), so typ(A)={2} misses the pure affine "
+            "exit. On cyclic3 Java returns [[2], [2, 3]]; the intended bounds "
+            "are [[2], [2]]."
+        ),
         **_LIST
     ),
     TestCaseSpec(
@@ -954,6 +966,12 @@ TEST_CASES.extend([
         setup=_WIDE_SETUP,
         call="_sets(Malcev.typeSetIdempotent(unary3, None))",
         description="typeSetIdempotent of a cyclic permutation algebra",
+        xfail_reason=(
+            "Known Java bug: Malcev.typeSetIdempotent calls types1.add(2) "
+            "instead of types2.add(2), so the typ(A)={1} exit is unreachable. "
+            "On the 3-element cyclic permutation algebra Java returns "
+            "[[1], [1, 2, 3, 4, 5]]; the intended bounds are [[1], [1]]."
+        ),
         **_LIST
     ),
     TestCaseSpec(
