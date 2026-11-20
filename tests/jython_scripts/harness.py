@@ -55,6 +55,34 @@ def normalize_phd_file(content: str, path: str | Path) -> str:
     return "\n".join(lines) + ("\n" if lines else "")
 
 
+def _normalize_phd_io_path(line: str) -> str:
+    """Collapse temp fixture dirs and phd_runtime to a stable logical path for stdout diff."""
+    path_tail: str | None = None
+    prefix_end: int | None = None
+    m = re.search(r"\bdeleting\s+(.+)$", line)
+    if m:
+        prefix_end, path_tail = m.start(1), m.group(1).strip()
+    else:
+        m = re.search(r"\sto\s+(.+)$", line)
+        if m:
+            prefix_end, path_tail = m.start(1), m.group(1).strip()
+    if path_tail is not None and prefix_end is not None:
+        sub = re.search(r"[\\/](input|output)[\\/](.+)$", path_tail.replace("/", "\\"))
+        if sub:
+            logical = (
+                f"tests/jython_scripts/phd_runtime/{sub.group(1)}/"
+                f"{sub.group(2).replace(chr(92), '/')}"
+            )
+            return line[:prefix_end] + logical
+    sub = re.search(r"[\\/](input|output)[\\/](.+)$", line.replace("/", "\\"))
+    if sub and not line.startswith("C-5-"):
+        return (
+            f"tests/jython_scripts/phd_runtime/{sub.group(1)}/"
+            f"{sub.group(2).replace(chr(92), '/')}"
+        )
+    return line
+
+
 def normalize_phd_output(text: str) -> str:
     lines = []
     for line in text.splitlines():
@@ -64,6 +92,7 @@ def normalize_phd_output(text: str) -> str:
         line = CLASS_AT_RE.sub("<obj>", line)
         line = TIMING_RE.sub("<time>", line)
         line = re.sub(r"\b(\d+)L\b", r"\1", line)
+        line = _normalize_phd_io_path(line)
         lines.append(line)
     return "\n".join(lines).strip()
 
@@ -130,6 +159,24 @@ def convert_print_statements_to_function(source: str) -> str:
     return "".join(lines)
 
 
+def _stabilize_fixture_mtimes(work: Path) -> None:
+    """Give fixture ``input/C-5-*.ua`` mtimes in numeric name order (Jamie glob uses mtime)."""
+    inp = work / "input"
+    if not inp.is_dir():
+        return
+    paths = [p for p in inp.glob("C-5-*.ua") if p.is_file()]
+    if not paths:
+        return
+
+    def _num(p: Path) -> int:
+        m = re.match(r"C-5-(\d+)\.ua$", p.name, re.I)
+        return int(m.group(1)) if m else 10**9
+
+    base = 1_600_000_000.0
+    for i, path in enumerate(sorted(paths, key=_num)):
+        os.utime(path, (base + i, base + i))
+
+
 def prepare_jython2_source(source: str) -> str:
     """Print statements, dict iterators, and legacy except syntax for CPython 3."""
     out_lines: list[str] = []
@@ -157,7 +204,9 @@ def prepare_jython2_source(source: str) -> str:
         flags=re.MULTILINE,
     )
     source = re.sub(r"^import Queue\b", "import queue as Queue", source, flags=re.MULTILINE)
-    return source
+    from cpython_support.load_dmm import _jython2_patches  # noqa: WPS433
+
+    return _jython2_patches(source)
 
 
 def _prime_cpython_imports() -> None:
@@ -222,6 +271,8 @@ def run_phd_script_cpython(
     run_cwd = cwd
     used_fixture_tmp = False
     try:
+        work: Path | None = None
+        script_file = script
         if fixture_root.is_dir():
             work = Path(tempfile.mkdtemp(prefix="phd_fixture_"))
             used_fixture_tmp = True
@@ -231,23 +282,28 @@ def run_phd_script_cpython(
                 dirs_exist_ok=True,
                 ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
             )
+            _stabilize_fixture_mtimes(work)
             run_cwd = work
+            # Jamie scripts resolve input/output via ``dirname(__file__)``, not cwd.
+            script_copy = work / Path(script_rel).name
+            script_copy.write_text(raw_source, encoding="utf-8")
+            script_file = script_copy
         os.chdir(str(run_cwd))
         os.environ.setdefault("PHD_SKIP_DRAW", "1")
         os.environ.setdefault("PHD_SIMPLE_DOT", "1")
         sys.path = phd_sys_path() + [p for p in saved_path if p not in phd_sys_path()]
-        sys.argv = [str(script)] + list(argv_suffix or [])
+        sys.argv = [str(script_file)] + list(argv_suffix or [])
         sys.stdout = out_buf
         sys.stderr = err_buf
         _prime_cpython_imports()
-        code = compile(source, str(script), "exec")
+        code = compile(source, str(script_file), "exec")
         if dmm_main_only:
             import dmm as dmm_mod
 
             glob = dmm_mod.__dict__.copy()
             glob["__name__"] = "__main__"
         else:
-            glob = {"__name__": "__main__", "__file__": str(script)}
+            glob = {"__name__": "__main__", "__file__": str(script_file)}
         exec(code, glob, glob)
         rc = 0
     except SystemExit as exc:
