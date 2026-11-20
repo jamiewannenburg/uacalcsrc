@@ -11,7 +11,7 @@ use serial_test::serial;
 use uacalc::alg::op::ops::make_int_operations;
 use uacalc::alg::{BasicAlgebra, BigProductAlgebra, Closer, SmallAlgebra};
 use uacalc::io::algebra_io::read_algebra_file;
-use uacalc::resource::{
+use uacalc::resource::{test_isolation_guard, 
     request_cancel, reset_all_limits, set_memory_limit, ComputationScope, UaError,
 };
 use uacalc::util::int_array::IntArray;
@@ -42,6 +42,7 @@ fn heavy_m4_closer_with_term_map() -> Closer<i32> {
 #[test]
 #[serial]
 fn parallel_closer_memory_limit() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let mut closer = heavy_m4_closer_with_term_map();
     set_memory_limit(Some(64));
@@ -57,6 +58,7 @@ fn parallel_closer_memory_limit() {
 #[test]
 #[serial]
 fn parallel_closer_cancel_from_other_thread() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let (ready_tx, ready_rx) = sync_channel::<()>(0);
     let outcome: Arc<Mutex<Option<Result<Vec<IntArray>, UaError>>>> = Arc::new(Mutex::new(None));

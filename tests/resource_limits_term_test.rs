@@ -6,11 +6,12 @@ use std::sync::Arc;
 use uacalc::alg::{BasicAlgebra, SmallAlgebra};
 use uacalc::alg::op::ops::make_int_operations;
 use uacalc::io::algebra_io::read_algebra_file;
-use uacalc::resource::{reset_all_limits, set_memory_limit, ComputationScope, UaError};
+use uacalc::resource::{test_isolation_guard, reset_all_limits, set_memory_limit, ComputationScope, UaError};
 use uacalc::terms::{Term, VariableImp};
 
 #[test]
 fn term_interpretation_hits_memory_limit() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let m4 = read_algebra_file(Path::new("resources/algebras/m4.ua")).expect("m4.ua");
     let int_ops = make_int_operations(m4.operations()).expect("ops");
@@ -31,6 +32,7 @@ fn term_interpretation_hits_memory_limit() {
 
 #[test]
 fn term_interpretation_succeeds_after_reset() {
+    let _resource_test_guard = test_isolation_guard();
     reset_all_limits();
     let m4 = read_algebra_file(Path::new("resources/algebras/m4.ua")).expect("m4.ua");
     let int_ops = make_int_operations(m4.operations()).expect("ops");

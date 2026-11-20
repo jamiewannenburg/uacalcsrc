@@ -65,6 +65,17 @@ static CANCEL_REQUESTED: AtomicBool = AtomicBool::new(false);
 /// Set when any thread has a non-None memory/element/time limit (fast path for overhead-free runs).
 static LIMITS_CONFIGURED: AtomicBool = AtomicBool::new(false);
 
+/// Serializes global cancel/`reset_all_limits` across parallel integration-test binaries.
+static RESOURCE_TEST_ISOLATION: Mutex<()> = Mutex::new(());
+
+/// Hold for the full duration of any test that calls [`reset_all_limits`], [`request_cancel`],
+/// or unbounded stress helpers (`*_stress` with cancel/time limits).
+pub fn test_isolation_guard() -> std::sync::MutexGuard<'static, ()> {
+    RESOURCE_TEST_ISOLATION
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
 fn sync_limits_configured() {
     let configured = with_state(|s| {
         s.memory_limit.is_some() || s.element_limit.is_some() || s.time_limit.is_some()
@@ -651,11 +662,13 @@ pub fn charge_homomorphism_entry(slice_len: usize) -> Result<(), UaError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::test_isolation_guard;
     use std::thread;
     use std::time::Duration;
 
     #[test]
     fn per_computation_reset_allows_second_run() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         set_memory_limit(Some(1000));
         let _s1 = ComputationScope::enter();
@@ -669,6 +682,7 @@ mod tests {
 
     #[test]
     fn cancel_from_other_thread() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         set_memory_limit(None);
         let _scope = ComputationScope::enter();
@@ -688,6 +702,7 @@ mod tests {
 
     #[test]
     fn element_limit_enforced() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         set_element_limit(Some(2));
         let _scope = ComputationScope::enter();
@@ -698,6 +713,7 @@ mod tests {
 
     #[test]
     fn time_limit_deadline() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         set_time_limit(Some(Duration::from_millis(1)));
         let _scope = ComputationScope::enter();
@@ -707,6 +723,7 @@ mod tests {
 
     #[test]
     fn clear_time_limit_clears_stale_deadline() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         set_time_limit(Some(Duration::from_millis(1)));
         let _scope = ComputationScope::enter();
@@ -720,6 +737,7 @@ mod tests {
 
     #[test]
     fn worker_inherits_caller_memory_limit() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         set_memory_limit(Some(64));
         let snap = snapshot_worker_limits();
@@ -737,6 +755,7 @@ mod tests {
 
     #[test]
     fn cancel_without_scope_or_limits_at_checkpoints() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         reset_all_limits();
         for _ in 0..CHECKPOINT_INTERVAL - 1 {
@@ -749,6 +768,7 @@ mod tests {
 
     #[test]
     fn nested_scopes_do_not_reset() {
+        let _resource_test_guard = test_isolation_guard();
         clear_cancel();
         set_memory_limit(Some(500));
         let _outer = ComputationScope::enter();
