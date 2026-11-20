@@ -530,6 +530,18 @@ class FiniteField(object):
             return 0
         return int(self._inv_power_map[key]) + 1
 
+    def convertToDefaultValueOps(self):
+        # Java FiniteField.convertToDefaultValueOps is an empty override.
+        return None
+
+    def getUniverseList(self):
+        # Java returns null. list(null) is TypeError: 'NoneType' object is not iterable.
+        return None
+
+    def getUniverseOrder(self):
+        # Java returns null.
+        return None
+
     def operations(self):
         return self._ops
 

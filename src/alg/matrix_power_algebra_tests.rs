@@ -159,7 +159,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Rust gap: MatrixPowerAlgebra.elementIndex disagrees with Java (Rust 0 vs Java -1 on universe compare)"]
+    #[ignore = "Known Java bug: PowerAlgebra.elementIndex looks for IntArray, but MatrixPowerAlgebra stores ProductAlgebra.makeCartesianProduct, whose iterator yields ArrayLists, so every lookup including [0, 0] returns -1"]
     fn test_element_index() {
         let config = get_test_config();
         

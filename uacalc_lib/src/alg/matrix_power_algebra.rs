@@ -3,11 +3,13 @@ use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use std::collections::HashMap;
 use uacalc::alg::*;
+use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 use crate::alg::convert::{
     algebra_type_java_name, get_operation_by_symbol, operations_to_py, ops_to_basic_algebra,
 };
 use crate::alg::PyBasicAlgebra;
 use crate::alg::power_algebra::PyPowerAlgebra;
+use crate::alg::sublat::subalgebra_lattice::PySubalgebraLattice;
 
 /// Python wrapper for MatrixPowerAlgebra
 #[pyclass]
@@ -246,6 +248,19 @@ impl PyMatrixPowerAlgebra {
     ///     int: The number of operations
     fn operations_count(&self) -> usize {
         self.inner.get_operations_ref().len()
+    }
+
+    /// Java `con()`: congruence lattice of this matrix power, including the
+    /// power-algebra operations plus left shift and diagonal.
+    fn con(&self) -> PyResult<PyCongruenceLattice> {
+        let basic = self.to_basic_algebra()?;
+        Ok(PyCongruenceLattice::from_algebra(&basic))
+    }
+
+    /// Java `sub()`: subalgebra lattice of this matrix power.
+    fn sub(&self) -> PyResult<PySubalgebraLattice> {
+        let basic = self.to_basic_algebra()?;
+        PySubalgebraLattice::from_basic(&basic)
     }
 
     /// Python string representation

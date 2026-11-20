@@ -76,14 +76,11 @@ def _c(cid, method, call, description, **kw):
 
 TEST_CASES = [
     _c("inh_ff_convert", "FiniteField.convertToDefaultValueOps",
-       "(ff21.convertToDefaultValueOps(), ff21.cardinality())[1]", "FiniteField convertToDefaultValueOps",
-       xfail_reason="Rust gap: org.uacalc.example.FiniteField does not inherit GeneralAlgebra ops on uacalc_lib"),
+       "(ff21.convertToDefaultValueOps(), ff21.cardinality())[1]", "FiniteField convertToDefaultValueOps"),
     _c("inh_ff_univ_list", "FiniteField.getUniverseList",
-       "list(ff21.getUniverseList())", "FiniteField getUniverseList", **_LIST,
-       xfail_reason="Rust gap: org.uacalc.example.FiniteField getUniverseList not bound on uacalc_lib"),
+       "list(ff21.getUniverseList())", "FiniteField getUniverseList", **_LIST),
     _c("inh_ff_univ_order", "FiniteField.getUniverseOrder",
-       "ff21.getUniverseOrder()", "FiniteField getUniverseOrder", **_NONE,
-       xfail_reason="Rust gap: org.uacalc.example.FiniteField getUniverseOrder not bound on uacalc_lib"),
+       "ff21.getUniverseOrder()", "FiniteField getUniverseOrder", **_NONE),
     _c("ctor_finite_field_21", "FiniteField.FiniteField",
        "ff21.cardinality()", "FiniteField(2,1) constructor"),
     _c("ctor_finite_field_31", "FiniteField.FiniteField",

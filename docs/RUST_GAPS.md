@@ -100,11 +100,11 @@ test(s) that surface it.
 - **Missing:** Return the algebra without the lifetime workaround panic.
 - **Tests:** ignored `sub_product_element_get_algebra`.
 
-### MatrixPowerAlgebra.elementIndex (ignored Rust test)
+### MatrixPowerAlgebra.elementIndex of a real vector (ignored Rust test)
 
-- **Rust:** `src/alg/matrix_power_algebra_tests.rs` `test_element_index` — Rust returns 0, Java -1.
-- **Missing:** Match Java `elementIndex` universe comparison (or document a Java bug if Java is wrong).
-- **Tests:** ignored `test_element_index` (`Rust gap:` reason).
+- **Java bug:** `PowerAlgebra.elementIndex` searches `universe()` for an `IntArray`, but `MatrixPowerAlgebra` stores `ProductAlgebra.makeCartesianProduct`, whose iterator yields `ArrayList`s. The `instanceof IntArray` test never hits, so every lookup, including `[0, 0]`, returns -1. A bare `int` also returns -1, and that path is matched (`inh_mp_elem_idx`).
+- **Rust:** `element_index(&[0, 0])` returns the Horner index 0.
+- **Tests:** ignored `test_element_index` (`Known Java bug:` reason). Do not change Rust to return -1.
 
 ### SimpleList cons sharing (ignored Rust test)
 
@@ -147,29 +147,11 @@ test(s) that surface it.
 - **Missing:** Expose Java-compatible `getElement` / universe element handles for matrix-power algebras.
 - **Tests:** `jython_comparison/scripts/matrix_power_algebra_smoke.py` (`getElement0`, `op_plus`).
 
-### MatrixPowerAlgebra con / sub / universe list / elementIndex
+### SubProductAlgebra.getElementFromTerm on a term-less constructor
 
-- **Rust:** `uacalc_lib` `PyMatrixPowerAlgebra` has no `con` / `sub`; `getUniverseList` / `elementIndex` disagree with Java on small examples.
-- **Missing:** Bind congruence/subalgebra lattices and match Java universe indexing for matrix-power algebras.
-- **Tests:** `tests/parity/alg/test_cases/untested_wraps_cases.py` `inh_mp_con`, `inh_mp_sub`, `inh_mp_elem_idx`, `inh_mp_univ_list`.
-
-### ReductAlgebra sub / getUniverseOrder
-
-- **Rust:** `ReductAlgebra.sub()` cardinality and `getUniverseOrder()` differ from Java on a C2 reduct.
-- **Missing:** Match Java subalgebra-lattice size and universe-order map for reducts.
-- **Tests:** `inh_red_sub`, `inh_red_univ_order` in `untested_wraps_cases.py`.
-
-### ReductAlgebra.convertToDefaultValueOps / SubProductAlgebra getElementFromTerm
-
-- **Rust:** `ReductAlgebra.convertToDefaultValueOps` is a silent no-op on `uacalc_lib`; Java throws `UnsupportedOperationException` on non-basic algebras. `SubProductAlgebra.getElementFromTerm` succeeds where Java NPEs on the bundled thin subproduct fixture.
-- **Missing:** Match Java exception/success boundaries for reduct conversion and subproduct term round-trips.
-- **Tests:** `inh_red_convert`, `inh_sp_get_elem_term` in `tests/parity/alg/test_cases/untested_wraps_cases.py`.
-
-### example.FiniteField GeneralAlgebra surface
-
-- **Rust:** `org.uacalc.example.FiniteField` on `uacalc_lib` does not expose `convertToDefaultValueOps`, `getUniverseList`, or `getUniverseOrder`.
-- **Missing:** Inherit the same GeneralAlgebra API as Java `FiniteField`.
-- **Tests:** `inh_ff_convert`, `inh_ff_univ_list`, `inh_ff_univ_order` in `tests/parity/example/test_cases/untested_wraps_cases.py`.
+- **Java bug:** `SubProductAlgebra(name, product, gens)` calls the overload with `findTerms=false`, so `terms` stays null. `getTerm` returns null. `getElementFromTerm` then reads `terms.length` and throws `NullPointerException`.
+- **Rust / Python:** return null, the same result `getTerm` already documents. Do not copy the NPE.
+- **Tests:** `inh_sp_get_elem_term` in `tests/parity/alg/test_cases/untested_wraps_cases.py` (`Known Java bug:` strict xfail).
 
 ### UnaryTermsMonoid universe / element_index
 
