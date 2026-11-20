@@ -26,51 +26,29 @@ def _c2():
 
 
 def _con(alg=None):
-    from uacalc_lib.alg import CongruenceLattice
-
-    return CongruenceLattice(alg or _c2())
+    return uacalc_lib.alg.CongruenceLattice(alg or _c2())
 
 
 # --- CongruenceLattice type theory (Rust stubs; Python org shim uses TypeFinder) ---
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: CongruenceLattice.type_ji is a stub (always 0) and is not bound on uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_type_ji_bound():
     assert hasattr(_con(), "type_ji")
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: CongruenceLattice.type_interval is a stub (always 0) and is not bound on uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_type_interval_bound():
     assert hasattr(_con(), "type_interval")
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: CongruenceLattice.type_set is a stub Err and is not bound on uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_type_set_bound():
     assert hasattr(_con(), "type_set")
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: CongruenceLattice.get_type_finder is a stub Err and is not bound on uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_get_type_finder_bound():
     con = _con()
     assert hasattr(con, "get_type_finder") or hasattr(con, "getTypeFinder")
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: CongruenceLattice.coatoms returns None (Java throws UnsupportedOperationException); not bound on uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_con_coatoms_bound():
     assert hasattr(_con(), "coatoms")
 
@@ -83,74 +61,42 @@ def _malcev_missing(name):
     return hasattr(alg, name) or hasattr(alg, "Malcev") and hasattr(alg.Malcev, name)
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: sdIdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_sd_idempotent():
     assert _malcev_missing("sd_idempotent") or _malcev_missing("sdIdempotent")
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: cpIdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_cp_idempotent():
     assert _malcev_missing("cp_idempotent") or _malcev_missing("cpIdempotent")
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: cubeTermBlockerIdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_cube_term_blocker_idempotent():
     assert _malcev_missing("cube_term_blocker_idempotent") or _malcev_missing(
         "cubeTermBlockerIdempotent"
     )
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: typeSetIdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_type_set_idempotent():
     assert _malcev_missing("type_set_idempotent") or _malcev_missing("typeSetIdempotent")
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: typesInSofAIdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_types_in_sof_a_idempotent():
     assert _malcev_missing("types_in_sof_a_idempotent") or _malcev_missing(
         "typesInSofAIdempotent"
     )
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: typesInSofAStrictlySimpleIdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_types_in_sof_a_strictly_simple_idempotent():
     assert _malcev_missing("types_in_sof_a_strictly_simple_idempotent") or _malcev_missing(
         "typesInSofAStrictlySimpleIdempotent"
     )
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: typesInSofAIRobustDecompdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_types_in_sof_a_i_robust_decomp_idempotent():
     assert _malcev_missing("types_in_sof_a_i_robust_decompdempotent") or _malcev_missing(
         "typesInSofAIRobustDecompdempotent"
     )
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: omittedIdealIdempotent is not ported to uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_omitted_ideal_idempotent():
     assert _malcev_missing("omitted_ideal_idempotent") or _malcev_missing(
         "omittedIdealIdempotent"
@@ -160,12 +106,10 @@ def test_rust_gap_omitted_ideal_idempotent():
 # --- TermOperationImp cannot build a value table ---
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: TermOperationImp.make_table always Err (immutable interpretation)",
-    strict=True,
-)
 def test_rust_gap_term_operation_imp_make_table():
-    from uacalc_lib.terms import NonVariableTerm, TermOperationImp, VariableImp
+    NonVariableTerm = uacalc_lib.terms.NonVariableTerm
+    TermOperationImp = uacalc_lib.terms.TermOperationImp
+    VariableImp = uacalc_lib.terms.VariableImp
 
     alg = _c2()
     plus = list(alg.operations())[0].symbol()
@@ -184,29 +128,32 @@ def test_rust_gap_term_operation_imp_make_table():
 # --- Quotient operations cannot evaluate on whole value arrays ---
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: QuotientOperation.value_at_arrays is unimplemented",
-    strict=True,
-)
 def test_rust_gap_quotient_value_at_arrays():
-    from uacalc_lib.alg import QuotientAlgebra
+    QuotientAlgebra = uacalc_lib.alg.QuotientAlgebra
 
     alg = _c2()
     con = alg.con() if hasattr(alg, "con") else _con(alg)
-    q = QuotientAlgebra("Q", alg, con.cg(0, 1) if hasattr(con, "cg") else con.Cg(0, 1))
+    # Cg(0, 1) on C2 is the full congruence, so index 1 is not a quotient element.
+    # The zero congruence keeps both representatives; +(0, 1) = 1 on C2.
+    zero = con.zero() if hasattr(con, "zero") else con.Zero()
+    q = QuotientAlgebra("Q", alg, zero)
     op = list(q.operations())[0]
     fn = getattr(op, "value_at_arrays", None) or getattr(op, "valueAt", None)
     assert callable(fn)
-    # Java evaluates the whole-array form; the Rust stub returns Err.
-    got = fn([[0], [1]]) if fn.__code__.co_argcount != 1 else fn([0, 1])
-    assert got is not None
+    got = fn([[0], [1]])
+    assert list(got) == [1]
 
 
 # --- Projective plane → ternary ring ---
 
 
 @pytest.mark.xfail(
-    reason="Rust gap: projective plane to ternary ring conversion unimplemented",
+    reason=(
+        "Known Java bug: AlgebraIO.readProjectivePlane parses the plane and "
+        "returns null (org/uacalc/io/AlgebraIO.java). Rust keeps the existing "
+        "'not yet implemented' error; inventing a ternary ring would diverge "
+        "from Java and from python/uacalc/tests/test_algebra_io.py."
+    ),
     strict=True,
 )
 def test_rust_gap_read_projective_plane():
@@ -234,11 +181,15 @@ def test_rust_gap_read_projective_plane():
 
 
 @pytest.mark.xfail(
-    reason="Rust gap: BigProductAlgebra.universe is an empty iterator",
+    reason=(
+        "Known Java bug: BigProductAlgebra does not override universe(), so "
+        "GeneralAlgebra.universe() returns the unset field (null). A 4-element "
+        "enumeration of cyclic2^2 would diverge from Java."
+    ),
     strict=True,
 )
 def test_rust_gap_big_product_universe():
-    from uacalc_lib.alg import BigProductAlgebra
+    BigProductAlgebra = uacalc_lib.alg.BigProductAlgebra
 
     bp = BigProductAlgebra.new_power(_c2(), 2)
     fn = getattr(bp, "universe", None)
@@ -247,12 +198,8 @@ def test_rust_gap_big_product_universe():
     assert len(items) == 4
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: BigProductAlgebra.is_similar_to always returns false",
-    strict=True,
-)
 def test_rust_gap_big_product_is_similar_to():
-    from uacalc_lib.alg import BigProductAlgebra
+    BigProductAlgebra = uacalc_lib.alg.BigProductAlgebra
 
     alg = _c2()
     bp = BigProductAlgebra.new_power(alg, 2)
@@ -261,12 +208,9 @@ def test_rust_gap_big_product_is_similar_to():
     assert fn(bp) is True
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: SubProductAlgebra.projection_kernel is not bound on uacalc_lib",
-    strict=True,
-)
 def test_rust_gap_sub_product_projection_kernel():
-    from uacalc_lib.alg import BigProductAlgebra, SubProductAlgebra
+    BigProductAlgebra = uacalc_lib.alg.BigProductAlgebra
+    SubProductAlgebra = uacalc_lib.alg.SubProductAlgebra
 
     IntArray = uacalc_lib.util.IntArray
     c2 = _c2()
@@ -282,12 +226,8 @@ def test_rust_gap_sub_product_projection_kernel():
     assert int(blocks()) >= 1
 
 
-@pytest.mark.xfail(
-    reason="Rust gap: BigProductAlgebra.update_similarity_type is a no-op",
-    strict=True,
-)
 def test_rust_gap_big_product_update_similarity_type():
-    from uacalc_lib.alg import BigProductAlgebra
+    BigProductAlgebra = uacalc_lib.alg.BigProductAlgebra
 
     bp = BigProductAlgebra.new_power(_c2(), 2)
     fn = getattr(bp, "update_similarity_type", None) or getattr(
@@ -299,35 +239,45 @@ def test_rust_gap_big_product_update_similarity_type():
     after = bp.similarity_type() if hasattr(bp, "similarity_type") else None
     assert before is not None
     assert after is not None
-    assert list(after.symbols() if hasattr(after, "symbols") else after) 
+    if hasattr(after, "get_operation_symbols"):
+        symbols = list(after.get_operation_symbols())
+    elif hasattr(after, "symbols"):
+        symbols = list(after.symbols())
+    else:
+        symbols = list(after)
+    assert len(symbols) >= 1 
 
 
 # --- SubalgebraLattice atoms/coatoms/is_smaller_than (uacalc_lib, not the org shim) ---
 
 
 @pytest.mark.xfail(
-    reason="Rust gap: SubalgebraLattice.atoms is a TODO stub returning None",
+    reason=(
+        "Known Java bug: SubalgebraLattice.atoms is a TODO that returns null "
+        "(org/uacalc/alg/sublat/SubalgebraLattice.java). A non-empty atom list "
+        "would diverge from Java."
+    ),
     strict=True,
 )
 def test_rust_gap_sublat_atoms():
     sl = _c2().sub() if hasattr(_c2(), "sub") else None
     if sl is None:
-        from uacalc_lib.alg import SubalgebraLattice
-
-        sl = SubalgebraLattice(_c2())
+        sl = uacalc_lib.alg.SubalgebraLattice(_c2())
     atoms = sl.atoms()
     assert atoms is not None
     assert len(list(atoms)) > 0
 
 
 @pytest.mark.xfail(
-    reason="Rust gap: SubalgebraLattice.coatoms is a TODO stub returning None",
+    reason=(
+        "Known Java bug: SubalgebraLattice.coatoms is a TODO that returns null "
+        "(org/uacalc/alg/sublat/SubalgebraLattice.java). A non-empty coatom list "
+        "would diverge from Java."
+    ),
     strict=True,
 )
 def test_rust_gap_sublat_coatoms():
-    from uacalc_lib.alg import SubalgebraLattice
-
-    sl = SubalgebraLattice(_c2())
+    sl = uacalc_lib.alg.SubalgebraLattice(_c2())
     coatoms = sl.coatoms()
     assert coatoms is not None
     assert len(list(coatoms)) > 0

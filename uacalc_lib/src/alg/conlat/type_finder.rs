@@ -7,6 +7,12 @@ pub struct PyTypeFinder {
     inner: uacalc::alg::conlat::TypeFinder<i32>,
 }
 
+impl PyTypeFinder {
+    pub(crate) fn from_inner(inner: uacalc::alg::conlat::TypeFinder<i32>) -> Self {
+        Self { inner }
+    }
+}
+
 #[pymethods]
 impl PyTypeFinder {
     /// Create a new TypeFinder for the given algebra.
@@ -193,7 +199,7 @@ impl PyTypeFinder {
     ///     ValueError: If computation fails
     fn find_type_from_subtrace(&self, subtrace: &crate::alg::conlat::subtrace::PySubtrace) -> PyResult<i32> {
         match self.inner.find_type_from_subtrace(subtrace.get_inner().clone()) {
-            Ok(typ) => Ok(typ),
+            Ok(st) => Ok(st.type_value()),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }

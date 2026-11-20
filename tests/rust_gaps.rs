@@ -24,46 +24,49 @@ fn empty_alg(name: &str, n: i32) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
 }
 
 #[test]
-#[ignore = "Rust gap: CongruenceLattice::type_ji always returns 0 (TypeFinder not wired)"]
 fn type_ji_not_stub() {
     let mut con = CongruenceLattice::new(empty_alg("A", 2));
     let jis = CongruenceLattice::join_irreducibles(&mut con);
     let beta = jis[0].clone();
-    let ty = con.type_ji(&beta);
+    let ty = con.type_ji(&beta).expect("type_ji");
     assert_ne!(ty, 0, "type_ji of a join-irreducible of Con(C2-size set) is not type 0");
 }
 
 #[test]
-#[ignore = "Rust gap: CongruenceLattice::type_interval always returns 0"]
 fn type_interval_not_stub() {
-    let con = CongruenceLattice::new(empty_alg("A", 2));
-    let ty = con.type_interval(&con.one(), &con.zero());
+    let mut con = CongruenceLattice::new(empty_alg("A", 2));
+    let ty = con
+        .type_interval(&con.one(), &con.zero())
+        .expect("type_interval");
     assert_ne!(ty, 0);
 }
 
 #[test]
-#[ignore = "Rust gap: CongruenceLattice::type_set returns Err(TypeFinder not implemented)"]
 fn type_set_not_stub() {
-    let con = CongruenceLattice::new(empty_alg("A", 2));
+    let mut con = CongruenceLattice::new(empty_alg("A", 2));
     let set = con.type_set().expect("type_set should succeed once TypeFinder is wired");
     assert!(!set.is_empty());
 }
 
 #[test]
-#[ignore = "Rust gap: CongruenceLattice::get_type_finder returns Err"]
 fn get_type_finder_not_stub() {
-    let con = CongruenceLattice::new(empty_alg("A", 2));
+    let mut con = CongruenceLattice::new(empty_alg("A", 2));
     con.get_type_finder()
         .expect("get_type_finder should succeed once TypeFinder is wired");
 }
 
 #[test]
-#[ignore = "Rust gap: CongruenceLattice::coatoms returns None (Java throws UOE; fill in or throw)"]
 fn con_coatoms_not_none() {
     let con = CongruenceLattice::new(empty_alg("A", 2));
-    let _ = Lattice::coatoms(&con);
-    // Once implemented this should either throw like Java or return the coatoms.
-    panic!("coatoms still a stub");
+    assert!(
+        Lattice::coatoms(&con).is_none(),
+        "Lattice::coatoms stays None until coatoms are computed"
+    );
+    let err = con.coatoms_unsupported().unwrap_err();
+    assert!(
+        err.contains("Not implemented yet"),
+        "Java UnsupportedOperationException message"
+    );
 }
 
 #[test]
@@ -75,14 +78,14 @@ fn commutator2_does_not_swallow_errors() {
 }
 
 #[test]
-#[ignore = "Rust gap: SubalgebraLattice::atoms returns None"]
+#[ignore = "Known Java bug: SubalgebraLattice.atoms returns null (TODO)"]
 fn sublat_atoms_not_none() {
     let sl = SubalgebraLattice::new(empty_alg("A", 2));
     assert!(Lattice::atoms(&sl).is_some());
 }
 
 #[test]
-#[ignore = "Rust gap: SubalgebraLattice::coatoms returns None"]
+#[ignore = "Known Java bug: SubalgebraLattice.coatoms returns null (TODO)"]
 fn sublat_coatoms_not_none() {
     let sl = SubalgebraLattice::new(empty_alg("A", 2));
     assert!(Lattice::coatoms(&sl).is_some());
@@ -119,7 +122,7 @@ fn sublat_meet_irreducibles_not_empty_stub() {
 }
 
 #[test]
-#[ignore = "Rust gap: BigProductAlgebra::universe is an empty iterator"]
+#[ignore = "Known Java bug: GeneralAlgebra.universe() returns the unset field (null) for BigProductAlgebra"]
 fn big_product_universe_not_empty() {
     let bp = BigProductAlgebra::new_power_safe(empty_alg("A", 2), 2).unwrap();
     let n = bp.universe().count();
@@ -127,14 +130,12 @@ fn big_product_universe_not_empty() {
 }
 
 #[test]
-#[ignore = "Rust gap: BigProductAlgebra::is_similar_to always returns false"]
 fn big_product_is_similar_to_self() {
     let bp = BigProductAlgebra::new_power_safe(empty_alg("A", 2), 2).unwrap();
     assert!(bp.is_similar_to(&bp));
 }
 
 #[test]
-#[ignore = "Rust gap: BigProductAlgebra::update_similarity_type is a no-op"]
 fn big_product_update_similarity_type() {
     let mut bp = BigProductAlgebra::new_power_safe(empty_alg("A", 2), 2).unwrap();
     bp.update_similarity_type();
@@ -162,21 +163,29 @@ fn diamond_lattice_is_similar_to_checks_type() {
 }
 
 #[test]
-#[ignore = "Rust gap: QuotientOperation::value_at_arrays is unimplemented"]
 fn quotient_value_at_arrays() {
-    let super_alg = empty_alg("A", 2);
+    use uacalc::alg::op::{IntOperation, OperationSymbol};
+
+    let sym = OperationSymbol::new("+", 2, false);
+    let op = IntOperation::new(sym, 2, vec![0, 1, 1, 0]).unwrap();
+    let univ: HashSet<i32> = (0..2).collect();
+    let super_alg = Box::new(BasicAlgebra::new(
+        "A".to_string(),
+        univ,
+        vec![Box::new(op)],
+    ));
     let cong = Partition::zero(2);
     let q = QuotientAlgebra::<i32>::new_safe(super_alg, cong).unwrap();
     let ops = q.operations();
     assert!(!ops.is_empty());
+    let expected = ops[0].int_value_at(&[0, 1]).expect("int_value_at");
     let got = ops[0]
-        .value_at_arrays(&[&[0], &[0]])
+        .value_at_arrays(&[&[0], &[1]])
         .expect("value_at_arrays on a quotient op should succeed");
-    assert_eq!(got.len(), 1);
+    assert_eq!(got, vec![expected]);
 }
 
 #[test]
-#[ignore = "Rust gap: SubProductAlgebra::projection_kernel is unimplemented"]
 fn sub_product_projection_kernel() {
     let bp = BigProductAlgebra::new_power_safe(empty_alg("A", 2), 2).unwrap();
     let gens = vec![
@@ -184,9 +193,9 @@ fn sub_product_projection_kernel() {
         IntArray::from_array(vec![1, 1]).unwrap(),
     ];
     let sp = SubProductAlgebra::new_safe("SP".to_string(), bp, gens, false).unwrap();
-    // When implemented, merge universe elements that agree on coordinate k.
-    let _ = sp;
-    panic!("SubProductAlgebra::projection_kernel is not implemented");
+    let part = sp.projection_kernel(0).expect("projection_kernel");
+    assert!(part.number_of_blocks() >= 1);
+    assert!(sp.projection_kernel(-1).is_err());
 }
 
 #[test]

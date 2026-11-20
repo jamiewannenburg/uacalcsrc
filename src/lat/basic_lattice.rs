@@ -177,7 +177,7 @@ impl BasicLattice<crate::alg::conlat::Partition> {
     /// * `Err(String)` - If creation fails
     pub fn new_from_congruence_lattice(
         name: String,
-        con_lat: &crate::alg::conlat::CongruenceLattice<crate::alg::conlat::Partition>,
+        con_lat: &mut crate::alg::conlat::CongruenceLattice<crate::alg::conlat::Partition>,
         label: bool,
     ) -> Result<Self, String> {
         // Create poset from congruence lattice
@@ -236,19 +236,19 @@ impl BasicLattice<crate::alg::conlat::Partition> {
     /// Make TCT type map for congruence lattice edges.
     fn make_tct_type_map(
         &mut self,
-        con_lat: &crate::alg::conlat::CongruenceLattice<crate::alg::conlat::Partition>,
+        con_lat: &mut crate::alg::conlat::CongruenceLattice<crate::alg::conlat::Partition>,
     ) -> Result<(), String> {
         use crate::alg::conlat::Partition;
         let types = vec!["1", "2", "3", "4", "5"];
         let mut tct_map = HashMap::new();
         
-        let univ: Vec<Partition> = con_lat.universe().into_iter().collect();
+        let univ: Vec<Partition> = con_lat.universe().clone();
         for elt in &univ {
             if let Some(pelt) = self.poset.get_element(elt) {
                 for upper_cover in self.poset.get_upper_covers(&pelt) {
                     let elt2 = upper_cover.get_underlying_object();
                     // Use type_interval method (beta, alpha) where beta covers alpha
-                    let typ = con_lat.type_interval(elt2, elt);
+                    let typ = con_lat.type_interval(elt2, elt)?;
                     if typ >= 1 && typ <= 5 {
                         let edge = Edge::new(elt.to_string(), elt2.to_string());
                         tct_map.insert(edge, types[typ as usize - 1].to_string());

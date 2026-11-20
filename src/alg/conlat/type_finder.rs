@@ -518,7 +518,7 @@ where
         let gen_pair = self.con.generating_pair(beta)
             .ok_or_else(|| format!("No generating pair found for beta"))?;
         let subtrace = self.find_subtrace_from_pair(&gen_pair)?;
-        self.find_type_from_subtrace(subtrace)
+        Ok(self.find_type_from_subtrace(subtrace)?.type_value())
     }
     
     /// Find the type of a subtrace.
@@ -532,7 +532,7 @@ where
     /// 
     /// # Returns
     /// The TCT type (1-5)
-    pub fn find_type_from_subtrace(&self, mut subtrace: Subtrace) -> Result<i32, String> {
+    pub fn find_type_from_subtrace(&self, mut subtrace: Subtrace) -> Result<Subtrace, String> {
         let c = subtrace.first();
         let d = subtrace.second();
         
@@ -623,12 +623,12 @@ where
                         if subtrace.has_involution() {
                             subtrace.set_matrix_universe(universe);
                             subtrace.set_type(3);
-                            return Ok(3);
+                            return Ok(subtrace);
                         }
                         if meet {
                             subtrace.set_matrix_universe(universe);
                             subtrace.set_type(4);
-                            return Ok(4);
+                            return Ok(subtrace);
                         }
                         join = true;
                         one_snag = true;
@@ -636,12 +636,12 @@ where
                         // Check for meet
                         if subtrace.has_involution() {
                             subtrace.set_type(3);
-                            return Ok(3);
+                            return Ok(subtrace);
                         }
                         if join {
                             subtrace.set_matrix_universe(universe);
                             subtrace.set_type(4);
-                            return Ok(4);
+                            return Ok(subtrace);
                         }
                         meet = true;
                         one_snag = true;
@@ -668,13 +668,13 @@ where
         
         if join || meet {
             subtrace.set_type(5);
-            Ok(5)
+            Ok(subtrace)
         } else if one_snag {
             subtrace.set_type(2);
-            Ok(2)
+            Ok(subtrace)
         } else {
             subtrace.set_type(1);
-            Ok(1)
+            Ok(subtrace)
         }
     }
 }

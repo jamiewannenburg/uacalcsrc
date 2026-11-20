@@ -197,7 +197,6 @@ impl Operation for BigProductOperation {
 /// let product = BigProductAlgebra::new_safe(vec![alg1, alg2]).unwrap();
 /// assert_eq!(product.get_number_of_factors(), 2);
 /// ```
-#[derive(Debug)]
 pub struct BigProductAlgebra<T>
 where
     T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static,
@@ -236,8 +235,10 @@ where
     /// Operations on this algebra (Arc-backed, boxed view provided on demand)
     operations: Vec<Arc<dyn Operation>>,
 
-    /// Similarity type
-    similarity_type: Option<SimilarityType>,
+    /// Similarity type. Java stores this on the algebra and rebuilds it in
+    /// ``updateSimilarityType``. Shared ``Arc`` handles see an update only when
+    /// the Python wrapper can mutably borrow the allocation (or replaces it).
+    similarity_type: SimilarityType,
 
     /// Progress monitor
     monitor: Option<Box<dyn ProgressMonitor>>,
@@ -300,18 +301,12 @@ where
             root_algebras: None,
             powers: None,
             operations: Vec::new(),
-            similarity_type: None,
+            similarity_type: SimilarityType::new(Vec::new()),
             monitor: None,
         };
 
         product.make_operations();
-        product.similarity_type = Some(SimilarityType::new(
-            product
-                .operations
-                .iter()
-                .map(|op| op.symbol().clone())
-                .collect(),
-        ));
+        product.recompute_similarity_type();
 
         Ok(product)
     }
@@ -405,20 +400,25 @@ where
             root_algebras: Some(root_algebras),
             powers: Some(powers),
             operations: Vec::new(),
-            similarity_type: None,
+            similarity_type: SimilarityType::new(Vec::new()),
             monitor: None,
         };
 
         product.make_operations();
-        product.similarity_type = Some(SimilarityType::new(
-            product
-                .operations
-                .iter()
-                .map(|op| op.symbol().clone())
-                .collect(),
-        ));
+        product.recompute_similarity_type();
 
         Ok(product)
+    }
+
+    /// Rebuild the similarity type from operation symbols in ``operations()`` order
+    /// (matches Java ``GeneralAlgebra.updateSimilarityType()``).
+    pub fn recompute_similarity_type(&mut self) {
+        let symbols: Vec<OperationSymbol> = self
+            .operations
+            .iter()
+            .map(|op| op.symbol().clone())
+            .collect();
+        self.similarity_type = SimilarityType::new(symbols);
     }
 
     /// Make operations on the product algebra.
@@ -784,6 +784,19 @@ where
     }
 }
 
+impl<T> fmt::Debug for BigProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("BigProductAlgebra")
+            .field("name", &self.name)
+            .field("number_of_factors", &self.number_of_factors)
+            .field("similarity_type", &self.similarity_type)
+            .finish()
+    }
+}
+
 impl<T> fmt::Display for BigProductAlgebra<T>
 where
     T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static,
@@ -875,19 +888,15 @@ where
     }
 
     fn similarity_type(&self) -> &SimilarityType {
-        static DEFAULT: once_cell::sync::Lazy<SimilarityType> =
-            once_cell::sync::Lazy::new(|| SimilarityType::new(Vec::new()));
-        self.similarity_type.as_ref().unwrap_or(&DEFAULT)
+        &self.similarity_type
     }
 
     fn update_similarity_type(&mut self) {
-        // Update similarity type from operations
-        // TODO: Implement
+        self.recompute_similarity_type();
     }
 
-    fn is_similar_to(&self, _other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
-        // TODO: Implement proper similarity check
-        false
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+        self.similarity_type() == other.similarity_type()
     }
 
     fn make_operation_tables(&mut self) {

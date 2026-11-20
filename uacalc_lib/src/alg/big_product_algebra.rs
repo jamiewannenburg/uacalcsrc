@@ -1,9 +1,10 @@
 use crate::alg::algebra_extract::extract_boxed_small_algebra;
 use crate::alg::convert::{ops_to_basic_algebra, term_to_py};
 use crate::alg::op::operation_symbol::PyOperationSymbol;
+use crate::alg::op::similarity_type::PySimilarityType;
 use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyAny;
 use std::sync::Arc;
@@ -223,6 +224,64 @@ impl PyBigProductAlgebra {
 
     fn cardinality(&self) -> i32 {
         Algebra::cardinality(&*self.inner)
+    }
+
+    /// Java ``similarityType()`` / ``GeneralAlgebra.similarityType()``.
+    fn similarity_type(&self) -> PySimilarityType {
+        PySimilarityType::from_inner(Algebra::similarity_type(&*self.inner).clone())
+    }
+
+    #[allow(non_snake_case)]
+    fn similarityType(&self) -> PySimilarityType {
+        self.similarity_type()
+    }
+
+    /// Java ``updateSimilarityType()`` / ``GeneralAlgebra.updateSimilarityType()``.
+    ///
+    /// Mutates the shared algebra when this object uniquely owns the ``Arc``.
+    /// If another handle (for example ``Closer``) also holds it, the updated
+    /// algebra is installed on this Python object.
+    fn update_similarity_type(&mut self) {
+        if let Some(alg) = Arc::get_mut(&mut self.inner) {
+            alg.recompute_similarity_type();
+            return;
+        }
+        let mut cloned = (*self.inner).clone();
+        cloned.recompute_similarity_type();
+        self.inner = Arc::new(cloned);
+    }
+
+    #[allow(non_snake_case)]
+    fn updateSimilarityType(&mut self) {
+        self.update_similarity_type();
+    }
+
+    /// Java ``isSimilarTo(Algebra)`` — compares similarity types (``SimilarityType.equals``).
+    fn is_similar_to(&self, other: &Bound<'_, PyAny>) -> PyResult<bool> {
+        if other.is_none() {
+            return Err(PyTypeError::new_err(
+                "is_similar_to: argument must not be None",
+            ));
+        }
+        if let Ok(other_bp) = other.extract::<PyRef<PyBigProductAlgebra>>() {
+            return Ok(
+                Algebra::similarity_type(&*self.inner) == Algebra::similarity_type(&*other_bp.inner),
+            );
+        }
+        if let Ok(other_ba) = other.extract::<PyRef<PyBasicAlgebra>>() {
+            return Ok(
+                Algebra::similarity_type(&*self.inner)
+                    == Algebra::similarity_type(&other_ba.inner),
+            );
+        }
+        Err(PyTypeError::new_err(
+            "is_similar_to: expected BigProductAlgebra or BasicAlgebra",
+        ))
+    }
+
+    #[allow(non_snake_case)]
+    fn isSimilarTo(&self, other: &Bound<'_, PyAny>) -> PyResult<bool> {
+        self.is_similar_to(other)
     }
 
     /// Apply product operation ``op_index`` to coordinate arrays (Java ``valueAt(int[][])``).

@@ -146,6 +146,22 @@ impl PyTermOperationImp {
         }
     }
 
+    /// Build the operation table if it is not already available.
+    ///
+    /// # Raises
+    /// ValueError: If table construction fails
+    fn make_table(&mut self) -> PyResult<()> {
+        self.inner
+            .make_table()
+            .map_err(PyValueError::new_err)
+    }
+
+    /// Java-style alias for `make_table`.
+    #[pyo3(name = "makeTable")]
+    fn make_table_camel(&mut self) -> PyResult<()> {
+        self.make_table()
+    }
+
     /// Get the operation table.
     ///
     /// # Returns

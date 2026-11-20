@@ -133,7 +133,26 @@ impl Operation for QuotientOperation {
     }
     
     fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> {
-        Err("value_at_arrays not implemented for QuotientOperation".to_string())
+        if args.is_empty() {
+            return Err("No argument arrays provided".to_string());
+        }
+
+        let length = args[0].len();
+        let mut result = Vec::with_capacity(length);
+
+        for i in 0..length {
+            crate::resource::checkpoint()?;
+            let mut single_args = Vec::with_capacity(args.len());
+            for arg_array in args {
+                if arg_array.len() != length {
+                    return Err("All argument arrays must have the same length".to_string());
+                }
+                single_args.push(arg_array[i]);
+            }
+            result.push(self.int_value_at(&single_args)?);
+        }
+
+        Ok(result)
     }
     
     fn int_value_at_horner(&self, arg: i32) -> Result<i32, String> {

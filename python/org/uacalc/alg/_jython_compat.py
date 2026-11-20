@@ -1736,6 +1736,17 @@ def _install(alg_module_globals: dict) -> None:
             if alg is None or typesFound is None:
                 _raise_npe()
             _reject_progress_report(report, "typesInSofAStrictlySimpleIdempotent")
+            if alg_module_globals.get("types_in_sof_a_strictly_simple_idempotent") is not None:
+                found = sorted(int(x) for x in typesFound)
+                out = _lib_call(
+                    _malcev_fn("types_in_sof_a_strictly_simple_idempotent"),
+                    _as_basic_algebra(alg),
+                    found,
+                )
+                typesFound.clear()
+                for x in out:
+                    typesFound.add(int(x))
+                return typesFound
             alg = _as_basic_algebra(alg)
             n = int(alg.cardinality())
             for a in range(n):
@@ -1756,6 +1767,17 @@ def _install(alg_module_globals: dict) -> None:
             if alg is None or typesFound is None:
                 _raise_npe()
             _reject_progress_report(report, "typesInSofAIdempotent")
+            if alg_module_globals.get("types_in_sof_a_idempotent") is not None:
+                found = sorted(int(x) for x in typesFound)
+                out = _lib_call(
+                    _malcev_fn("types_in_sof_a_idempotent"),
+                    _as_basic_algebra(alg),
+                    found,
+                )
+                typesFound.clear()
+                for x in out:
+                    typesFound.add(int(x))
+                return typesFound
             from org.uacalc.alg import QuotientAlgebra
 
             decomp = list(alg.con().irredundantMeetDecomposition())
@@ -1772,6 +1794,17 @@ def _install(alg_module_globals: dict) -> None:
             if alg is None or typesFound is None:
                 _raise_npe()
             _reject_progress_report(report, "typesInSofAIRobustDecompdempotent")
+            if alg_module_globals.get("types_in_sof_a_i_robust_decompdempotent") is not None:
+                found = sorted(int(x) for x in typesFound)
+                out = _lib_call(
+                    _malcev_fn("types_in_sof_a_i_robust_decompdempotent"),
+                    _as_basic_algebra(alg),
+                    found,
+                )
+                typesFound.clear()
+                for x in out:
+                    typesFound.add(int(x))
+                return typesFound
             if int(alg.cardinality()) == 1:
                 return typesFound
             from org.uacalc.alg import MaltsevProductDecomposition
@@ -1795,6 +1828,14 @@ def _install(alg_module_globals: dict) -> None:
                 report = typesFound
                 typesFound = None
                 _reject_progress_report(report, "omittedIdealIdempotent")
+                if alg_module_globals.get("omitted_ideal_idempotent") is not None:
+                    return set(
+                        int(x)
+                        for x in _lib_call(
+                            _malcev_fn("omitted_ideal_idempotent"),
+                            _as_basic_algebra(alg),
+                        )
+                    )
                 found = set()
                 Malcev.typesInSofAStrictlySimpleIdempotent(alg, found, None)
                 typesFound = found
@@ -1802,6 +1843,15 @@ def _install(alg_module_globals: dict) -> None:
                 _reject_progress_report(report, "omittedIdealIdempotent")
                 if typesFound is None:
                     _raise_npe()
+                if alg_module_globals.get("omitted_ideal_idempotent") is not None:
+                    return set(
+                        int(x)
+                        for x in _lib_call(
+                            _malcev_fn("omitted_ideal_idempotent"),
+                            _as_basic_algebra(alg),
+                            typesFound,
+                        )
+                    )
             ans = set()
             if 1 not in typesFound:
                 ans.add(1)
@@ -1818,6 +1868,11 @@ def _install(alg_module_globals: dict) -> None:
             if alg is None:
                 _raise_npe()
             _reject_progress_report(report, "typeSetIdempotent")
+            if alg_module_globals.get("type_set_idempotent") is not None:
+                bounds = _lib_call(
+                    _malcev_fn("type_set_idempotent"), _as_basic_algebra(alg)
+                )
+                return [set(int(x) for x in part) for part in bounds]
             # Match Java including the types1.add(2) bug that aliases {1,2}.
             types12 = set([1, 2])
             types1 = set([1])
@@ -1870,6 +1925,19 @@ def _install(alg_module_globals: dict) -> None:
                 if len(args) == 2 or (len(args) == 3 and args[2] is None):
                     alg, report = args[0], args[1] if len(args) > 1 else None
                     _reject_progress_report(report, "cubeTermBlockerIdempotent")
+                    if alg_module_globals.get("cube_term_blocker_idempotent") is not None:
+                        from org.uacalc.alg.sublat import BasicSet
+
+                        out = _lib_call(
+                            _malcev_fn("cube_term_blocker_idempotent"),
+                            _as_basic_algebra(alg),
+                        )
+                        if out is None:
+                            return None
+                        return [
+                            BasicSet([int(x) for x in out[0]]),
+                            BasicSet([int(x) for x in out[1]]),
+                        ]
                     return _cube_term_blocker_alg(alg)
                 if len(args) >= 3:
                     alg, C, D = args[0], args[1], args[2]
@@ -1896,6 +1964,15 @@ def _install(alg_module_globals: dict) -> None:
             if alg is None:
                 _raise_npe()
             _reject_progress_report(report, "sdIdempotent")
+            if alg_module_globals.get("sd_idempotent") is not None:
+                out = _lib_call(
+                    _malcev_fn("sd_idempotent"), _as_basic_algebra(alg)
+                )
+                if out is None:
+                    return None
+                from org.uacalc.util import IntArray
+
+                return IntArray([int(x) for x in out])
             from org.uacalc.alg import BigProductAlgebra, SubProductAlgebra
             from org.uacalc.util import IntArray
 
@@ -1931,6 +2008,15 @@ def _install(alg_module_globals: dict) -> None:
             if alg is None:
                 _raise_npe()
             _reject_progress_report(report, "cpIdempotent")
+            if alg_module_globals.get("cp_idempotent") is not None:
+                out = _lib_call(
+                    _malcev_fn("cp_idempotent"), _as_basic_algebra(alg)
+                )
+                if out is None:
+                    return None
+                from org.uacalc.util import IntArray
+
+                return IntArray([int(x) for x in out])
             from org.uacalc.alg import BigProductAlgebra, SubProductAlgebra
             from org.uacalc.util import IntArray
 

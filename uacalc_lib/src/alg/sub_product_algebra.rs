@@ -5,6 +5,7 @@ use uacalc::alg::{Algebra, SmallAlgebra};
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 
 use crate::alg::basic_algebra::PyBasicAlgebra;
+use crate::alg::conlat::partition::PyPartition;
 use crate::alg::big_product_algebra::PyBigProductAlgebra;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 use crate::alg::convert::{
@@ -286,6 +287,19 @@ impl PySubProductAlgebra {
             self.inner.cardinality(),
             Algebra::operations(&self.inner),
         )
+    }
+
+    /// Java `SubProductAlgebra.projectionKernel(int)`.
+    fn projection_kernel(&self, py: Python<'_>, k: i32) -> PyResult<PyPartition> {
+        self.inner
+            .projection_kernel(k)
+            .map(PyPartition::from_inner)
+            .map_err(|e| crate::resource::ua_to_py(e, py))
+    }
+
+    #[allow(non_snake_case)]
+    fn projectionKernel(&self, py: Python<'_>, k: i32) -> PyResult<PyPartition> {
+        self.projection_kernel(py, k)
     }
 
     fn __str__(&self) -> String {
