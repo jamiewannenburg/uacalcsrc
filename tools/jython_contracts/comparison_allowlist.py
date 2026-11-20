@@ -22,6 +22,10 @@ KNOWN_OUTPUT_DIFFERENCES: Dict[str, str] = {
         "Known Java bug: BasicSet.union uses lst.contains(i) on the index; "
         "{0,2}∪{1,3} is [0,2,3] on Java/Jython vs [0,1,2,3] on CPython."
     ),
+    "jython_comparison/scripts/random_parity.py": (
+        "Known Java bug: BasicSet.union index typo; snapshot basicset.union "
+        "differs from Java (same as tests/parity/random LIBRARY_BUG_PREFIXES)."
+    ),
 }
 
 

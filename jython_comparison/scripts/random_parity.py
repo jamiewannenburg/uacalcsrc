@@ -535,7 +535,7 @@ def snapshot_util(rng, n):
 
 
 def snapshot_basicset(rng, n):
-    # Split the universe so union cannot hit Java's duplicate-preserving bug.
+    # Disjoint halves; union vs Java may differ (Known Java bug on lst.contains(i)).
     cut = rng.randint(0, n)
     a = list(range(0, cut))
     b = list(range(cut, n))
