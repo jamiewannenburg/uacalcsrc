@@ -18,6 +18,10 @@ KNOWN_OUTPUT_DIFFERENCES: Dict[str, str] = {
     "jython_comparison/scripts/matrix_power_algebra_smoke.py": (
         "Rust gap: MatrixPowerAlgebra getElement(0) NPE on shim; op_plus False vs True on Java."
     ),
+    "jython_comparison/scripts/basic_set_ops.py": (
+        "Known Java bug: BasicSet.union uses lst.contains(i) on the index; "
+        "{0,2}∪{1,3} is [0,2,3] on Java/Jython vs [0,1,2,3] on CPython."
+    ),
 }
 
 
