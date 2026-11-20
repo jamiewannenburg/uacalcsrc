@@ -1787,8 +1787,10 @@ def _install(conlat_globals: dict) -> None:
         if _LibPoly is None:
             return
 
+        _orig_make_graph = _LibPoly.make_graph
+
         def make_graph(self: Any) -> None:
-            _lib_call(self.make_graph)
+            _lib_call(_orig_make_graph, self)
 
         try:
             _LibPoly.make_graph = make_graph

@@ -227,7 +227,12 @@ class TestNonVariableTermBasic(unittest.TestCase):
         self.assertIsInstance(compound, NonVariableTerm)
         self.assertEqual(compound.depth(), 2)
         self.assertEqual(compound.length(), 3)
-        self.assertEqual(list(compound.getVariableList()), ["x"])
+        var_list = list(compound.getVariableList())
+        var_names = [
+            v if isinstance(v, str) else getattr(v, "get_name", lambda: str(v))()
+            for v in var_list
+        ]
+        self.assertEqual(var_names, ["x"])
         self.assertEqual(str(compound), "f(x,e())")
 
         y = VariableImp("y")
@@ -350,11 +355,13 @@ class TestNonVariableTermEvaluation(unittest.TestCase):
         
         term = self.NonVariableTerm(plus, [x, y])
         
-        # Missing variable should raise error
-        with self.assertRaises(ValueError):
+        # Missing variable should raise error (ValueError native; NPE after org.uacalc shim).
+        from org.uacalc._exceptions import NullPointerException
+
+        with self.assertRaises((ValueError, NullPointerException)):
             term.eval(alg, {"x": 0})
-        
-        with self.assertRaises(ValueError):
+
+        with self.assertRaises((ValueError, NullPointerException)):
             term.eval(alg, {})
     
     def test_eval_multiple_algebras(self):

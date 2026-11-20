@@ -6,29 +6,62 @@ in the tests directory and provides algebra loading utilities.
 """
 
 import os
+import sys
 import pytest
 import uacalc_lib
 from typing import Optional
 
 pytestmark = []
 
+def pytest_sessionstart(session):
+    """Clear thread-local resource limits at session start (leftover from prior runs)."""
+    if hasattr(uacalc_lib, "reset_all_limits"):
+        uacalc_lib.reset_all_limits()
+    else:
+        uacalc_lib.set_memory_limit(None)
+        uacalc_lib.set_element_limit(None)
+        uacalc_lib.set_time_limit(None)
+        uacalc_lib.clear_cancel()
+
+
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: long-running or Java comparison tests")
+    # Fail fast when java_wrapper / uacalc_lib are missing (skip in CI that sets UACALC_SKIP_ENV_CHECK=1).
+    if os.environ.get("UACALC_SKIP_ENV_CHECK") == "1":
+        return
+    from pathlib import Path
+
+    tools = Path(__file__).resolve().parents[3] / "tools" / "check_test_env.py"
+    if tools.is_file():
+        import subprocess
+
+        rc = subprocess.run(
+            [sys.executable, str(tools)],
+            cwd=tools.parents[1],
+            env=os.environ.copy(),
+        ).returncode
+        if rc != 0:
+            pytest.exit("Test environment preflight failed (see tools/check_test_env.py)", returncode=rc)
 
 
 @pytest.fixture(autouse=True)
 def reset_resource_limits():
     """Teardown thread-local limit state between tests that touch budgets."""
-    uacalc_lib.clear_cancel()
-    uacalc_lib.set_memory_limit(None)
-    uacalc_lib.set_element_limit(None)
-    uacalc_lib.set_time_limit(None)
-    uacalc_lib.clear_cancel()
+    if hasattr(uacalc_lib, "reset_all_limits"):
+        uacalc_lib.reset_all_limits()
+    else:
+        uacalc_lib.clear_cancel()
+        uacalc_lib.set_memory_limit(None)
+        uacalc_lib.set_element_limit(None)
+        uacalc_lib.set_time_limit(None)
     yield
-    uacalc_lib.set_memory_limit(None)
-    uacalc_lib.set_element_limit(None)
-    uacalc_lib.set_time_limit(None)
-    uacalc_lib.clear_cancel()
+    if hasattr(uacalc_lib, "reset_all_limits"):
+        uacalc_lib.reset_all_limits()
+    else:
+        uacalc_lib.set_memory_limit(None)
+        uacalc_lib.set_element_limit(None)
+        uacalc_lib.set_time_limit(None)
+        uacalc_lib.clear_cancel()
 
 # Import all fixtures from test_utils to make them available
 from test_utils import (

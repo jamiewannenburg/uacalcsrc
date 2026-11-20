@@ -94,6 +94,12 @@ fn clear_cancel() -> PyResult<()> {
     Ok(())
 }
 
+#[pyfunction]
+fn reset_all_limits() -> PyResult<()> {
+    resource::reset_all_limits();
+    Ok(())
+}
+
 /// Cooperative limit poll for long pure-Python loops (org.uacalc term tables).
 #[pyfunction]
 fn checkpoint(py: Python<'_>) -> PyResult<()> {
@@ -118,6 +124,7 @@ pub fn register(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(set_time_limit, m)?)?;
     m.add_function(wrap_pyfunction!(cancel, m)?)?;
     m.add_function(wrap_pyfunction!(clear_cancel, m)?)?;
+    m.add_function(wrap_pyfunction!(reset_all_limits, m)?)?;
     m.add_function(wrap_pyfunction!(checkpoint, m)?)?;
     m.add_function(wrap_pyfunction!(poll_cancel, m)?)?;
     m.add_function(wrap_pyfunction!(checkpoint_force, m)?)?;

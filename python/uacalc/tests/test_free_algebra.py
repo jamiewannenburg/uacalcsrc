@@ -197,10 +197,6 @@ class TestFreeAlgebra:
         # Get automorphism
         automorphism = free_alg.switch_x_and_y_automorphism()
         
-        # Basic validation - Rust implementation currently returns None due to simplified construction
-        # This is expected behavior for the current implementation
-        assert automorphism is None
-        
         # Compare with Java wrapper
         java_result = run_java_wrapper(
             "java_wrapper.src.alg.FreeAlgebraWrapper",
@@ -210,8 +206,13 @@ class TestFreeAlgebra:
         
         assert java_result.exit_code == 0
         java_data = get_java_data(java_result)
-        # Java implementation returns a proper automorphism operation
         assert java_data["automorphism"] is not None
+        assert automorphism is not None
+        auto_java = java_data.get("automorphism")
+        if isinstance(auto_java, dict):
+            assert automorphism.symbol().name() == auto_java.get("symbolName")
+        else:
+            assert auto_java is not None
 
     def test_find_equation_of_a_not_b(self, test_config, base_algebra):
         """Test find equation of A not B static method."""

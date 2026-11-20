@@ -81,7 +81,18 @@ else:
     _LibNonVariableTerm = _terms.NonVariableTerm
     _string_to_term = _terms.string_to_term
     VariableImp = _terms.VariableImp
-    Variable = VariableImp
+
+    class _JavaVariable:
+        """Java ``Variable.x`` static fields without shadowing ``VariableImp.x()``."""
+
+        x = VariableImp.x()
+        y = VariableImp.y()
+        z = VariableImp.z()
+
+        def __call__(self, name):
+            return VariableImp(name)
+
+    Variable = _JavaVariable()
 
     class Term(object):
         """Java ``org.uacalc.terms.Term`` interface surface for contracts."""
@@ -137,14 +148,6 @@ else:
 
     NonVariableTerm = _LibNonVariableTerm
     NonVariableTerm.makeConstantTerm = staticmethod(_make_constant_term)
-
-    for _vname in ("x", "y", "z"):
-        _attr = getattr(VariableImp, _vname, None)
-        if callable(_attr):
-            try:
-                setattr(VariableImp, _vname, _attr())
-            except TypeError:
-                pass
 
     class Terms(object):
         """Static facade matching Java ``org.uacalc.terms.Terms``."""
@@ -204,8 +207,6 @@ else:
         _uacalc_lib,
         _terms,
         _name,
-        _vname,
-        _attr,
         _LibNonVariableTerm,
         _make_constant_term,
         _install_jython_compat,

@@ -180,21 +180,14 @@ impl PyBasicSet {
         PyBasicSet { inner: uacalc::alg::sublat::BasicSet::union_static(&set1.inner, &set2.inner) }
     }
 
-    /// Match Java ``IntArray.toString()``: ``[0, 1]`` with comma-space.
+    /// Match Java ``BasicSet`` element labels (integer universe): ``{1,3,5}``.
     fn __str__(&self) -> String {
         let elems = self.inner.elements();
         if elems.is_empty() {
-            return "[]".to_string();
+            return "{}".to_string();
         }
-        let mut sb = String::from("[");
-        for (i, v) in elems.iter().enumerate() {
-            if i > 0 {
-                sb.push_str(", ");
-            }
-            sb.push_str(&v.to_string());
-        }
-        sb.push(']');
-        sb
+        let body: Vec<String> = elems.iter().map(|v| v.to_string()).collect();
+        format!("{{{}}}", body.join(","))
     }
 
     /// Python repr representation

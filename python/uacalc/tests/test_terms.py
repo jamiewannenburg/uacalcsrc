@@ -167,9 +167,11 @@ class TestTermEvaluation(unittest.TestCase):
         # Create a variable term
         x = VariableImp("x")
         
+        from org.uacalc._exceptions import NullPointerException
+
         # Try to evaluate without providing value for x
         var_map = {}
-        with self.assertRaises(ValueError):
+        with self.assertRaises((ValueError, NullPointerException)):
             x.eval(alg, var_map)
     
     def test_variable_eval_with_different_algebras(self):

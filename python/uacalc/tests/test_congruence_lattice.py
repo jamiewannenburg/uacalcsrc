@@ -214,7 +214,8 @@ def test_idempotent_polynomials():
     
     # All elements should be IntArrays
     for poly in polynomials:
-        assert isinstance(poly, uacalc_lib.IntArray)
+        IntArray = uacalc_lib.util.IntArray
+        assert isinstance(poly, IntArray)
 
 
 def test_delta():

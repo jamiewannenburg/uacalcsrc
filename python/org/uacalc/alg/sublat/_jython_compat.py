@@ -28,6 +28,7 @@ def _install(sublat_globals: dict) -> None:
     _SL_MONITOR = [None]
     _ORIG_BS_LEQ = _LibBasicSet.leq
     _ORIG_BS_INTER = _LibBasicSet.intersection
+    _ORIG_BS_UNION = _LibBasicSet.union
     _ORIG_BS_GET = getattr(_LibBasicSet, "get", None)
     _ORIG_BS_CONTAINS = _LibBasicSet.contains
     _ORIG_BS_NORMALIZE = getattr(_LibBasicSet, "normalize", None)
@@ -178,9 +179,12 @@ def _install(sublat_globals: dict) -> None:
 
     def union(self_or_a: Any, other: Any) -> Any:
         # Java BasicSet.union uses ``lst.contains(i)`` on the *index*, not the
-        # element (a real Java bug). Match that, then construct BasicSet (sorts).
+        # element (a real Java bug). Match that for list overloads; two native
+        # BasicSet operands keep the Rust implementation (suite isolation).
         if self_or_a is None or other is None:
             _raise_npe()
+        if _is_basic_set(self_or_a) and _is_basic_set(other):
+            return _ORIG_BS_UNION(self_or_a, other)
         set1 = self_or_a if _is_basic_set(self_or_a) else BasicSet(_as_int_list(self_or_a))
         set2 = other if _is_basic_set(other) else BasicSet(_as_int_list(other))
         lst = [int(get(set1, i)) for i in range(universeSize(set1))]
@@ -218,14 +222,14 @@ def _install(sublat_globals: dict) -> None:
     except (TypeError, AttributeError):
         pass
 
-    _BS_PATCHES = {
+    # Java facade names; do not override native ``__str__`` / ``__repr__`` on
+    # ``_LibBasicSet`` so uacalc_lib BasicSet string parity tests stay stable.
+    _BS_LIB_PATCHES = {
         "universeSize": universeSize,
         "get": get,
         "toArray": toArray,
         "getArray": getArray,
         "toString": toString,
-        "__str__": _bs_str,
-        "__repr__": lambda self: "BasicSet(" + _bs_str(self) + ")",
         "compareTo": compareTo,
         "setDifference": setDifference,
         "contains": contains,
@@ -234,11 +238,20 @@ def _install(sublat_globals: dict) -> None:
         "intersection": intersection,
         "union": union,
     }
-    for camel, impl in _BS_PATCHES.items():
+    _BS_FACADE_ONLY = {
+        "__str__": _bs_str,
+        "__repr__": lambda self: "BasicSet(" + _bs_str(self) + ")",
+    }
+    for camel, impl in _BS_LIB_PATCHES.items():
         try:
             setattr(_LibBasicSet, camel, impl)
         except (TypeError, AttributeError):
             pass
+        try:
+            setattr(BasicSet, camel, impl)
+        except (TypeError, AttributeError):
+            pass
+    for camel, impl in _BS_FACADE_ONLY.items():
         try:
             setattr(BasicSet, camel, impl)
         except (TypeError, AttributeError):
