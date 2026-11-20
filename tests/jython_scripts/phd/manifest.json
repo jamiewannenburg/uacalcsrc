@@ -4,7 +4,7 @@
       "path": "probes/nullary_string_to_term.py",
       "argv": [],
       "xfail_cpython": {
-        "reason": "line 2: jython='parse_fail|e()|empty string' cpython='parse_ok|e()|term:e()'"
+        "reason": "Known Java bug: line 2: jython='parse_fail|e()|empty string' cpython='parse_ok|e()|term:e()'"
       }
     },
     {

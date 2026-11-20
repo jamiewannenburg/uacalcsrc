@@ -55,14 +55,14 @@ Latest on `test_phd_jython_scripts.py`: **20 passed**, **1 xfailed** (`probes/nu
 
 | Root cause | Scripts | Status |
 |------------|---------|--------|
-| **Rust/Java nullary parse parity** | `probes/nullary_string_to_term.py` | open xfail |
+| **Known Java nullary `e()` parse bug** | `probes/nullary_string_to_term.py` | strict xfail (allowlisted; see `KNOWN_DIFFERENCES.md`) |
 | **Py2 vs Py3 eager `map()` statement** | `find_simple_chains.py` | **fixed** — harness rewrites bare `map(...)` to `list(map(...))` (Jython 2 ran search; Py3 was lazy and skipped straight to rename diagnostics) |
 | **Fixture / path / golden drift** | `2subalgebras.py`, `find_simple_chains.py` | **fixed** — logical `input/` path normalisation, fixture temp `__file__` for writers, stable `C-5-*.ua` mtime order in fixture copies |
 | **Mace4 / `findFailureMap` / checks / heyting file compare** | `mace4.py`, `filter2sa_mace4.py`, `check_m.py`, `heyting_from_poset.py`, … | **pass** on current `origin/jython` goldens |
 
 ### Roadmap (remaining)
 
-1. **Nullary `e()`:** align `Terms.stringToTerm` with Java or document intentional Rust extension (`probes/nullary_string_to_term.py`).
+1. **Nullary `e()`:** documented as a known Java bug (Jamie); CPython probe stays strict-xfail (`probes/nullary_string_to_term.py`, `KNOWN_DIFFERENCES.md`).
 
 ## Maintainer commands
 

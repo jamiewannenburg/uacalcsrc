@@ -108,6 +108,5 @@ TEST_CASES = [
     _c("inh_term_tostr", "Term.toString", "fxy.toString()", "Term toString", **_SKIP),
     _c("inh_term_wsb", "Term.writeStringBuffer", "_wsb(fxy, 't=')", "Term writeStringBuffer"),
     _c("inh_nvt_hash", "NonVariableTerm.hashCode",
-       "fxy.hashCode()", "NonVariableTerm hashCode",
-       xfail_reason="Wrapper bug: NonVariableTerm.hashCode differs from Java on the same term tree"),
+       "fxy.hashCode()", "NonVariableTerm hashCode"),
 ]

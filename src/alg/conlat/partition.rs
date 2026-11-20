@@ -71,13 +71,15 @@ impl Partition {
     /// assert_eq!(partition.universe_size(), 3);
     /// ```
     pub fn new(array: Vec<i32>) -> Result<Self, String> {
-        // Java BasicPartition(int[]) accepts the empty array (0-element algebra).
+        if array.is_empty() {
+            return Err("Index: 0, Size: 0".to_string());
+        }
         let mut partition = Partition {
             array,
             block_count: -1,
             representatives: None,
         };
-        
+
         partition.normalize();
         Ok(partition)
     }

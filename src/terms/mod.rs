@@ -449,7 +449,46 @@ impl Clone for NonVariableTerm {
     }
 }
 
+/// Java ``List.hashCode()`` for a list of child terms.
+pub fn java_term_list_hash_code(children: &[Box<dyn Term>]) -> i32 {
+    let mut h: i32 = 1;
+    for child in children {
+        h = h
+            .wrapping_mul(31)
+            .wrapping_add(java_term_hash_code(child.as_ref()));
+    }
+    h
+}
+
+/// Java ``Term.hashCode()`` on variables and compound terms.
+pub fn java_term_hash_code(term: &dyn Term) -> i32 {
+    if term.isa_variable() {
+        return OperationSymbol::java_string_hash(&format!("{}", term));
+    }
+    let sym_h = term
+        .leading_operation_symbol()
+        .map(|s| s.java_hash_code())
+        .unwrap_or(0);
+    let list_h = term
+        .get_children()
+        .map(|ch| java_term_list_hash_code(&ch))
+        .unwrap_or(1);
+    sym_h.wrapping_add(list_h)
+}
+
+impl VariableImp {
+    /// Java ``VariableImp.hashCode()`` (`name.hashCode()`).
+    pub fn java_hash_code(&self) -> i32 {
+        OperationSymbol::java_string_hash(&self.name)
+    }
+}
+
 impl NonVariableTerm {
+    /// Java ``NonVariableTerm.hashCode()`` (`leadingOperationSymbol.hashCode() + children.hashCode()`).
+    pub fn java_hash_code(&self) -> i32 {
+        java_term_hash_code(self)
+    }
+
     /// Creates a new non-variable term.
     /// 
     /// # Arguments
