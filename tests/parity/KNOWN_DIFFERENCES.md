@@ -683,7 +683,8 @@ the org shim's `leftSide` / `rightSide` return term objects via
 - **Status**: Known Java bug — intentional difference; Python is the desired
   behavior
 - **Tests**: `bs_union_index_bug`, `bs_union_keeps_dups` strict xfail (Java
-  golden values unchanged)
+  golden values unchanged). Random parity snapshots skip `basicset.union` via
+  `LIBRARY_BUG_PREFIXES` in `random_parity_config.py`.
 - **Owner vs shim**: Known Java bug. Not a shim issue and not a library issue.
 
 ### SubalgebraLattice.meet / join(List) / atoms / coatoms / meetIrreducibles
