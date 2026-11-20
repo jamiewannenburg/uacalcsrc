@@ -81,18 +81,36 @@ else:
     _LibNonVariableTerm = _terms.NonVariableTerm
     _string_to_term = _terms.string_to_term
     VariableImp = _terms.VariableImp
+    Variable = VariableImp
 
-    class _JavaVariable:
-        """Java ``Variable.x`` static fields without shadowing ``VariableImp.x()``."""
+    class _CallableSingleton:
+        """Java ``Variable.x`` literals plus ``VariableImp.x()`` factories on one name."""
 
-        x = VariableImp.x()
-        y = VariableImp.y()
-        z = VariableImp.z()
+        __slots__ = ("_factory", "_inst")
 
-        def __call__(self, name):
-            return VariableImp(name)
+        def __init__(self, factory):
+            self._factory = factory
+            self._inst = factory()
 
-    Variable = _JavaVariable()
+        def __call__(self):
+            return self._factory()
+
+        def __getattr__(self, name):
+            return getattr(self._inst, name)
+
+        def __repr__(self):
+            return repr(self._inst)
+
+        def __eq__(self, other):
+            return self._inst == other
+
+        def __hash__(self):
+            return hash(self._inst)
+
+    for _vname in ("x", "y", "z"):
+        _factory = getattr(VariableImp, _vname)
+        if callable(_factory):
+            setattr(VariableImp, _vname, _CallableSingleton(_factory))
 
     class Term(object):
         """Java ``org.uacalc.terms.Term`` interface surface for contracts."""

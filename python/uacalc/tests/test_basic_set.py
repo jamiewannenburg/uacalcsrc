@@ -233,8 +233,8 @@ class TestBasicSet(unittest.TestCase):
     def test_basic_set_string_representation(self):
         """Test string representation."""
         set1 = self.BasicSet([1, 3, 5])
-        self.assertEqual(str(set1), "{1,3,5}")
-        self.assertEqual(repr(set1), "BasicSet({1,3,5})")
+        self.assertEqual(str(set1), "[1, 3, 5]")
+        self.assertEqual(repr(set1), "BasicSet([1, 3, 5])")
     
     def test_basic_set_comprehensive_operations(self):
         """Test comprehensive set operations."""
