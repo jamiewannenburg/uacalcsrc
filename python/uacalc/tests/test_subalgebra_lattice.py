@@ -7,10 +7,26 @@ to ensure correctness and compatibility.
 """
 
 import subprocess
-import json
 import sys
 import platform
 from pathlib import Path
+import pytest
+import uacalc_lib
+from test_utils import build_java_command, get_project_root, parse_java_wrapper_stdout
+
+
+@pytest.fixture(autouse=True)
+def _clear_resource_limits_for_sublat_tests():
+    """Resource-limit tests run earlier in the suite; sg/join_irreducibles need a clean budget."""
+    uacalc_lib.set_time_limit(None)
+    uacalc_lib.set_element_limit(None)
+    uacalc_lib.set_memory_limit(None)
+    uacalc_lib.clear_cancel()
+    yield
+    uacalc_lib.set_time_limit(None)
+    uacalc_lib.set_element_limit(None)
+    uacalc_lib.set_memory_limit(None)
+    uacalc_lib.clear_cancel()
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -32,21 +48,22 @@ except ImportError as e:
 def run_java_wrapper(command_args):
     """Run the Java wrapper and return parsed JSON output."""
     try:
-        separator = ";" if platform.system() == "Windows" else ":"
-        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
-        cmd = [
-            "java", "-cp", classpath,
-            "java_wrapper.src.alg.sublat.SubalgebraLatticeWrapper"
-        ] + command_args
-        
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        cmd = build_java_command(
+            "java_wrapper.src.alg.sublat.SubalgebraLatticeWrapper", command_args
+        )
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=get_project_root(),
+        )
         
         if result.returncode != 0:
             print(f"Java command failed: {result.stderr}")
             return None
             
-        # Parse JSON output
-        return json.loads(result.stdout)
+        return parse_java_wrapper_stdout(result.stdout)
     except subprocess.TimeoutExpired:
         print("Java command timed out")
         return None

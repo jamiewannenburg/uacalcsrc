@@ -273,7 +273,18 @@ pub fn set_element_limit(limit: Option<u64>) {
 }
 
 pub fn set_time_limit(limit: Option<Duration>) {
-    with_state(|s| s.time_limit = limit);
+    with_state(|s| {
+        s.time_limit = limit;
+        if limit.is_none() {
+            s.deadline = None;
+        } else if s.scope_depth == 0 {
+            s.deadline = Some(Instant::now() + limit.unwrap());
+        }
+    });
+    // Detach stale parallel budgets left over from limit stress tests.
+    if limit.is_none() {
+        end_shared_budget();
+    }
     sync_limits_configured();
 }
 
@@ -288,10 +299,12 @@ pub fn clear_cancel() {
 /// Reset all limit configuration and cancel flag (for tests).
 pub fn reset_all_limits() {
     clear_cancel();
+    end_shared_budget();
     with_state(|s| {
         s.memory_limit = None;
         s.element_limit = None;
         s.time_limit = None;
+        s.deadline = None;
     });
     sync_limits_configured();
 }
@@ -690,6 +703,19 @@ mod tests {
         let _scope = ComputationScope::enter();
         thread::sleep(Duration::from_millis(5));
         assert!(matches!(checkpoint_force(), Err(UaError::TimeLimit)));
+    }
+
+    #[test]
+    fn clear_time_limit_clears_stale_deadline() {
+        clear_cancel();
+        set_time_limit(Some(Duration::from_millis(1)));
+        let _scope = ComputationScope::enter();
+        thread::sleep(Duration::from_millis(5));
+        assert!(matches!(checkpoint_force(), Err(UaError::TimeLimit)));
+        drop(_scope);
+        set_time_limit(None);
+        assert!(checkpoint_entry().is_ok());
+        reset_all_limits();
     }
 
     #[test]

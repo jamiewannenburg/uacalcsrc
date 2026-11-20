@@ -305,3 +305,27 @@ New behavioral tests are added alongside them:
 - `golden_data/*.json` → new structured golden data
 
 The goal is to eventually have behavioral tests for all wrapped methods, making smoke/surface tests a quick sanity check layer.
+
+## Fast local suite (`pytest -m "not slow"`)
+
+One-shot setup on a fresh machine (Windows PowerShell example; use `:` instead of `;` on Unix for `JAVA_HOME`/`PATH`):
+
+```powershell
+git clone <repo>
+cd uacalcsrc
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
+git fetch origin
+git checkout jython
+python -m venv venv
+.\venv\Scripts\pip install -e ".[test,drawing]"
+.\venv\Scripts\pip install maturin
+ant compile-wrappers
+.\venv\Scripts\maturin develop --release
+.\venv\Scripts\python.exe tools\check_test_env.py
+.\venv\Scripts\python.exe tools\compare_pytest_not_slow.py `
+  --python .\venv\Scripts\python.exe `
+  --junit-out baseline_junit.xml `
+  --failures-out baseline_failures.txt
+```
+
+Expect **0 failed** tests; skipped and strict-xfail entries are allowed when documented. Record branch-vs-baseline diffs with `tools/compare_pytest_failures.py`. Set `UACALC_SKIP_ENV_CHECK=1` only when intentionally running without Java (e.g. Rust-only edits).

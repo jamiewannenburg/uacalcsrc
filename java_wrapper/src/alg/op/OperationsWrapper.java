@@ -799,9 +799,9 @@ public class OperationsWrapper extends WrapperBase {
         Operation op = withSilencedStdout(() -> Operations.makeLeftShift(vecSize, rootSize));
         
         Map<String, Object> data = new HashMap<>();
-        data.put("symbolName", "leftShift");
+        data.put("symbolName", op.symbol().name());
         data.put("arity", op.arity());
-        data.put("setSize", vecSize);
+        data.put("setSize", op.getSetSize());
         data.put("vecSize", vecSize);
         data.put("rootSize", rootSize);
         
@@ -818,9 +818,9 @@ public class OperationsWrapper extends WrapperBase {
         Operation op = withSilencedStdout(() -> Operations.makeBinaryLeftShift(vecSize, rootSize));
         
         Map<String, Object> data = new HashMap<>();
-        data.put("symbolName", "binaryLeftShift");
+        data.put("symbolName", op.symbol().name());
         data.put("arity", op.arity());
-        data.put("setSize", vecSize);
+        data.put("setSize", op.getSetSize());
         data.put("vecSize", vecSize);
         data.put("rootSize", rootSize);
         
@@ -837,9 +837,9 @@ public class OperationsWrapper extends WrapperBase {
         Operation op = withSilencedStdout(() -> Operations.makeMatrixDiagonalOp(vecSize, rootSize));
         
         Map<String, Object> data = new HashMap<>();
-        data.put("symbolName", "matrixDiagonal");
-        data.put("arity", 2);
-        data.put("setSize", vecSize);
+        data.put("symbolName", op.symbol().name());
+        data.put("arity", op.arity());
+        data.put("setSize", op.getSetSize());
         data.put("vecSize", vecSize);
         data.put("rootSize", rootSize);
         

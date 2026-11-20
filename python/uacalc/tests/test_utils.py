@@ -24,6 +24,27 @@ from contextlib import contextmanager
 import pytest
 
 
+def parse_java_wrapper_stdout(stdout: str) -> Dict[str, Any]:
+    """Parse JSON from Java wrapper stdout (may include progress lines before JSON)."""
+    json_start = stdout.find("{")
+    if json_start == -1:
+        raise ValueError(f"No JSON object in Java wrapper output: {stdout[:200]!r}")
+    json_str = stdout[json_start:]
+    brace_count = 0
+    json_end = -1
+    for i, char in enumerate(json_str):
+        if char == "{":
+            brace_count += 1
+        elif char == "}":
+            brace_count -= 1
+            if brace_count == 0:
+                json_end = i + 1
+                break
+    if json_end == -1:
+        raise ValueError(f"Unbalanced JSON in Java wrapper output: {json_str[:200]!r}")
+    return json.loads(json_str[:json_end])
+
+
 def build_java_command(wrapper_class: str, args: List[str]) -> List[str]:
     """Build platform-independent Java command."""
     separator = ";" if platform.system() == "Windows" else ":"

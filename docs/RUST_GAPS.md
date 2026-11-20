@@ -171,6 +171,18 @@ test(s) that surface it.
 - **Missing:** Inherit the same GeneralAlgebra API as Java `FiniteField`.
 - **Tests:** `inh_ff_convert`, `inh_ff_univ_list`, `inh_ff_univ_order` in `tests/parity/example/test_cases/untested_wraps_cases.py`.
 
+### UnaryTermsMonoid universe / element_index
+
+- **Rust:** `get_universe_list` on `UnaryTermsMonoid` exposes term-like universe entries; `element_index` binding expects `IntArray`.
+- **Missing:** Match Java universe element type for indexing.
+- **Tests:** `python/uacalc/tests/test_unary_terms_monoid.py` `test_unary_terms_monoid_universe` (strict xfail).
+
+### Operations.make_composition_op / make_jonsson_operations_from_nuf
+
+- **Rust:** `src/alg/op/operations.rs` `make_composition_op` builds tables with out-of-range indices for `(n,pow)=(3,2)`; `make_jonsson_operations_from_nuf` hits negative capacity during NUF reduct expansion.
+- **Missing:** Match Java `Operations.makeCompositionOp` / `makeJonssonOperationsFromNUF` encodings.
+- **Tests:** `python/uacalc/tests/test_operations.py` `test_make_composition_op`, `test_make_jonsson_operations_from_nuf` (strict xfails).
+
 ## Platform notes (not Rust-gap xfails)
 
 On Windows, `malcev_term_rand_bin` and `hagemann_mitschke_rand_bin`

@@ -7,11 +7,12 @@ to ensure correctness and compatibility.
 """
 
 import subprocess
-import json
 import sys
 import platform
 from pathlib import Path
 import pytest
+from test_utils import build_java_command, get_project_root, parse_java_wrapper_stdout
+
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -33,21 +34,22 @@ except (ImportError, AttributeError) as e:
 def run_java_wrapper(command_args):
     """Run the Java wrapper and return parsed JSON output."""
     try:
-        separator = ";" if platform.system() == "Windows" else ":"
-        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
-        cmd = [
-            "java", "-cp", classpath,
-            "java_wrapper.src.alg.SubProductAlgebraWrapper"
-        ] + command_args
-        
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        cmd = build_java_command(
+            "java_wrapper.src.alg.SubProductAlgebraWrapper", command_args
+        )
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=get_project_root(),
+        )
         
         if result.returncode != 0:
             print(f"Java command failed: {result.stderr}")
             return None
             
-        # Parse JSON output
-        return json.loads(result.stdout)
+        return parse_java_wrapper_stdout(result.stdout)
     except subprocess.TimeoutExpired:
         print("Java command timed out")
         return None

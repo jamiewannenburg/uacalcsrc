@@ -43,9 +43,9 @@ class TestTermEvaluation(unittest.TestCase):
         """Test predefined variables x, y, z."""
         VariableImp = uacalc_lib.terms.VariableImp
         
-        x = VariableImp.x()
-        y = VariableImp.y()
-        z = VariableImp.z()
+        x = VariableImp("x")
+        y = VariableImp("y")
+        z = VariableImp("z")
         
         self.assertEqual(x.get_name(), "x")
         self.assertEqual(y.get_name(), "y")
@@ -167,9 +167,11 @@ class TestTermEvaluation(unittest.TestCase):
         # Create a variable term
         x = VariableImp("x")
         
+        from org.uacalc._exceptions import NullPointerException
+
         # Try to evaluate without providing value for x
         var_map = {}
-        with self.assertRaises(ValueError):
+        with self.assertRaises((ValueError, NullPointerException)):
             x.eval(alg, var_map)
     
     def test_variable_eval_with_different_algebras(self):
