@@ -28,7 +28,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": false,
       "timeout_seconds": null,
-      "xfail_reason": "Rust gap: org.uacalc.example.FiniteField does not inherit GeneralAlgebra ops on uacalc_lib"
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -51,7 +51,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": true,
       "timeout_seconds": null,
-      "xfail_reason": "Rust gap: org.uacalc.example.FiniteField getUniverseList not bound on uacalc_lib"
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -73,7 +73,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": true,
       "timeout_seconds": null,
-      "xfail_reason": "Rust gap: org.uacalc.example.FiniteField getUniverseOrder not bound on uacalc_lib"
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -118,7 +118,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": true,
       "timeout_seconds": null,
-      "xfail_reason": "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null."
+      "xfail_reason": "Environment: FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null"
     },
     {
       "args": [],
@@ -184,7 +184,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": true,
       "timeout_seconds": null,
-      "xfail_reason": "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null."
+      "xfail_reason": "Environment: FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null"
     },
     {
       "args": [],
@@ -306,7 +306,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": true,
       "timeout_seconds": null,
-      "xfail_reason": "Incomplete Java 8 stream closer; constructor is not a portable API"
+      "xfail_reason": "Known Java bug: Incomplete Java 8 stream ParallelClose8; constructor is not a portable API"
     },
     {
       "args": [],
@@ -621,7 +621,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": true,
       "timeout_seconds": null,
-      "xfail_reason": "Type1.reductAlg builds a size-8 matrix-power reduct and looks up terms by IntArray identity"
+      "xfail_reason": "Rust gap: Type1.reductAlg builds a size-8 matrix-power reduct and looks up terms by IntArray identity"
     },
     {
       "args": [],
@@ -643,7 +643,7 @@
       "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
       "skip_string_check": true,
       "timeout_seconds": null,
-      "xfail_reason": "HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close; GUI/IO-environment-bound"
+      "xfail_reason": "Environment: HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close (heavy / GUI-adjacent)"
     }
   ]
 }

@@ -1,158 +1,118 @@
 # Rust gaps
 
-Parity tests that fail because `uacalc` / `uacalc_lib` is missing logic
-(stubs, unbound parallel workers, incomplete searches) are marked
-`pytest.mark.xfail(..., strict=True)` with a reason that **starts with**
-`Rust gap:`. They are kept separate from Java-bug / Java-limitation xfails.
+Parity tests that fail because `uacalc` / `uacalc_lib` is missing logic are marked `pytest.mark.xfail(..., strict=True)` with a reason that starts with `Rust gap:`. They are kept separate from Java-bug / environment xfails (see `tools/check_xfail_prefixes.py`).
 
-Gaps that are only visible inside the Rust crate (the `org.uacalc` Python
-shim already matches Java) are `#[ignore = "Rust gap: ..."]` tests in
-`tests/rust_gaps.rs` (and two in-tree ignored tests). `cargo test` stays
-green; `cargo test --test rust_gaps -- --ignored` is the watch list.
+Gaps visible only in the Rust crate (the `org.uacalc` Python shim already matches Java) are listed as `#[ignore = "Rust gap: …"]` or `#[ignore = "Known Java bug: …"]` tests in `tests/rust_gaps.rs` and a few in-tree tests. `cargo test --workspace` stays green; `cargo test --test rust_gaps -- --ignored` is the Rust watch list.
 
-This file is the maintained list: Rust location, what is missing, and the
-test(s) that surface it.
+## Closed in #104–#106
+
+| Area | Verification |
+| --- | --- |
+| `CongruenceLattice` type theory (`type_ji`, `type_interval`, `type_set`, `get_type_finder`, `find_type_from_subtrace`) | `tests/rust_gaps.rs` (`type_*_not_stub`, `get_type_finder_not_stub`); `tests/parity/test_rust_gaps.py` (`test_rust_gap_type_*_bound`) |
+| `CongruenceLattice.coatoms` | Raises `UnsupportedOperationException`, matching Java; `con_coatoms_not_none` in `rust_gaps.rs` |
+| `SubProductAlgebra.projection_kernel` | `sub_product_projection_kernel` in `rust_gaps.rs`; `test_rust_gap_sub_product_projection_kernel` |
+| `QuotientOperation.value_at_arrays` | `quotient_value_at_arrays` in `rust_gaps.rs`; `test_rust_gap_quotient_value_at_arrays` |
+| `TermOperationImp.make_table` | `test_rust_gap_term_operation_imp_make_table` |
+| `Malcev` idempotent helpers on `uacalc_lib.alg` | Direct-call tests in `tests/parity/test_rust_gaps.py` (`test_type_set_idempotent_cyclic2_is_exactly_affine`, etc.) |
+| `MatrixPowerAlgebra` con/sub, universe list, bare `elementIndex` (#104) | Parity alg `untested_wraps` cases (xfails removed) |
+| `ReductAlgebra` con/sub, `getUniverseOrder`, `convertToDefaultValueOps` (#104) | Same |
+| `FiniteField` empty `GeneralAlgebra` stubs (#104) | Example `untested_wraps` (xfails removed) |
+| `BigProductAlgebra.is_similar_to` / `update_similarity_type` | `big_product_*` tests in `rust_gaps.rs`; `test_rust_gap_big_product_*` |
+| `BasicSet.union` (#106) | `tests/parity/sublat` strict xfails with `Known Java bug:` |
 
 ## Dropped from the Oct 21 audit (already match Java on the Python surface)
 
 | Item | Why dropped |
 | --- | --- |
-| `CongruenceLattice.typeJI` / `typeSet` / `getTypeFinder` via `org.uacalc` | The CPython shim computes these with its TypeFinder. The Rust lattice methods now call `TypeFinder` as well. |
+| `CongruenceLattice.typeJI` / `typeSet` / `getTypeFinder` via `org.uacalc` | CPython shim uses `TypeFinder`; Rust methods call it too. |
 | `CongruenceLattice.coatoms` via `org.uacalc` | Shim raises `UnsupportedOperationException`, matching Java. |
-| `BigProductAlgebra.projectionKernel` | Java also returns null; `uacalc_lib` returns `None`. |
-| `SubalgebraLattice.atoms` / `coatoms` / `meetIrreducibles` via `org.uacalc` | Shim returns `None`, matching Java's empty stubs. |
-| `SubalgebraLattice.isSmallerThan` via `org.uacalc` | Shim uses `cardinality()`, matching Java's observable result. |
-| `SubalgebraLattice.setMonitor` via `org.uacalc` | Shim stores the monitor; Java `ProgressReport` is out of scope. |
-| `SubProductElement.getAlgebra` via Python | `uacalc_lib` stores the algebra as a `PyObject` and does not hit the Rust `Element::get_algebra` panic. |
-| `BigProductAlgebra.isSimilarTo` via `org.uacalc` | Shim falls back to similarity-type equality when `is_similar_to` is unbound. |
+| `BigProductAlgebra.projectionKernel` | Java returns null; `uacalc_lib` returns `None`. Rust core returns `Err` until implemented (not Python-visible). |
+| `SubalgebraLattice.atoms` / `coatoms` / `meetIrreducibles` via `org.uacalc` | Shim returns `None`, matching Java TODOs. |
+| `SubalgebraLattice.isSmallerThan` via `org.uacalc` | Shim uses `cardinality()`, matching Java’s observable result. |
+| `SubalgebraLattice.setMonitor` via `org.uacalc` | Shim stores the monitor. |
+| `SubProductElement.getAlgebra` via Python | Bindings do not hit the Rust `Element::get_algebra` panic. |
+| `BigProductAlgebra.isSimilarTo` via `org.uacalc` | Shim falls back to similarity-type equality. |
 
 ## Current gaps
 
-### CongruenceLattice type theory
-
-Closed. `type_ji`, `type_interval` (`type(beta, alpha)` via `find_join_irred(alpha, beta)`), `type_set`, and `get_type_finder` call `TypeFinder`. `find_type_from_subtrace` writes the typed subtrace, including its matrix universe, back into the join-irreducible cache, matching Java `TypeFinder.findType(Subtrace)`. Bound on `PyCongruenceLattice`. Checkpoints run once per join irreducible in `type_set`.
-
-### CongruenceLattice.coatoms
-
-`coatoms()` is bound and raises `UnsupportedOperationException: Not implemented yet.`, matching Java. `Lattice::coatoms` stays `None` so other lattices are unchanged.
-
 ### commutator2 swallows errors
 
-- **Rust:** `src/alg/conlat/congruence_lattice.rs` `commutator2` returns `zero()` on `Err`.
-- **Missing:** Surface the internal error (or match Java's exception) instead of a silent zero congruence.
-- **Tests:** ignored `commutator2_does_not_swallow_errors`. (Happy-path `commutator2(zero, one)` already matches Java in `python/uacalc/tests/test_congruence_lattice.py`.)
+- **Rust:** `src/alg/conlat/congruence_lattice.rs` — `commutator2` returns `zero()` on `Err`.
+- **Tests:** `#[ignore]` `commutator2_does_not_swallow_errors` in `rust_gaps.rs`.
 
-### SubalgebraLattice atoms / coatoms
+### SubalgebraLattice (Rust crate only)
 
-`atoms()` and `coatoms()` still return null, matching the Java TODOs. Strict xfails `test_rust_gap_sublat_atoms` and `test_rust_gap_sublat_coatoms` are labelled `Known Java bug:`. The other SubalgebraLattice gaps (`is_smaller_than`, `set_monitor`, meet irreducibles) are unchanged; their ignored tests remain in `tests/rust_gaps.rs`.
+- **atoms / coatoms:** Java TODOs return null — parity xfails labelled `Known Java bug:`; ignored tests `sublat_atoms_not_none`, `sublat_coatoms_not_none`.
+- **`is_smaller_than`:** Returns false when universe is unset (Java triggers `makeUniverse` as a side effect). **Tests:** `sublat_is_smaller_than_computes_universe`.
+- **`set_monitor`:** Rust no-op. **Tests:** `sublat_set_monitor_stores`.
+- **`make_meet_irreducibles`:** Empty stub list. **Tests:** `sublat_meet_irreducibles_not_empty_stub`.
 
-### BigProductAlgebra universe
+### BigProductAlgebra.universe (Python)
 
-`universe()` stays an empty iterator. Java `BigProductAlgebra` does not override `universe()`, and `GeneralAlgebra.universe()` returns the unset field (null). Enumerating cyclic2^2 would diverge. Strict xfail `test_rust_gap_big_product_universe` is labelled `Known Java bug:`. `projectionKernel` on `BigProductAlgebra` is still Java's null stub.
+Java does not override `universe()` (null field). Enumerating C2² would diverge. **Tests:** `test_rust_gap_big_product_universe` (`Known Java bug:`).
 
-`is_similar_to` compares similarity types (Java `SimilarityType.equals`, order-insensitive). `update_similarity_type` rebuilds the type from `operations()` symbols.
+### SmallLattice `is_similar_to`
 
-### SubProductAlgebra projection_kernel
+- **Rust:** `DiamondLattice` / `BooleanLattice` always return `true`.
+- **Tests:** `diamond_lattice_is_similar_to_checks_type`.
 
-Closed. `projection_kernel(k)` builds the partition of elements that agree on coordinate `k` (`Partition::zero`, then `join_blocks`), with a checkpoint on each inner pair. A negative or out-of-range coordinate is an error. Bound as `projection_kernel` / `projectionKernel`.
+### `meetIrreducibles` on lattices built from a congruence lattice
 
-### SmallLattice is_similar_to always true
+- **Rust:** Python binding does not expose `meet_irreducibles` for the partition-typed `BasicLattice` inner.
 
-- **Rust:** `src/lat/small_lattice.rs` `DiamondLattice` / `BooleanLattice` `is_similar_to` always `true`.
-- **Missing:** Compare similarity types (as `BasicLattice` does).
-- **Tests:** ignored `diamond_lattice_is_similar_to_checks_type`.
+### SubProductElement.get_algebra (Rust crate)
 
-### meetIrreducibles on lattices built from a congruence lattice
+- **Rust:** `Element::get_algebra` panics; Python bindings avoid this path.
+- **Tests:** `sub_product_element_get_algebra`.
 
-- **Rust:** `uacalc_lib` `BasicLattice.meet_irreducibles` only handles the `Int32` inner variant; lattices built from `CongruenceLattice` take the other arm and error. `src/lat/basic_lattice.rs` `meet_irreducibles` itself is implemented for `BasicLattice<T>`, but the Python binding does not expose the Partition-typed lattice.
-- **Missing:** Bind `meet_irreducibles` for the congruence-lattice inner.
-- **Tests:** Covered by `test_rust_gap_sublat_atoms` / coatoms style xfails once a Con-backed `BasicLattice` is used; until then the Partition inner is Rust-only (see ignored sublat meet-irreducible stub). Existing `python/uacalc/tests/test_small_lattice.py` covers operation-built lattices, which work.
+### MatrixPowerAlgebra.elementIndex (Java bug)
 
-### QuotientOperation.value_at_arrays
+Java searches `universe()` for `IntArray` but cartesian-product elements are `ArrayList`s, so every lookup returns -1. Rust returns the Horner index. **Tests:** `src/alg/matrix_power_algebra_tests.rs` (`Known Java bug:` ignore).
 
-Closed. Column-wise evaluation calls `int_value_at` (representatives, super-operation, congruence representative, binary search), with a checkpoint per column. Java `AbstractOperation.valueAt(int[][])` throws; the crate's `value_at_arrays` is the vectorized `intValueAt` path the gap asked for.
+### SimpleList cons sharing
 
-### TermOperationImp.make_table
+- **Tests:** `src/util/simple_list.rs` `test_cons_memory_efficiency`.
 
-Closed. `make_table` keeps an existing interpretation table or fills a Horner cache from `int_value_at`, with a checkpoint per row. Bound as `make_table` / `makeTable`.
+### Malcev `pixley_term` distributivity guard
 
-### Projective plane to ternary ring
-
-`AlgebraIO.readProjectivePlane` parses the file and returns null. Rust still returns `Projective plane to ternary ring conversion not yet implemented`, which `python/uacalc/tests/test_algebra_io.py` locks. Strict xfail `test_rust_gap_read_projective_plane` is labelled `Known Java bug:`. Do not invent a ternary ring.
-
-### SubProductElement.get_algebra panic
-
-- **Rust:** `src/element/sub_product_element.rs` `Element::get_algebra` panics. Python bindings do not call this path.
-- **Missing:** Return the algebra without the lifetime workaround panic.
-- **Tests:** ignored `sub_product_element_get_algebra`.
-
-### MatrixPowerAlgebra.elementIndex of a real vector (ignored Rust test)
-
-- **Java bug:** `PowerAlgebra.elementIndex` searches `universe()` for an `IntArray`, but `MatrixPowerAlgebra` stores `ProductAlgebra.makeCartesianProduct`, whose iterator yields `ArrayList`s. The `instanceof IntArray` test never hits, so every lookup, including `[0, 0]`, returns -1. A bare `int` also returns -1, and that path is matched (`inh_mp_elem_idx`).
-- **Rust:** `element_index(&[0, 0])` returns the Horner index 0.
-- **Tests:** ignored `test_element_index` (`Known Java bug:` reason). Do not change Rust to return -1.
-
-### SimpleList cons sharing (ignored Rust test)
-
-- **Rust:** `src/util/simple_list.rs` `test_cons_memory_efficiency` panics `left:0 right:1`.
-- **Missing:** Sharing identity of `rest().rest()` after two `cons` from the same base.
-- **Tests:** ignored `test_cons_memory_efficiency` (`Rust gap:` reason).
-
-### Malcev pixley_term distributivity TODO
-
-- **Rust:** `src/alg/malcev.rs` `pixley_term` skips `is_congruence_dist_idempotent` for idempotent algebras.
-- **Missing:** Fail fast with `Ok(None)` on idempotent non-CD algebras instead of enumerating F(2)^3.
-- **Tests:** ignored `pixley_term_uses_distributivity_guard`.
-
-### Malcev idempotent methods
-
-Closed on `uacalc_lib.alg` and delegated from `org.uacalc.alg.Malcev` when the Rust function is present: `sd_idempotent`, `cp_idempotent`, `cube_term_blocker_idempotent`, `type_set_idempotent`, `types_in_sof_a_idempotent`, `types_in_sof_a_strictly_simple_idempotent`, `types_in_sof_a_i_robust_decompdempotent`, `omitted_ideal_idempotent`.
-
-Outer loops call `resource::checkpoint`. `type_set_idempotent` uses `types1 = {1}` and `types2 = {2}`. Java's `types1.add(2)` (the line after `types2` is created) leaves `types2` empty; that divergence is a known Java bug, recorded in `tests/parity/KNOWN_DIFFERENCES.md`. On `cyclic2.ua` (`typ(A) = {2}`, no type 1 in `HS(A)`) Rust returns `[[2], [2]]` and Java returns `[[2], [2, 3]]`. Java `System.out.println` traces in the cube-term and robust-decomposition methods are not printed. The method name `typesInSofAIRobustDecompdempotent` keeps Java's spelling.
+- **Tests:** `pixley_term_uses_distributivity_guard`.
 
 ### MemoryMonitor placeholder
 
-- **Rust:** `src/common.rs` `MemoryMonitor::current_memory_usage` returns `pid as usize * 1024`.
-- **Missing:** Read real RSS (or equivalent).
-- **Tests:** ignored `memory_monitor_reads_real_rss`.
+- **Tests:** `memory_monitor_reads_real_rss`.
 
 ### Closer.doOneStagePartialClosure parallel worker
 
-- **Rust:** `src/alg/closer.rs` / Python shim `python/org/uacalc/alg/_jython_compat.py` — the parallel worker body is not bound. Success-path fixtures still hit Java's empty-`rawList` / null-`termMap` exceptions first.
-- **Missing:** Bind the worker. No `Rust gap:` xfail yet (unchanged from leftover wraps).
+Parallel worker body not bound on Python shim.
 
 ### AlgebraFromMinimalSets operation table from a basic algebra
 
-- **Rust:** `uacalc_lib` `AlgebraFromMinimalSets` built from `cyclic2.ua` exposes a unary `s` operation via `get_operation`; Java returns null for `OperationSymbol("s", 1)`.
-- **Missing:** Match Java minimal-sets operation naming when cloning from a `BasicAlgebra`.
-- **Tests:** `jython_comparison/scripts/algebra_from_minimal_sets_smoke.py` (`op_s`).
+Java returns null for minimal-sets operation naming when cloning from `BasicAlgebra`. **Tests:** `jython_comparison/scripts/algebra_from_minimal_sets_smoke.py`.
 
 ### MatrixPowerAlgebra.getElement typing
 
-- **Rust:** `uacalc_lib` `PyMatrixPowerAlgebra.get_element` returns a `PyIntArray` that CPython scripts cannot iterate like Java `IntArray`.
-- **Missing:** Expose Java-compatible `getElement` / universe element handles for matrix-power algebras.
-- **Tests:** `jython_comparison/scripts/matrix_power_algebra_smoke.py` (`getElement0`, `op_plus`).
+`PyIntArray` from `get_element` is not iterable like Java `IntArray`. **Tests:** `jython_comparison/scripts/matrix_power_algebra_smoke.py`.
 
-### SubProductAlgebra.getElementFromTerm on a term-less constructor
+### SubProductAlgebra.getElementFromTerm (Java bug)
 
-- **Java bug:** `SubProductAlgebra(name, product, gens)` calls the overload with `findTerms=false`, so `terms` stays null. `getTerm` returns null. `getElementFromTerm` then reads `terms.length` and throws `NullPointerException`.
-- **Rust / Python:** return null, the same result `getTerm` already documents. Do not copy the NPE.
-- **Tests:** `inh_sp_get_elem_term` in `tests/parity/alg/test_cases/untested_wraps_cases.py` (`Known Java bug:` strict xfail).
+`findTerms=false` leaves `terms` null; Java NPEs on `terms.length`. Python returns null like `getTerm`. **Tests:** parity `inh_sp_get_elem_term`.
 
 ### UnaryTermsMonoid universe / element_index
 
-- **Rust:** `get_universe_list` on `UnaryTermsMonoid` exposes term-like universe entries; `element_index` binding expects `IntArray`.
-- **Missing:** Match Java universe element type for indexing.
-- **Tests:** `python/uacalc/tests/test_unary_terms_monoid.py` `test_unary_terms_monoid_universe` (strict xfail).
+Universe element type vs `element_index` expecting `IntArray`. **Tests:** `python/uacalc/tests/test_unary_terms_monoid.py`.
 
 ### Operations.make_composition_op / make_jonsson_operations_from_nuf
 
-- **Rust:** `src/alg/op/operations.rs` `make_composition_op` builds tables with out-of-range indices for `(n,pow)=(3,2)`; `make_jonsson_operations_from_nuf` hits negative capacity during NUF reduct expansion.
-- **Missing:** Match Java `Operations.makeCompositionOp` / `makeJonssonOperationsFromNUF` encodings.
-- **Tests:** `python/uacalc/tests/test_operations.py` `test_make_composition_op`, `test_make_jonsson_operations_from_nuf` (strict xfails).
+Table encoding / NUF reduct expansion. **Tests:** `python/uacalc/tests/test_operations.py` (strict xfails).
+
+### Projective plane → ternary ring
+
+Java `readProjectivePlane` returns null after parse. Rust keeps “not yet implemented” error. **Tests:** `test_rust_gap_read_projective_plane` (`Known Java bug:`).
+
+### Malcev.typeSetIdempotent (Java bug)
+
+Java `types1.add(2)` instead of `types2.add(2)` on some algebras. Documented in `tests/parity/KNOWN_DIFFERENCES.md` and malcev parity xfails.
 
 ## Platform notes (not Rust-gap xfails)
 
-On Windows, `malcev_term_rand_bin` and `hagemann_mitschke_rand_bin`
-(size-3 magma seed 11, F(2)=409) exceed the 120s search timeout that
-Linux CI meets. They are Windows-only xfails, not `Rust gap:` entries.
+On Windows, `malcev_term_rand_bin` and `hagemann_mitschke_rand_bin` exceed the 120s search timeout Linux CI meets. Platform xfails use prefix `Environment:`.

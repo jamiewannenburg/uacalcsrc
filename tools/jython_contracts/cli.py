@@ -161,7 +161,11 @@ def cmd_validate(args: argparse.Namespace) -> int:
     issues = validate_contracts(contracts_dir)
     print(format_issues(issues), end="")
     errors = sum(1 for i in issues if i.severity == "error")
-    return 1 if errors else 0
+    if errors:
+        return 1
+    import check_xfail_prefixes
+
+    return check_xfail_prefixes.main()
 
 
 def cmd_coverage(args: argparse.Namespace) -> int:

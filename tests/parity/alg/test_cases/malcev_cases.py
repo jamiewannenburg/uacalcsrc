@@ -238,7 +238,7 @@ TEST_CASES = [
         call="_terms(Malcev.gummTerms(lat2))",
         description="Gumm terms of lat2",
         xfail_reason=(
-            "known Java bug: gummTerms(alg) NPEs because ProgressReport.addStartLine "
+            "Known Java bug: gummTerms(alg) NPEs because ProgressReport.addStartLine "
             "is invoked on a null report inside the no-arg overload."
         ),
         **_LIST
@@ -369,7 +369,7 @@ TEST_CASES = [
         call="_terms(Malcev.primalityTerms(c2, None))",
         description="primality terms of C2 if any",
         xfail_reason=(
-            "known Java bug: primalityTerms(alg, report) NPEs when report is null "
+            "Known Java bug: primalityTerms(alg, report) NPEs when report is null "
             "(semilatTerm calls report.addStartLine unconditionally)."
         ),
         **_LIST
@@ -953,7 +953,7 @@ TEST_CASES.extend([
         description="seeded random binary magma of size 3: card and Malcev term",
         timeout_seconds=(20 if sys.platform == "win32" else 120),
         xfail_reason=(
-            "Windows Malcev F(2)^2 search for size-3 seed 11 exceeds 120s; "
+            "Environment: Windows Malcev F(2)^2 search for size-3 seed 11 exceeds 120s; "
             "Linux CI completes within the timeout"
             if sys.platform == "win32"
             else None
@@ -1078,8 +1078,8 @@ for _alg, _n, _seed, _var in _RANDOM_MAGMAS:
                 ),
                 timeout_seconds=(20 if _win_slow else _timeout),
                 xfail_reason=(
-                    "Windows Malcev F(2)^2 search for size-3 seed 11 exceeds 120s; "
-                    "Linux CI completes within the timeout"
+                    "Environment: Windows Malcev F(2)^2 search for size-3 seed 11 "
+                    "exceeds 120s; Linux CI completes within the timeout"
                     if _win_slow
                     else None
                 ),

@@ -199,8 +199,8 @@ TEST_CASES = [
        "bp2.getConstantTerm(g00)",
        "Java NPEs on a non-constant; Python raises ValueError",
        xfail_reason=(
-           "Java-limitation: getConstantTerm of a non-constant tuple NPEs; "
-           "Python raises ValueError"
+           "Known Java bug: getConstantTerm of a non-constant tuple NPEs on "
+           "null constantTerm; Python raises ValueError instead"
        ), **_NONE),
     _c("bpa_get_constant_term_from_list", "BigProductAlgebra.getConstantTerm",
        "[_term_str(bp2.getConstantTerm(c)) for c in list(bp2.getConstants() or [])]",

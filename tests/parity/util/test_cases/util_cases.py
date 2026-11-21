@@ -151,31 +151,26 @@ _LIST = dict(skip_string_check=True, notes="Java array/List toString vs Python l
 _NONE = dict(skip_string_check=True, notes="Java null vs Python None.")
 
 _GETARRAY_XFAIL = (
-    "Java IntArray.getArray returns the live backing int[]; uacalc_lib "
-    "returns a copy. Owner: keep IntArray copy-on-write. "
-    "Do not change Java expected values."
+    "Wrapper bug: Java IntArray.getArray returns the live backing int[]; uacalc_lib "
+    "returns a copy (intentional copy-on-write). Do not change Java goldens."
 )
 _SETINT_XFAIL = (
-    "Java IntArray.setIntArray replaces the backing array (may change size); "
-    "uacalc_lib cannot replace the store. Owner: copy-on-write IntArray. "
-    "Do not change Java expected values."
+    "Wrapper bug: Java IntArray.setIntArray replaces the backing array; "
+    "uacalc_lib cannot replace the store (copy-on-write). Do not change Java goldens."
 )
 _STREAM_XFAIL = (
-    "Java 8 LongList.stream / parallelStream are not bound. "
-    "Owner: Stream API out of scope for the org shim."
+    "Wrapper bug: Java 8 LongList.stream is not bound; Stream API out of scope "
+    "for the org shim."
 )
 _SERIAL_XFAIL = (
-    "SimpleList custom writeObject/readObject sharing graph is not bound. "
-    "Owner: serialization roadmap; core list ops are covered."
+    "Wrapper bug: SimpleList custom writeObject/readObject sharing graph is not bound."
 )
 _APP_REV_XFAIL = (
-    "Java SimpleList.app / rev are commented out of the live class; "
-    "the scanner still sees them. Python aliases them to append/reverse. "
-    "Owner: do not expose commented-out Java. Do not change Java expected values."
+    "Wrapper bug: Java SimpleList.app / rev are commented out in the live class; "
+    "Python aliases them to append/reverse. Do not change Java goldens."
 )
 _PARALLEL_XFAIL = (
-    "Java 8 LongList.parallelStream is not bound. "
-    "Owner: Stream API out of scope for the org shim."
+    "Wrapper bug: Java 8 LongList.parallelStream is not bound; Stream API out of scope."
 )
 
 TEST_CASES = [

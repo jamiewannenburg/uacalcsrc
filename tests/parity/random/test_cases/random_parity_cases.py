@@ -26,7 +26,9 @@ def _xfail_reason(seed):
     if not items:
         return None
     bits = [path + ": " + reason for path, reason in items]
-    return "Random parity xfail seed {0}: {1}".format(seed, "; ".join(bits))
+    return "Environment: randomized parity seed {0} expected mismatches: {1}".format(
+        seed, "; ".join(bits)
+    )
 
 
 TEST_CASES = []
