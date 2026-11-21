@@ -1,0 +1,22 @@
+﻿diff --git a/.github/workflows/jython.yml b/.github/workflows/jython.yml
+index ddb7b398..9be6e76e 100644
+--- a/.github/workflows/jython.yml
++++ b/.github/workflows/jython.yml
+@@ -54,6 +54,8 @@ jobs:
+         run: ant compile-wrappers
+ 
+       - name: Run Rust tests (main crate)
++        env:
++          UACALC_STRICT_TESTS: "1"
+         run: cargo test --all-features
+ 
+   jython-parity:
+@@ -123,6 +125,8 @@ jobs:
+           python -m pip install -e ".[test,jython_comparison]"
+ 
+       - name: Pytest (parity + Jython example tests)
++        env:
++          UACALC_STRICT_TESTS: "1"
+         run: |
+           set -o pipefail
+           python -m pytest tests/parity python/uacalc/tests/test_jython_examples_parity.py \

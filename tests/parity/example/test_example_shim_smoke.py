@@ -58,7 +58,7 @@ def test_example_shim_exposes_demo_classes():
 
 def test_example_gui_entry_points_are_documented():
     if sys.platform.startswith("java"):
-        pytest.skip("CPython-only skip/xfail registry")
+        pytest.skip("Environment: CPython-only skip/xfail registry for demo mains")
     _ensure_python_org_on_path()
     from org.uacalc.example._demos import GUI_OR_INTERACTIVE  # noqa: PLC0415
 
@@ -67,36 +67,3 @@ def test_example_gui_entry_points_are_documented():
     assert "HasKaryNU.main" in GUI_OR_INTERACTIVE
 
 
-@pytest.mark.skip(reason="ForkJoinPool timing demo; not a packaged org.uacalc.example class")
-def test_parallel_close_unpackaged():
-    raise AssertionError("unreachable")
-
-
-@pytest.mark.skip(reason="Computes Con(F(4)) of the Lyndon algebra; too heavy for parity")
-def test_conlyndon_f3_main_too_heavy():
-    raise AssertionError("unreachable")
-
-
-@pytest.mark.skip(reason="HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close")
-def test_haskary_nu_progress_report():
-    raise AssertionError("unreachable")
-
-
-@pytest.mark.skip(reason="FilteringAlgebras.main is a NotImplementedError stub")
-def test_filtering_algebras_main_malcev():
-    raise AssertionError("unreachable")
-
-
-@pytest.mark.skip(reason="Type1.main prints subtraces of a size-5 matrix power; interactive/demo main")
-def test_type1_main_matrix_power():
-    raise AssertionError("unreachable")
-
-
-@pytest.mark.skip(reason="TupleStream.main is a serial vs parallel timing benchmark")
-def test_tuple_stream_main_timing():
-    raise AssertionError("unreachable")
-
-
-@pytest.mark.skip(reason="NoSymGroup.main writes SymTestGroup.ua and runs a large HasConstantTuple search")
-def test_nosymgroup_main_search():
-    raise AssertionError("unreachable")

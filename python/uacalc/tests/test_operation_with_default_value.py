@@ -17,13 +17,18 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+_tools = project_root / "tools"
+if str(_tools) not in sys.path:
+    sys.path.insert(0, str(_tools))
+from strict_testing import guard_import_skip  # noqa: E402
+
 try:
     import uacalc_lib
     OperationWithDefaultValue = uacalc_lib.alg.OperationWithDefaultValue
     OperationSymbol = uacalc_lib.alg.OperationSymbol
     BasicOperation = uacalc_lib.alg.BasicOperation
-except ImportError:
-    pytest.skip("uacalc_lib not available", allow_module_level=True)
+except ImportError as _exc:
+    guard_import_skip("uacalc_lib", _exc)
 
 
 def run_java_wrapper(command, args):

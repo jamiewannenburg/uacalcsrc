@@ -55,10 +55,18 @@ def _load_generate_inventory_module():
     return mod
 
 
+import sys
+from pathlib import Path as _Path
+
 try:
-    import uacalc_lib  # noqa: F401
-except ImportError:
-    pytest.skip("uacalc_lib not available", allow_module_level=True)
+    import uacalc_lib
+except ImportError as _uacalc_exc:
+    _tools = _Path(__file__).resolve().parents[3] / "tools"
+    if str(_tools) not in sys.path:
+        sys.path.insert(0, str(_tools))
+    from strict_testing import guard_import_skip  # noqa: E402
+
+    guard_import_skip("uacalc_lib", _uacalc_exc)
 
 
 @pytest.fixture(scope="module", autouse=True)

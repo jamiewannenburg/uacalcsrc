@@ -18,22 +18,28 @@ def _ensure_python_org_on_path() -> None:
         sys.path.insert(0, s)
 
 
+import sys as _sys
+
+_TOOLS = REPO_ROOT / "tools"
+if str(_TOOLS) not in _sys.path:
+    _sys.path.insert(0, str(_TOOLS))
+from strict_testing import guard_import_skip, guard_skip  # noqa: E402
+
 try:
     import uacalc_lib  # noqa: F401
-except ImportError:
-    pytest.skip("uacalc_lib not available", allow_module_level=True)
+except ImportError as _exc:
+    guard_import_skip("uacalc_lib", _exc)
 
 
 def test_org_uacalc_lat_matches_uacalc_lib_lat_exports():
     if not hasattr(uacalc_lib, "lat"):
-        pytest.skip(
-            "uacalc_lib.lat not available (native extension not built or stub import)"
+        guard_skip(
+            "uacalc_lib.lat not available (native extension not built or stale build)"
         )
+    _lat = uacalc_lib.lat
 
     _ensure_python_org_on_path()
     import org.uacalc.lat as lat_pkg  # pylint: disable=import-outside-toplevel
-
-    _lat = getattr(uacalc_lib, "lat")
     assert lat_pkg.BasicLattice is _lat.BasicLattice
     assert lat_pkg.DiamondLattice is _lat.DiamondLattice
 

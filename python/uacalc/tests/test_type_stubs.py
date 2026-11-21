@@ -17,10 +17,15 @@ import sys
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+_tools = project_root / "tools"
+if str(_tools) not in sys.path:
+    sys.path.insert(0, str(_tools))
+from strict_testing import guard_import_skip  # noqa: E402
+
 try:
     import uacalc_lib
-except ImportError:
-    pytest.skip("uacalc_lib not available", allow_module_level=True)
+except ImportError as _uacalc_exc:
+    guard_import_skip("uacalc_lib", _uacalc_exc)
 
 
 class TestTypeStubValidation:
@@ -145,8 +150,9 @@ class TestTypeStubValidation:
     def test_type_stub_syntax(self):
         """Test that the type stub file has valid Python syntax."""
         stub_file = Path(__file__).parent.parent.parent / "uacalc_lib" / "__init__.pyi"
-        if not stub_file.exists():
-            pytest.skip("Type stub file does not exist")
+        assert stub_file.is_file(), (
+            f"Type stub file missing at {stub_file}; run validate_type_stubs"
+        )
         
         try:
             with open(stub_file, 'r', encoding='utf-8') as f:

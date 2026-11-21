@@ -23,12 +23,13 @@ try:
     BasicAlgebra = uacalc_lib.alg.BasicAlgebra
     BigProductAlgebra = uacalc_lib.alg.BigProductAlgebra #uacalc_lib.alg.SubProductAlgebra #uacalc_lib.alg.BigProductAlgebra
 except (ImportError, AttributeError) as e:
-    print(f"Error importing uacalc_lib: {e}")
-    print("Make sure to run 'maturin develop' first")
-    import traceback
-    traceback.print_exc()
-    pytest.skip("uacalc_lib module BasicAlgebra or BigProductAlgebra not available", allow_module_level=True)
-    sys.exit(1)
+    _root = get_project_root()
+    _tools = _root / "tools"
+    if str(_tools) not in sys.path:
+        sys.path.insert(0, str(_tools))
+    from strict_testing import guard_import_skip  # noqa: E402
+
+    guard_import_skip("uacalc_lib", e)
 
 
 def run_java_wrapper(command_args):

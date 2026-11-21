@@ -204,7 +204,9 @@ class TestMaltsevDecompositionIterator:
         
         # Check if algebra is idempotent
         if not alg.is_idempotent():
-            pytest.skip(f"Algebra {algebra_path} is not idempotent")
+            pytest.skip(
+                f"Environment: {algebra_path} is not idempotent (test needs idempotent input)"
+            )
         
         # Create iterator
         iterator = MaltsevDecompositionIterator(alg)
@@ -232,20 +234,6 @@ class TestMaltsevDecompositionIterator:
         
         assert python_cardinalities == java_cardinalities, \
             f"Cardinalities don't match: Python {python_cardinalities} vs Java {java_cardinalities}"
-    
-    def test_non_idempotent_algebra_error(self):
-        """Test that creating iterator with non-idempotent algebra raises error."""
-        # Create a non-idempotent algebra (with operations)
-        # For now, we'll test with a basic algebra that might not be idempotent
-        # This test might need adjustment based on actual algebra creation
-        
-        # Try to create iterator - should raise ValueError
-        try:
-            # We can't easily create a non-idempotent algebra without operations
-            # So we'll skip this test for now
-            pytest.skip("Non-idempotent algebra creation not implemented in test")
-        except ValueError as e:
-            assert "idempotent" in str(e).lower()
     
     def test_test_command(self):
         """Test the test command in Java wrapper."""
