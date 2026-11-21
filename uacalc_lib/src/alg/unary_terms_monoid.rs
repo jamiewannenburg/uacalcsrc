@@ -4,7 +4,7 @@ use pyo3::types::PyAny;
 use uacalc::alg::*;
 use crate::alg::convert::{
     algebra_type_java_name, get_operation_by_symbol, operations_to_py, ops_to_basic_algebra,
-    term_to_py,
+    py_to_term, term_to_py,
 };
 use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
@@ -167,12 +167,19 @@ impl PyUnaryTermsMonoid {
     /// Get the index of an element.
     ///
     /// Args:
-    ///     element (IntArray): The element to find the index for
+    ///     element: An ``IntArray`` universe coordinate, or a term (`VariableImp` /
+    ///         `NonVariableTerm`) as returned by `get_universe_list()`.
     ///
     /// Returns:
     ///     int: The index of the element (optional)
-    fn element_index(&self, element: &PyIntArray) -> Option<usize> {
-        self.inner.element_index(&element.inner)
+    fn element_index(&self, element: &Bound<'_, PyAny>) -> PyResult<Option<usize>> {
+        if let Ok(arr) = element.extract::<PyRef<PyIntArray>>() {
+            return Ok(self.inner.element_index(&arr.inner));
+        }
+        match py_to_term(element) {
+            Ok(term) => Ok(self.inner.element_index_term(term.as_ref())),
+            Err(_) => Ok(None),
+        }
     }
 
     /// String representation of the algebra.

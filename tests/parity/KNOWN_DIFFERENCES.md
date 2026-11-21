@@ -334,6 +334,13 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 - **Tests**: `small_get_element_null`
 - **Owner vs shim**: Shim — argument coercion. Not a library defect.
 
+### org.uacalc.alg.UnaryTermsMonoid.elementIndex
+
+- **Java behavior**: stub `return 0` for every argument
+- **Python behavior**: index of that term in `getUniverseList()`
+- **Status**: Accepted (Known Java bug)
+- **Tests**: `test_unary_terms_monoid_element_index_java_stub`
+
 ---
 
 ## org.uacalc.alg (Subalgebra / products / quotients)

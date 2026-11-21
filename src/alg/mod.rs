@@ -2572,6 +2572,17 @@ impl UnaryTermsMonoid {
         }
         self.sub.as_ref().unwrap()
     }
+
+    /// Index of a term in `unary_term_list` (same order as `getUniverseList()` in Java).
+    ///
+    /// Terms are matched by their `Display` / `to_string()` form, consistent with
+    /// Java `Term.toString()` and with term lookup elsewhere (e.g. `SubProductAlgebra`).
+    pub fn element_index_term(&self, term: &dyn Term) -> Option<usize> {
+        let needle = term.to_string();
+        self.unary_term_list
+            .iter()
+            .position(|t| t.to_string() == needle)
+    }
 }
 
 impl Algebra for UnaryTermsMonoid {
