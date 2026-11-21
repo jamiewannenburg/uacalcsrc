@@ -19,7 +19,6 @@ use uacalc::resource::test_isolation_guard;
 use uacalc::alg::sublat::SubalgebraLattice;
 use uacalc::common::MemoryMonitor;
 use uacalc::element::{Element, SubProductElement};
-use uacalc::alg::op::OperationSymbol;
 use uacalc::lat::small_lattice::{BooleanLattice, DiamondLattice};
 use uacalc::lat::Lattice;
 use uacalc::util::int_array::IntArray;

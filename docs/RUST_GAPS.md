@@ -35,11 +35,6 @@ Gaps visible only in the Rust crate (the `org.uacalc` Python shim already matche
 
 ## Current gaps
 
-### commutator2 swallows errors
-
-- **Rust:** `src/alg/conlat/congruence_lattice.rs` — `commutator2` returns `zero()` on `Err`.
-- **Tests:** `#[ignore]` `commutator2_does_not_swallow_errors` in `rust_gaps.rs`.
-
 ### SubalgebraLattice (Rust crate only)
 
 - **atoms / coatoms:** Java TODOs return null — parity xfails labelled `Known Java bug:`; ignored tests `sublat_atoms_not_none`, `sublat_coatoms_not_none`.
@@ -50,15 +45,6 @@ Gaps visible only in the Rust crate (the `org.uacalc` Python shim already matche
 ### BigProductAlgebra.universe (Python)
 
 Java does not override `universe()` (null field). Enumerating C2² would diverge. **Tests:** `test_rust_gap_big_product_universe` (`Known Java bug:`).
-
-### SmallLattice `is_similar_to`
-
-- **Rust:** `DiamondLattice` / `BooleanLattice` always return `true`.
-- **Tests:** `diamond_lattice_is_similar_to_checks_type`.
-
-### `meetIrreducibles` on lattices built from a congruence lattice
-
-- **Rust:** Python binding does not expose `meet_irreducibles` for the partition-typed `BasicLattice` inner.
 
 ### SubProductElement.get_algebra (Rust crate)
 
@@ -96,14 +82,6 @@ Java returns null for minimal-sets operation naming when cloning from `BasicAlge
 ### SubProductAlgebra.getElementFromTerm (Java bug)
 
 `findTerms=false` leaves `terms` null; Java NPEs on `terms.length`. Python returns null like `getTerm`. **Tests:** parity `inh_sp_get_elem_term`.
-
-### UnaryTermsMonoid universe / element_index
-
-Universe element type vs `element_index` expecting `IntArray`. **Tests:** `python/uacalc/tests/test_unary_terms_monoid.py`.
-
-### Operations.make_composition_op / make_jonsson_operations_from_nuf
-
-Table encoding / NUF reduct expansion. **Tests:** `python/uacalc/tests/test_operations.py` (strict xfails).
 
 ### Projective plane → ternary ring
 
