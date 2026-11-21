@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use uacalc::alg::*;
@@ -18,11 +19,11 @@ use crate::alg::op::similarity_type::PySimilarityType;
 use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for Subalgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySubalgebra {
     inner: uacalc::alg::Subalgebra<i32>,
     super_alg: uacalc::alg::BasicAlgebra<i32>,
-    super_obj: PyObject,
+    super_obj: Py<PyAny>,
     element_map: Option<PyUniverseMap>,
 }
 
@@ -70,7 +71,7 @@ impl PySubalgebra {
                 Ok(PySubalgebra {
                     inner,
                     super_alg,
-                    super_obj: super_algebra.clone().into_py(py),
+                    super_obj: super_algebra.clone().into_py_any(py)?,
                     element_map,
                 })
             }
@@ -112,7 +113,7 @@ impl PySubalgebra {
     ///
     /// Returns:
     ///     BasicAlgebra: The super algebra
-    fn super_algebra(&self, py: Python<'_>) -> PyObject {
+    fn super_algebra(&self, py: Python<'_>) -> Py<PyAny> {
         self.super_obj.clone_ref(py)
     }
 
@@ -133,14 +134,14 @@ impl PySubalgebra {
     ///
     /// Returns:
     ///     List[Any]: The universe elements as a list
-    fn get_universe(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn get_universe(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         self.inner
             .universe()
             .map(|element| {
                 if let Some(map) = &self.element_map {
                     map.element_or_error(element, "Subalgebra element")
                 } else {
-                    Ok(element.into_py(py))
+                    Ok(element.into_py_any(py)?)
                 }
             })
             .collect()
@@ -161,14 +162,14 @@ impl PySubalgebra {
     ///
     /// Returns:
     ///     Any: The element at index k, or -1/None if out of bounds
-    fn get_element(&self, py: Python<'_>, k: usize) -> PyObject {
+    fn get_element(&self, py: Python<'_>, k: usize) -> Py<PyAny> {
         let element = self.inner.get_element(k);
         if let Some(map) = &self.element_map {
             return element
                 .and_then(|index| map.element(index as usize))
                 .unwrap_or_else(|| py.None());
         }
-        element.unwrap_or(-1).into_py(py)
+        element.unwrap_or(-1).into_py_any(py).unwrap()
     }
 
     /// Get the index of an element in the universe.
@@ -238,7 +239,7 @@ impl PySubalgebra {
         Algebra::set_description(&mut self.inner, description);
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         let name = if let Ok(s) = sym.extract::<String>() {
             s
         } else if let Ok(n) = sym.call_method0("name") {
@@ -264,11 +265,11 @@ impl PySubalgebra {
         None
     }
 
-    fn parent(&self) -> Option<PyObject> {
+    fn parent(&self) -> Option<Py<PyAny>> {
         None
     }
 
-    fn parents(&self) -> Option<Vec<PyObject>> {
+    fn parents(&self) -> Option<Vec<Py<PyAny>>> {
         None
     }
 
@@ -327,7 +328,7 @@ impl PySubalgebra {
     ///
     /// Note: This method reconstructs Python operation objects from the internal
     /// Rust operations. Operations are restricted to the subalgebra's universe.
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&self.inner))
     }
     
@@ -391,7 +392,7 @@ impl PySubalgebra {
         Ok(PySubalgebra {
             inner,
             super_alg: alg.inner.clone(),
-            super_obj: py_prod.to_object(py),
+            super_obj: py_prod.into_py_any(py)?,
             element_map: alg.element_map().cloned(),
         })
     }

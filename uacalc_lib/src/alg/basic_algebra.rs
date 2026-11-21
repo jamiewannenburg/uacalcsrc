@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyDict, PyList};
 use uacalc::alg::*;
@@ -11,7 +12,7 @@ use crate::alg::PyOperationSymbol;
 use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for BasicAlgebra (for integer universes)
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBasicAlgebra {
     pub(crate) inner: uacalc::alg::BasicAlgebra<i32>,
     pub(crate) element_map: Option<PyUniverseMap>,
@@ -115,7 +116,7 @@ impl PyBasicAlgebra {
     fn new(
         py: Python<'_>,
         name: String,
-        universe: Vec<PyObject>,
+        universe: Vec<Py<PyAny>>,
         operations: Option<&Bound<'_, PyList>>,
     ) -> PyResult<Self> {
         let map = PyUniverseMap::from_objects(py, universe, true)?;
@@ -159,7 +160,7 @@ impl PyBasicAlgebra {
     fn new_with_constant_op(
         py: Python<'_>,
         name: String,
-        universe: Vec<PyObject>,
+        universe: Vec<Py<PyAny>>,
     ) -> PyResult<Self> {
         let map = PyUniverseMap::from_objects(py, universe, true)?;
         let set_size = i32::try_from(map.len())
@@ -288,7 +289,7 @@ impl PyBasicAlgebra {
     ///
     /// Returns:
     ///     List[Any]: The universe elements as a list
-    fn get_universe(&self, py: Python<'_>) -> Vec<PyObject> {
+    fn get_universe(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         if let Some(map) = &self.element_map {
             return map.labels_owned();
         }
@@ -296,7 +297,7 @@ impl PyBasicAlgebra {
             .get_universe_list()
             .unwrap_or_default()
             .into_iter()
-            .map(|element| element.into_py(py))
+            .map(|element| element.into_py_any(py).unwrap())
             .collect()
     }
 
@@ -315,11 +316,11 @@ impl PyBasicAlgebra {
     ///
     /// Returns:
     ///     Any: The element at index k, or -1/None if k is out of bounds
-    fn get_element(&self, py: Python<'_>, k: usize) -> PyObject {
+    fn get_element(&self, py: Python<'_>, k: usize) -> Py<PyAny> {
         if let Some(map) = &self.element_map {
             return map.element(k).unwrap_or_else(|| py.None());
         }
-        self.inner.get_element(k).unwrap_or(-1).into_py(py)
+        self.inner.get_element(k).unwrap_or(-1).into_py_any(py).unwrap()
     }
 
     /// Get the index of an element in the universe.
@@ -351,14 +352,14 @@ impl PyBasicAlgebra {
     ///
     /// Returns:
     ///     List[Any]: The universe elements as a list, or None if not available
-    fn get_universe_list(&self, py: Python<'_>) -> Option<Vec<PyObject>> {
+    fn get_universe_list(&self, py: Python<'_>) -> Option<Vec<Py<PyAny>>> {
         if let Some(map) = &self.element_map {
             return Some(map.labels_owned());
         }
         self.inner.get_universe_list().map(|universe| {
             universe
                 .into_iter()
-                .map(|element| element.into_py(py))
+                .map(|element| element.into_py_any(py).unwrap())
                 .collect()
         })
     }
@@ -367,8 +368,8 @@ impl PyBasicAlgebra {
     ///
     /// Returns:
     ///     dict: A mapping from elements to their indices, or None if labels are unhashable
-    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
-        let order = PyDict::new_bound(py);
+    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
+        let order = PyDict::new(py);
         if let Some(map) = &self.element_map {
             for (index, label) in map.labels().iter().enumerate() {
                 if order.set_item(label.bind(py), index).is_err() {
@@ -380,7 +381,7 @@ impl PyBasicAlgebra {
                 order.set_item(element, index)?;
             }
         }
-        Ok(Some(order.to_object(py)))
+        Ok(Some(order.into_py_any(py)?))
     }
 
     /// Check if this algebra uses an integer universe.
@@ -437,7 +438,7 @@ impl PyBasicAlgebra {
     /// Note: This uses Arc references to avoid deep cloning through trait objects,
     /// which can cause infinite recursion. Operations are reconstructed from their
     /// symbol and table data, which is a shallow operation.
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         let ops_arc = self.inner.operations_ref_arc();
         let mut result = Vec::new();
         
@@ -477,7 +478,7 @@ impl PyBasicAlgebra {
                         table,
                         map.clone(),
                     )?;
-                result.push(Py::new(py, py_op)?.to_object(py));
+                result.push(Py::new(py, py_op)?.into_any());
                 continue;
             }
             
@@ -490,7 +491,7 @@ impl PyBasicAlgebra {
                     let py_op = crate::alg::op::int_operation::PyIntOperation {
                         inner: int_op,
                     };
-                    result.push(Py::new(py, py_op)?.to_object(py));
+                    result.push(Py::new(py, py_op)?.into_any());
                     continue;
                 }
                 
@@ -499,7 +500,7 @@ impl PyBasicAlgebra {
                     let py_op = crate::alg::op::operation::PyBasicOperation {
                         inner: basic_op,
                     };
-                    result.push(Py::new(py, py_op)?.to_object(py));
+                    result.push(Py::new(py, py_op)?.into_any());
                     continue;
                 }
             }
@@ -510,7 +511,7 @@ impl PyBasicAlgebra {
                 let py_op = crate::alg::op::operation::PyBasicOperation {
                     inner: basic_op,
                 };
-                result.push(Py::new(py, py_op)?.to_object(py));
+                result.push(Py::new(py, py_op)?.into_any());
                 continue;
             }
             
@@ -558,7 +559,7 @@ impl PyBasicAlgebra {
 
     /// Look up an operation by symbol. Returns None if the symbol is absent
     /// (including a None argument, matching Java HashMap.get).
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         if sym.is_none() {
             return Ok(None);
         }
@@ -573,13 +574,13 @@ impl PyBasicAlgebra {
     }
 
     /// Map from operation symbols to operations.
-    fn get_operations_map(&self, py: Python<'_>) -> PyResult<PyObject> {
-        let dict = PyDict::new_bound(py);
+    fn get_operations_map(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        let dict = PyDict::new(py);
         for (sym, op) in Algebra::get_operations_map(&self.inner) {
             let py_sym = Py::new(py, PyOperationSymbol::from_inner(sym))?;
             dict.set_item(py_sym, operation_to_py(py, op.as_ref())?)?;
         }
-        Ok(dict.to_object(py))
+        Ok(dict.into_py_any(py)?)
     }
 
     /// Similarity type of this algebra.
@@ -603,27 +604,27 @@ impl PyBasicAlgebra {
     }
 
     /// Operations of arity 0.
-    fn constant_operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn constant_operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::constant_operations(&self.inner))
     }
 
     /// Universe as a list of labels (Java ``Algebra.universe()`` iteration order).
-    fn universe(&self, py: Python<'_>) -> Vec<PyObject> {
+    fn universe(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         self.get_universe(py)
     }
 
     /// Iterator over the universe (materialized list, matching finite Java sets).
-    fn iterator(&self, py: Python<'_>) -> Vec<PyObject> {
+    fn iterator(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         self.get_universe(py)
     }
 
     /// Parent algebra; None for BasicAlgebra.
-    fn parent(&self) -> Option<PyObject> {
+    fn parent(&self) -> Option<Py<PyAny>> {
         None
     }
 
     /// Parent algebras; None for BasicAlgebra.
-    fn parents(&self) -> Option<Vec<PyObject>> {
+    fn parents(&self) -> Option<Vec<Py<PyAny>>> {
         None
     }
 }

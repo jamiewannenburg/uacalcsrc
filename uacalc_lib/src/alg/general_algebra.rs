@@ -1,17 +1,18 @@
 #![allow(warnings)]
 
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyList, PyAny};
 use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for GeneralAlgebra that supports Python objects and AbstractOperations
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyGeneralAlgebra {
     name: String,
     description: Option<String>,
     universe: PyUniverseMap,
-    operations: Vec<PyObject>, // Operations stored as PyObject references to PyAbstractOperationNew
+    operations: Vec<Py<PyAny>>, // Operations stored as Py<PyAny> references to PyAbstractOperationNew
 }
 
 #[pymethods]
@@ -37,12 +38,12 @@ impl PyGeneralAlgebra {
         operations: Option<&Bound<'_, PyAny>>,
     ) -> PyResult<Self> {
         // Extract universe as a list of PyObjects
-        let universe_list: Vec<PyObject> = if let Ok(list) = universe.extract::<Vec<PyObject>>() {
+        let universe_list: Vec<Py<PyAny>> = if let Ok(list) = universe.extract::<Vec<Py<PyAny>>>() {
             list
-        } else if let Ok(iter) = universe.iter() {
+        } else if let Ok(iter) = universe.try_iter() {
             let mut result = Vec::new();
             for item in iter {
-                result.push(item?.to_object(py));
+                result.push(item?.into_py_any(py)?);
             }
             result
         } else {
@@ -53,13 +54,13 @@ impl PyGeneralAlgebra {
         let universe = PyUniverseMap::from_objects(py, universe_list, true)?;
 
         // Extract operations
-        let operations_list: Vec<PyObject> = if let Some(ops) = operations {
-            if let Ok(list) = ops.extract::<Vec<PyObject>>() {
+        let operations_list: Vec<Py<PyAny>> = if let Some(ops) = operations {
+            if let Ok(list) = ops.extract::<Vec<Py<PyAny>>>() {
                 list
-            } else if let Ok(iter) = ops.iter() {
+            } else if let Ok(iter) = ops.try_iter() {
                 let mut result = Vec::new();
                 for item in iter {
-                    result.push(item?.to_object(py));
+                    result.push(item?.into_py_any(py)?);
                 }
                 result
             } else {
@@ -116,12 +117,12 @@ impl PyGeneralAlgebra {
     #[staticmethod]
     fn with_universe(py: Python<'_>, name: String, universe: &Bound<'_, PyAny>) -> PyResult<Self> {
         // Extract universe as a list of PyObjects
-        let universe_list: Vec<PyObject> = if let Ok(list) = universe.extract::<Vec<PyObject>>() {
+        let universe_list: Vec<Py<PyAny>> = if let Ok(list) = universe.extract::<Vec<Py<PyAny>>>() {
             list
-        } else if let Ok(iter) = universe.iter() {
+        } else if let Ok(iter) = universe.try_iter() {
             let mut result = Vec::new();
             for item in iter {
-                result.push(item?.to_object(py));
+                result.push(item?.into_py_any(py)?);
             }
             result
         } else {
@@ -254,7 +255,7 @@ impl PyGeneralAlgebra {
     ///
     /// Returns:
     ///     List[Any]: The universe elements as a list
-    fn get_universe(&self) -> Vec<PyObject> {
+    fn get_universe(&self) -> Vec<Py<PyAny>> {
         self.universe.labels_owned()
     }
 
@@ -262,7 +263,7 @@ impl PyGeneralAlgebra {
     ///
     /// Returns:
     ///     List[Any]: The universe elements as a list
-    fn universe(&self) -> Vec<PyObject> {
+    fn universe(&self) -> Vec<Py<PyAny>> {
         self.get_universe()
     }
 
@@ -270,20 +271,20 @@ impl PyGeneralAlgebra {
     ///
     /// Returns:
     ///     List[AbstractOperation]: List of AbstractOperation instances
-    fn get_operations(&self, py: Python<'_>) -> Vec<PyObject> {
+    fn get_operations(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         self.operations.clone()
     }
 
     /// Java `operations()`.
-    fn operations(&self, py: Python<'_>) -> Vec<PyObject> {
+    fn operations(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         self.get_operations(py)
     }
 
-    fn parent(&self) -> Option<PyObject> {
+    fn parent(&self) -> Option<Py<PyAny>> {
         None
     }
 
-    fn parents(&self) -> Option<Vec<PyObject>> {
+    fn parents(&self) -> Option<Vec<Py<PyAny>>> {
         None
     }
 
@@ -298,7 +299,7 @@ impl PyGeneralAlgebra {
         if operation.getattr("int_value_at").is_err() {
             return Err(PyValueError::new_err("Operation must be an AbstractOperation instance"));
         }
-        self.operations.push(operation.to_object(py));
+        self.operations.push(operation.into_py_any(py)?);
         Ok(())
     }
 
@@ -312,7 +313,7 @@ impl PyGeneralAlgebra {
     ///
     /// Raises:
     ///     IndexError: If index is out of bounds
-    fn get_operation(&self, py: Python<'_>, key: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, key: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         if let Ok(index) = key.extract::<usize>() {
             if index >= self.operations.len() {
                 return Err(PyValueError::new_err(format!("Operation index {} out of bounds", index)));
@@ -450,7 +451,7 @@ impl PyGeneralAlgebra {
                         set_size,
                         arity as usize,
                     );
-                    let py_args = PyList::new_bound(py, &args);
+                    let py_args = PyList::new(py, &args)?;
                     let result = op_bound.call_method1("int_value_at", (py_args,))?;
                     let result_int: i32 = result.extract()?;
                     

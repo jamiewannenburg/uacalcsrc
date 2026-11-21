@@ -2,10 +2,11 @@
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use uacalc::resource::UaError;
 
 fn ua_err(e: UaError) -> PyErr {
-    Python::with_gil(|py| crate::resource::ua_to_py(e, py))
+    Python::attach(|py| crate::resource::ua_to_py(e, py))
 }
 use pyo3::types::{PyAny, PyDict};
 use std::collections::HashMap;
@@ -56,23 +57,23 @@ pub fn py_to_term(item: &Bound<'_, PyAny>) -> PyResult<Box<dyn Term>> {
 }
 
 /// Java `Map<Variable,IntArray>` as a Python dict of VariableImp → IntArray.
-pub fn vars_map_to_py(py: Python<'_>, map: &HashMap<VariableImp, IntArray>) -> PyResult<PyObject> {
-    let dict = PyDict::new_bound(py);
+pub fn vars_map_to_py(py: Python<'_>, map: &HashMap<VariableImp, IntArray>) -> PyResult<Py<PyAny>> {
+    let dict = PyDict::new(py);
     for (var, ia) in map {
         let key = Py::new(py, PyVariableImp { inner: var.clone() })?;
         let val = Py::new(py, PyIntArray { inner: ia.clone() })?;
         dict.set_item(key, val)?;
     }
-    Ok(dict.to_object(py))
+    Ok(dict.into_py_any(py)?)
 }
 
 /// Wrap a Rust term as a Python VariableImp or NonVariableTerm.
-pub fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<PyObject> {
+pub fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<Py<PyAny>> {
     if term.isa_variable() {
         let var = PyVariableImp {
             inner: VariableImp::new(&term.to_string()),
         };
-        return Ok(Py::new(py, var)?.to_object(py));
+        return Ok(Py::new(py, var)?.into_any());
     }
     let sym = term
         .leading_operation_symbol()
@@ -82,16 +83,16 @@ pub fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<PyObject> {
     let nvt = PyNonVariableTerm {
         inner: NonVariableTerm::new(sym, children),
     };
-    Ok(Py::new(py, nvt)?.to_object(py))
+    Ok(Py::new(py, nvt)?.into_any())
 }
 
 /// Reconstruct a table-backed IntOperation so Jython scripts can call intValueAt.
-pub fn operation_to_py(py: Python<'_>, op: &dyn Operation) -> PyResult<PyObject> {
+pub fn operation_to_py(py: Python<'_>, op: &dyn Operation) -> PyResult<Py<PyAny>> {
     let symbol = op.symbol().clone();
     let set_size = op.get_set_size();
     if let Some(table) = op.get_table() {
         if let Ok(int_op) = IntOperation::new(symbol.clone(), set_size, table.to_vec()) {
-            return Ok(Py::new(py, PyIntOperation { inner: int_op })?.to_object(py));
+            return Ok(Py::new(py, PyIntOperation { inner: int_op })?.into_any());
         }
     }
     if set_size < 0 {
@@ -106,13 +107,13 @@ pub fn operation_to_py(py: Python<'_>, op: &dyn Operation) -> PyResult<PyObject>
     })
     .map_err(|e| crate::resource::ua_to_py(e, py))?;
     let int_op = IntOperation::new(symbol, set_size, table_vec).map_err(PyValueError::new_err)?;
-    Ok(Py::new(py, PyIntOperation { inner: int_op })?.to_object(py))
+    Ok(Py::new(py, PyIntOperation { inner: int_op })?.into_any())
 }
 
 pub fn operations_to_py(
     py: Python<'_>,
     ops: impl IntoIterator<Item = Box<dyn Operation>>,
-) -> PyResult<Vec<PyObject>> {
+) -> PyResult<Vec<Py<PyAny>>> {
     ops.into_iter()
         .map(|op| operation_to_py(py, op.as_ref()))
         .collect()
@@ -123,7 +124,7 @@ pub fn get_operation_by_symbol(
     py: Python<'_>,
     ops: impl IntoIterator<Item = Box<dyn Operation>>,
     sym: &Bound<'_, PyAny>,
-) -> PyResult<Option<PyObject>> {
+) -> PyResult<Option<Py<PyAny>>> {
     let name = if let Ok(s) = sym.extract::<String>() {
         s
     } else if let Ok(n) = sym.call_method0("name") {

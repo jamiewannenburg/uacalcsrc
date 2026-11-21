@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::util::horner;
 use uacalc::util::array_string;
@@ -19,7 +20,7 @@ use std::collections::HashSet;
 #[derive(Debug, Clone)]
 pub enum PySimpleListInner {
     Cons {
-        first: PyObject,
+        first: Py<PyAny>,
         rest: Arc<PySimpleListInner>,
     },
     Empty,
@@ -32,7 +33,7 @@ impl PySimpleListInner {
     }
 
     /// Create a new list with a single element
-    pub fn new_safe(obj: PyObject) -> Result<Arc<Self>, String> {
+    pub fn new_safe(obj: Py<PyAny>) -> Result<Arc<Self>, String> {
         Ok(Arc::new(PySimpleListInner::Cons {
             first: obj,
             rest: Self::new(),
@@ -40,7 +41,7 @@ impl PySimpleListInner {
     }
 
     /// Constructs a list with obj followed by list (cons operation)
-    pub fn cons_safe(self: &Arc<Self>, obj: PyObject) -> Result<Arc<Self>, String> {
+    pub fn cons_safe(self: &Arc<Self>, obj: Py<PyAny>) -> Result<Arc<Self>, String> {
         Ok(Arc::new(PySimpleListInner::Cons {
             first: obj,
             rest: self.clone(),
@@ -71,7 +72,7 @@ impl PySimpleListInner {
     }
 
     /// Get the first element
-    pub fn first(&self) -> Option<PyObject> {
+    pub fn first(&self) -> Option<Py<PyAny>> {
         match self {
             PySimpleListInner::Empty => None,
             PySimpleListInner::Cons { first, .. } => Some(first.clone()),
@@ -160,7 +161,7 @@ impl PySimpleListInner {
     }
 
     /// Check if the list contains an element
-    pub fn contains(&self, obj: &PyObject) -> bool {
+    pub fn contains(&self, obj: &Py<PyAny>) -> bool {
         let mut current = self;
         
         loop {
@@ -168,7 +169,7 @@ impl PySimpleListInner {
                 PySimpleListInner::Empty => return false,
                 PySimpleListInner::Cons { first, rest } => {
                     // Use Python's equality comparison
-                    let found = Python::with_gil(|py| {
+                    let found = Python::attach(|py| {
                         if let Ok(equal) = first.call_method1(py, "__eq__", (obj,)) {
                             if let Ok(is_equal) = equal.extract::<bool>(py) {
                                 return is_equal;
@@ -186,7 +187,7 @@ impl PySimpleListInner {
     }
 
     /// Get element at index (inefficient - O(n))
-    pub fn get_safe(&self, index: usize) -> Result<Option<PyObject>, String> {
+    pub fn get_safe(&self, index: usize) -> Result<Option<Py<PyAny>>, String> {
         // Special case: index 0 can be accessed directly without traversal
         if index == 0 {
             return Ok(self.first());
@@ -219,7 +220,7 @@ impl PySimpleListInner {
     }
 
     /// Find index of an element
-    pub fn index_of(&self, obj: &PyObject) -> Option<usize> {
+    pub fn index_of(&self, obj: &Py<PyAny>) -> Option<usize> {
         let mut current = self;
         let mut index = 0;
         
@@ -228,7 +229,7 @@ impl PySimpleListInner {
                 PySimpleListInner::Empty => return None,
                 PySimpleListInner::Cons { first, rest } => {
                     // Use Python's equality comparison
-                    let found = Python::with_gil(|py| {
+                    let found = Python::attach(|py| {
                         if let Ok(equal) = first.call_method1(py, "__eq__", (obj,)) {
                             if let Ok(is_equal) = equal.extract::<bool>(py) {
                                 return is_equal;
@@ -247,7 +248,7 @@ impl PySimpleListInner {
     }
 
     /// Find last index of an element
-    pub fn last_index_of(&self, obj: &PyObject) -> Option<usize> {
+    pub fn last_index_of(&self, obj: &Py<PyAny>) -> Option<usize> {
         let mut last_index = None;
         let mut current = self;
         let mut index = 0;
@@ -257,7 +258,7 @@ impl PySimpleListInner {
                 PySimpleListInner::Empty => return last_index,
                 PySimpleListInner::Cons { first, rest } => {
                     // Use Python's equality comparison
-                    let found = Python::with_gil(|py| {
+                    let found = Python::attach(|py| {
                         if let Ok(equal) = first.call_method1(py, "__eq__", (obj,)) {
                             if let Ok(is_equal) = equal.extract::<bool>(py) {
                                 return is_equal;
@@ -308,7 +309,7 @@ impl PySimpleListInner {
     }
 
     /// Convert to Python list
-    pub fn to_list(&self, _py: Python) -> PyResult<Vec<PyObject>> {
+    pub fn to_list(&self, _py: Python) -> PyResult<Vec<Py<PyAny>>> {
         let mut result = Vec::new();
         let mut current = self;
         
@@ -355,8 +356,8 @@ impl PySimpleListInner {
                     if !first {
                         result.push(' ');
                     }
-                    // Properly convert PyObject to Python string representation
-                    let elem_str = Python::with_gil(|py| {
+                    // Properly convert Py<PyAny> to Python string representation
+                    let elem_str = Python::attach(|py| {
                         match elem.bind(py).str() {
                             Ok(py_str) => py_str.to_string_lossy().to_string(),
                             Err(_) => format!("{:?}", elem), // Fallback to debug representation
@@ -375,7 +376,7 @@ impl PySimpleListInner {
 }
 
 /// Python wrapper for Horner encoding/decoding operations
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyHorner;
 
 #[pymethods]
@@ -465,7 +466,7 @@ impl PyHorner {
 }
 
 /// Python wrapper for SimpleList
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySimpleList {
     inner: Arc<PySimpleListInner>,
 }
@@ -482,14 +483,14 @@ impl PySimpleList {
     
     /// Create a new SimpleList with a single element
     #[staticmethod]
-    fn make_list(obj: PyObject) -> PyResult<Self> {
+    fn make_list(obj: Py<PyAny>) -> PyResult<Self> {
         let inner = PySimpleListInner::new_safe(obj).map_err(|e| PyValueError::new_err(e))?;
         Ok(PySimpleList { inner })
     }
     
     /// Create a new SimpleList from a Python list
     #[staticmethod]
-    fn from_list(_py: Python, items: Vec<PyObject>) -> PyResult<Self> {
+    fn from_list(_py: Python, items: Vec<Py<PyAny>>) -> PyResult<Self> {
         let mut result = PySimpleListInner::new();
         for item in items.into_iter().rev() {
             result = result.cons_safe(item).map_err(|e| PyValueError::new_err(e))?;
@@ -508,7 +509,7 @@ impl PySimpleList {
     }
     
     /// Get the first element
-    fn first(&self) -> Option<PyObject> {
+    fn first(&self) -> Option<Py<PyAny>> {
         self.inner.first()
     }
     
@@ -525,7 +526,7 @@ impl PySimpleList {
     }
     
     /// Add an element to the front of the list (cons operation)
-    fn cons(&self, obj: PyObject) -> PyResult<Self> {
+    fn cons(&self, obj: Py<PyAny>) -> PyResult<Self> {
         let inner = self.inner.cons_safe(obj).map_err(|e| PyValueError::new_err(e))?;
         Ok(PySimpleList { inner })
     }
@@ -559,12 +560,12 @@ impl PySimpleList {
     }
     
     /// Check if the list contains an element
-    fn contains(&self, obj: PyObject) -> bool {
+    fn contains(&self, obj: Py<PyAny>) -> bool {
         self.inner.contains(&obj)
     }
     
     /// Get element at index
-    fn get(&self, index: usize) -> PyResult<Option<PyObject>> {
+    fn get(&self, index: usize) -> PyResult<Option<Py<PyAny>>> {
         match self.inner.get_safe(index) {
             Ok(item) => Ok(item),
             Err(e) => Err(PyValueError::new_err(e)),
@@ -572,12 +573,12 @@ impl PySimpleList {
     }
     
     /// Find index of an element
-    fn index_of(&self, obj: PyObject) -> Option<usize> {
+    fn index_of(&self, obj: Py<PyAny>) -> Option<usize> {
         self.inner.index_of(&obj)
     }
     
     /// Find last index of an element
-    fn last_index_of(&self, obj: PyObject) -> Option<usize> {
+    fn last_index_of(&self, obj: Py<PyAny>) -> Option<usize> {
         self.inner.last_index_of(&obj)
     }
     
@@ -590,7 +591,7 @@ impl PySimpleList {
     }
     
     /// Convert to Python list
-    fn to_list(&self, py: Python) -> PyResult<Vec<PyObject>> {
+    fn to_list(&self, py: Python) -> PyResult<Vec<Py<PyAny>>> {
         self.inner.to_list(py)
     }
     
@@ -632,14 +633,14 @@ impl PySimpleList {
     }
     
     /// Python iteration support
-    fn __iter__(slf: PyRef<Self>) -> PyResult<PyObject> {
+    fn __iter__(slf: PyRef<Self>) -> PyResult<Py<PyAny>> {
         let iter = PySimpleListIterator::new(slf.inner.clone());
-        Ok(iter.into_py(slf.py()))
+        Ok(iter.into_py_any(slf.py())?)
     }
 }
 
 /// Iterator for Python SimpleList
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySimpleListIterator {
     current: Arc<PySimpleListInner>,
 }
@@ -650,7 +651,7 @@ impl PySimpleListIterator {
         slf
     }
     
-    fn __next__(&mut self, _py: Python) -> PyResult<Option<PyObject>> {
+    fn __next__(&mut self, _py: Python) -> PyResult<Option<Py<PyAny>>> {
         match self.current.as_ref() {
             PySimpleListInner::Empty => Ok(None),
             PySimpleListInner::Cons { first, rest } => {
@@ -669,7 +670,7 @@ impl PySimpleListIterator {
 }
 
 /// Python wrapper for ArrayString operations
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyArrayString;
 
 #[pymethods]
@@ -685,7 +686,7 @@ impl PyArrayString {
     /// This function mimics the behavior of Java's ArrayString.toString() method.
     /// It recursively converts nested arrays and collections to a bracketed format.
     #[staticmethod]
-    fn to_string(arr: Vec<PyObject>) -> PyResult<String> {
+    fn to_string(arr: Vec<Py<PyAny>>) -> PyResult<String> {
         // Convert Python objects to their string representations
         let mut result = String::new();
         result.push('[');
@@ -703,7 +704,7 @@ impl PyArrayString {
     
     /// Convert a 2D array to a string representation.
     #[staticmethod]
-    fn to_string_2d(arr: Vec<Vec<PyObject>>) -> PyResult<String> {
+    fn to_string_2d(arr: Vec<Vec<Py<PyAny>>>) -> PyResult<String> {
         let mut result = String::new();
         result.push('[');
         
@@ -727,7 +728,7 @@ impl PyArrayString {
     
     /// Convert any displayable type to string (handles non-arrays like Java's String.valueOf).
     #[staticmethod]
-    fn value_of(value: PyObject) -> String {
+    fn value_of(value: Py<PyAny>) -> String {
         value.to_string()
     }
     
@@ -767,7 +768,7 @@ impl PyArrayString {
 }
 
 /// Python wrapper for PermutationGenerator
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPermutationGenerator {
     inner: permutation_generator::PermutationGenerator,
 }
@@ -852,7 +853,7 @@ impl PyPermutationGenerator {
     /// The iteration is on a fixed list so one needs to be careful to
     /// copy any result that needs to be saved.
     #[staticmethod]
-    fn list_incrementor(lst: Vec<PyObject>) -> PyResult<PyListIncrementor> {
+    fn list_incrementor(lst: Vec<Py<PyAny>>) -> PyResult<PyListIncrementor> {
         if lst.is_empty() {
             return Err(PyValueError::new_err("List cannot be empty"));
         }
@@ -886,7 +887,7 @@ impl PyPermutationGenerator {
 }
 
 /// Python wrapper for PermutationIterator
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPermutationIterator {
     inner: permutation_generator::PermutationIterator,
 }
@@ -911,7 +912,7 @@ impl PyPermutationIterator {
 }
 
 /// Python wrapper for ArrayIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyArrayIncrementor {
     inner: Vec<usize>,
     generator: permutation_generator::PermutationGenerator,
@@ -958,16 +959,16 @@ impl PyArrayIncrementor {
 }
 
 /// Python wrapper for ListIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyListIncrementor {
-    inner: Vec<PyObject>,
+    inner: Vec<Py<PyAny>>,
     generator: permutation_generator::PermutationGenerator,
 }
 
 #[pymethods]
 impl PyListIncrementor {
     /// Get the current list
-    fn get_list(&self) -> Vec<PyObject> {
+    fn get_list(&self) -> Vec<Py<PyAny>> {
         self.inner.clone()
     }
     
@@ -977,7 +978,7 @@ impl PyListIncrementor {
             match self.generator.next_index() {
                 Some(k) => {
                     // Use Python's equality comparison
-                    let are_equal = Python::with_gil(|py| {
+                    let are_equal = Python::attach(|py| {
                         if let Ok(equal) = self.inner[k].call_method1(py, "__eq__", (&self.inner[k + 1],)) {
                             if let Ok(is_equal) = equal.extract::<bool>(py) {
                                 return is_equal;
@@ -1005,7 +1006,7 @@ impl PyListIncrementor {
 }
 
 impl PyListIncrementor {
-    fn new(lst: Vec<PyObject>) -> Self {
+    fn new(lst: Vec<Py<PyAny>>) -> Self {
         let generator = permutation_generator::PermutationGenerator::new(lst.len());
         Self {
             inner: lst,
@@ -1015,14 +1016,14 @@ impl PyListIncrementor {
 }
 
 /// Python wrapper for ArrayIncrementorImpl
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyArrayIncrementorImpl {
     data: Vec<usize>,
     generator: permutation_generator::PermutationGenerator,
 }
 
 /// Python wrapper for SimpleArrayIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySimpleArrayIncrementor {
     data: Vec<usize>,
     max_values: Vec<usize>,
@@ -1187,7 +1188,7 @@ impl PySimpleArrayIncrementor {
 }
 
 /// Python wrapper for IntArray
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone, Hash, Eq, PartialEq)]
 pub struct PyIntArray {
     pub inner: IntArray,
@@ -1462,7 +1463,7 @@ impl PyIntArray {
 }
 
 /// Python wrapper for IntTuples
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyIntTuples {
     inner: IntTuples,
 }
@@ -1502,7 +1503,7 @@ impl PyIntTuples {
 }
 
 /// Python wrapper for IntTuplesWithMin
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyIntTuplesWithMin {
     inner: IntTuplesWithMin,
 }
@@ -1542,7 +1543,7 @@ impl PyIntTuplesWithMin {
 }
 
 /// Python wrapper for FixedSizedSubsets
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyFixedSizedSubsets {
     inner: FixedSizedSubsets,
 }
@@ -1582,7 +1583,7 @@ impl PyFixedSizedSubsets {
 }
 
 /// Python wrapper for Subsets
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySubsets {
     inner: Subsets,
 }
@@ -1621,7 +1622,7 @@ impl PySubsets {
 }
 
 /// Python wrapper for Permutations
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPermutations {
     inner: Permutations,
 }
@@ -1660,7 +1661,7 @@ impl PyPermutations {
 }
 
 /// Python wrapper for TupleWithMin
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyTupleWithMin {
     inner: TupleWithMin,
 }
@@ -1700,7 +1701,7 @@ impl PyTupleWithMin {
 }
 
 /// Python wrapper for LongListUtils
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyLongListUtils;
 
 #[pymethods]
@@ -1747,7 +1748,7 @@ impl PyLongListUtils {
 }
 
 /// Python wrapper for SequenceGenerator
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySequenceGenerator;
 
 #[pymethods]
@@ -1912,7 +1913,7 @@ impl PySequenceGenerator {
 }
 
 /// Python wrapper for NondecreasingSequenceIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyNondecreasingSequenceIncrementor {
     data: Vec<i32>,
     max: i32,
@@ -1965,7 +1966,7 @@ impl PyNondecreasingSequenceIncrementor {
 }
 
 /// Python wrapper for IncreasingSequenceIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyIncreasingSequenceIncrementor {
     data: Vec<i32>,
     maxs: Vec<i32>,
@@ -2005,7 +2006,7 @@ impl PyIncreasingSequenceIncrementor {
 }
 
 /// Python wrapper for SequenceIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySequenceIncrementor {
     data: Vec<i32>,
     maxs: Vec<i32>,
@@ -2072,7 +2073,7 @@ impl PySequenceIncrementor {
 }
 
 /// Python wrapper for LeftSequenceIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyLeftSequenceIncrementor {
     data: Vec<i32>,
     max: i32,
@@ -2112,7 +2113,7 @@ impl PyLeftSequenceIncrementor {
 }
 
 /// Python wrapper for PartitionArrayIncrementor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPartitionArrayIncrementor {
     data: Vec<i32>,
     num_blocks: usize,
@@ -2145,7 +2146,7 @@ impl PyPartitionArrayIncrementor {
 }
 
 /// Python wrapper for VirtualLists static methods
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyVirtualLists;
 
 #[pymethods]

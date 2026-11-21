@@ -1,11 +1,12 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyList};
 use uacalc::alg::op::{IntOperation, Operation};
 use crate::alg::op::operation_symbol::PyOperationSymbol;
 
 /// Python wrapper for IntOperation
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyIntOperation {
     pub(crate) inner: IntOperation,
 }
@@ -123,8 +124,8 @@ impl PyIntOperation {
     ///         return (args[0] + args[1]) % 3
     ///     op = IntOperation.from_int_value_at("add_mod3", 2, 3, my_op)
     #[staticmethod]
-    fn from_int_value_at(name: &str, arity: i32, set_size: i32, int_value_at_fn: PyObject) -> PyResult<Self> {
-        Python::with_gil(|py| {
+    fn from_int_value_at(name: &str, arity: i32, set_size: i32, int_value_at_fn: Py<PyAny>) -> PyResult<Self> {
+        Python::attach(|py| {
             // Create the operation table by evaluating the function for all possible inputs
             let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
                 Ok(sym) => sym,
@@ -140,7 +141,7 @@ impl PyIntOperation {
                     set_size,
                     arity as usize,
                 );
-                let py_args = PyList::new_bound(py, &args);
+                let py_args = PyList::new(py, &args)?;
                 let result = int_value_at_fn.call1(py, (py_args,))?;
                 let result_int: i32 = result.extract(py)?;
 
@@ -179,8 +180,8 @@ impl PyIntOperation {
     ///         return args[0] + args[1]
     ///     op = IntOperation.from_value_at("concat", 2, ["a", "b", "c"], string_concat)
     #[staticmethod]
-    fn from_value_at(name: &str, arity: i32, universe: Vec<PyObject>, value_at_fn: PyObject) -> PyResult<Self> {
-        Python::with_gil(|py| {
+    fn from_value_at(name: &str, arity: i32, universe: Vec<Py<PyAny>>, value_at_fn: Py<PyAny>) -> PyResult<Self> {
+        Python::attach(|py| {
             let set_size = universe.len() as i32;
 
             // Create the operation table by evaluating the function for all possible inputs
@@ -207,7 +208,7 @@ impl PyIntOperation {
                     universe_args.push(universe[idx as usize].clone());
                 }
 
-                let py_args = PyList::new_bound(py, &universe_args);
+                let py_args = PyList::new(py, &universe_args)?;
                 let result = value_at_fn.call1(py, (py_args,))?;
 
                 // Find the index of the result in the universe
@@ -250,7 +251,7 @@ impl PyIntOperation {
     ///     op = IntOperation.from_matrix("xor", matrix)
     #[staticmethod]
     fn from_matrix(name: &str, operation_matrix: &Bound<'_, PyAny>) -> PyResult<Self> {
-        Python::with_gil(|_py| {
+        Python::attach(|_py| {
             // Extract the 2D matrix
             let matrix: Vec<Vec<i32>> = operation_matrix.extract()?;
 
@@ -443,7 +444,7 @@ impl PyIntOperation {
 impl PyIntOperation {
     /// Build a table-based IntOperation from any Operation trait object.
     pub(crate) fn from_dyn_op(op: &dyn Operation) -> PyResult<Self> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             match uacalc::alg::op::ops::make_int_operation_from_dyn(op) {
                 Ok(boxed) => {
                     let sym = boxed.symbol().clone();

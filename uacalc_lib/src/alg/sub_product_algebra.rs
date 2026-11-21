@@ -1,5 +1,6 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::{PyAny, PyDict};
 use uacalc::alg::{Algebra, SmallAlgebra};
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
@@ -18,7 +19,7 @@ use crate::terms::PyVariableImp;
 use crate::util::PyIntArray;
 
 /// Python wrapper for SubProductAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySubProductAlgebra {
     inner: uacalc::alg::SubProductAlgebra<i32>,
 }
@@ -42,7 +43,7 @@ pub(crate) fn extract_int_array(obj: &Bound<'_, PyAny>) -> PyResult<IntArray> {
 
 fn extract_int_arrays(obj: &Bound<'_, PyAny>) -> PyResult<Vec<IntArray>> {
     let mut out = Vec::new();
-    for item in obj.iter()? {
+    for item in obj.try_iter()? {
         out.push(extract_int_array(&item?)?);
     }
     Ok(out)
@@ -126,8 +127,8 @@ impl PySubProductAlgebra {
             .collect()
     }
 
-    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
-        let order = PyDict::new_bound(py);
+    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
+        let order = PyDict::new(py);
         for (element, index) in self.inner.get_universe_order() {
             let key = Py::new(
                 py,
@@ -137,7 +138,7 @@ impl PySubProductAlgebra {
             )?;
             order.set_item(key, *index)?;
         }
-        Ok(Some(order.to_object(py)))
+        Ok(Some(order.into_py_any(py)?))
     }
 
     fn get_product_algebra(&self) -> PyBigProductAlgebra {
@@ -169,11 +170,11 @@ impl PySubProductAlgebra {
         }
     }
 
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&self.inner))
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         let name = if let Ok(s) = sym.extract::<String>() {
             s
         } else if let Ok(n) = sym.call_method0("name") {
@@ -205,15 +206,15 @@ impl PySubProductAlgebra {
         Algebra::set_description(&mut self.inner, description);
     }
 
-    fn parent(&self) -> Option<PyObject> {
+    fn parent(&self) -> Option<Py<PyAny>> {
         None
     }
 
-    fn parents(&self) -> Option<Vec<PyObject>> {
+    fn parents(&self) -> Option<Vec<Py<PyAny>>> {
         None
     }
 
-    fn get_terms(&self, py: Python<'_>) -> PyResult<Option<Vec<PyObject>>> {
+    fn get_terms(&self, py: Python<'_>) -> PyResult<Option<Vec<Py<PyAny>>>> {
         if self.inner.get_terms().is_none() {
             return Ok(None);
         }
@@ -228,7 +229,7 @@ impl PySubProductAlgebra {
     }
 
     /// Java `getTerm(IntArray)`.
-    fn get_term(&self, py: Python<'_>, elt: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_term(&self, py: Python<'_>, elt: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         let ia = extract_int_array(elt)?;
         match self.inner.get_term(&ia) {
             Some(term) => Ok(Some(term_to_py(py, term)?)),
@@ -237,7 +238,7 @@ impl PySubProductAlgebra {
     }
 
     /// Java `getVariableToGeneratorMap()`.
-    fn get_variable_to_generator_map(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn get_variable_to_generator_map(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         match self.inner.get_variable_to_generator_map() {
             Some(map) => Ok(Some(vars_map_to_py(py, map)?)),
             None => Ok(None),

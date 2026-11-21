@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use uacalc::alg::*;
@@ -6,7 +7,7 @@ use uacalc::util::IntArrayTrait;
 use uacalc::alg::op::Operation;
 
 /// Python wrapper for Polymorphisms
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPolymorphisms {
     inner: uacalc::alg::conlat::Polymorphisms,
 }

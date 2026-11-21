@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::conlat::{BasicBinaryRelation, BinaryRelation};
 use uacalc::alg::conlat::partition::Partition;
@@ -8,7 +9,7 @@ use uacalc::util::IntArrayTrait;
 ///
 /// Note: We store the concrete types (BasicBinaryRelation) instead of the trait objects
 /// to avoid Send/Sync issues with PyO3.
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyCentralityData {
     left: BasicBinaryRelation,
     right: BasicBinaryRelation,

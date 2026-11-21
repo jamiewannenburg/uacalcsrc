@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use std::sync::Arc;
@@ -8,14 +9,14 @@ use crate::alg::universe_map::PyUniverseMap;
 /// Evaluation mode for AbstractOperation that supports both integer and non-integer universes
 #[derive(Debug, Clone)]
 enum AbstractOperationEvaluationMode {
-    IntFunction(PyObject),
-    ValueFunction(PyObject, PyUniverseMap),
+    IntFunction(Py<PyAny>),
+    ValueFunction(Py<PyAny>, PyUniverseMap),
     IntTable(Arc<[i32]>),
     ValueTable(Arc<[i32]>, PyUniverseMap),
 }
 
 /// Python wrapper for the new AbstractOperation class (supports both integer and non-integer universes)
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyAbstractOperationNew {
     symbol: uacalc::alg::op::OperationSymbol,
     set_size: i32,
@@ -25,7 +26,7 @@ pub struct PyAbstractOperationNew {
 #[pymethods]
 impl PyAbstractOperationNew {
     #[staticmethod]
-    fn from_int_value_at_function(name: &str, arity: i32, set_size: i32, int_value_at_fn: PyObject) -> PyResult<Self> {
+    fn from_int_value_at_function(name: &str, arity: i32, set_size: i32, int_value_at_fn: Py<PyAny>) -> PyResult<Self> {
         let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
             Ok(sym) => sym,
             Err(e) => return Err(PyValueError::new_err(e)),
@@ -47,8 +48,8 @@ impl PyAbstractOperationNew {
         py: Python<'_>,
         name: &str,
         arity: i32,
-        universe: Vec<PyObject>,
-        value_at_fn: PyObject,
+        universe: Vec<Py<PyAny>>,
+        value_at_fn: Py<PyAny>,
     ) -> PyResult<Self> {
         let universe = PyUniverseMap::from_objects(py, universe, true)?;
         let set_size = universe.len() as i32;
@@ -85,8 +86,8 @@ impl PyAbstractOperationNew {
 
         match &self.evaluation_mode {
             AbstractOperationEvaluationMode::IntFunction(func) => {
-                Python::with_gil(|py| {
-                    let py_args = PyList::new_bound(py, &args);
+                Python::attach(|py| {
+                    let py_args = PyList::new(py, &args)?;
                     let result = func.call1(py, (py_args,))?;
                     let result_int: i32 = result.extract(py)?;
 
@@ -100,14 +101,14 @@ impl PyAbstractOperationNew {
                 })
             }
             AbstractOperationEvaluationMode::ValueFunction(func, universe) => {
-                Python::with_gil(|py| {
-                    let universe_args: Vec<PyObject> = args
+                Python::attach(|py| {
+                    let universe_args: Vec<Py<PyAny>> = args
                         .iter()
                         .map(|&index| {
                             universe.element_or_error(index, "Operation argument")
                         })
                         .collect::<PyResult<_>>()?;
-                    let py_args = PyList::new_bound(py, &universe_args);
+                    let py_args = PyList::new(py, &universe_args)?;
                     let result = func.call1(py, (py_args,))?;
 
                     if let Some(index) = universe.index_of(py, result.bind(py))? {
@@ -134,12 +135,12 @@ impl PyAbstractOperationNew {
     ///
     /// Raises:
     ///     ValueError: If arguments are invalid or result is not in universe
-    fn value_at(&self, args: Vec<PyObject>) -> PyResult<PyObject> {
+    fn value_at(&self, args: Vec<Py<PyAny>>) -> PyResult<Py<PyAny>> {
         if args.len() != self.arity() as usize {
             return Err(PyValueError::new_err(format!("Expected {} arguments, got {}", self.arity(), args.len())));
         }
 
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             match &self.evaluation_mode {
                 AbstractOperationEvaluationMode::IntFunction(_) => {
                     // For integer functions, convert universe elements to indices
@@ -155,7 +156,7 @@ impl PyAbstractOperationNew {
                     }
                     let result_idx = self.int_value_at(int_args)?;
                     // Return as integer
-                    Ok(result_idx.into_py(py))
+                    Ok(result_idx.into_py_any(py)?)
                 }
                 AbstractOperationEvaluationMode::ValueFunction(func, universe) => {
                     // Verify all arguments are in the universe
@@ -166,7 +167,7 @@ impl PyAbstractOperationNew {
                     }
                     
                     // Call the function with the actual universe elements
-                    let py_args = PyList::new_bound(py, &args);
+                    let py_args = PyList::new(py, &args)?;
                     let result = func.call1(py, (py_args,))?;
                     
                     // Verify result is in universe
@@ -187,7 +188,7 @@ impl PyAbstractOperationNew {
                         int_args.push(int_val);
                     }
                     let result_idx = self.int_value_at(int_args)?;
-                    Ok(result_idx.into_py(py))
+                    Ok(result_idx.into_py_any(py)?)
                 }
                 AbstractOperationEvaluationMode::ValueTable(table, universe) => {
                     // Convert universe elements to indices
@@ -212,7 +213,7 @@ impl PyAbstractOperationNew {
             AbstractOperationEvaluationMode::IntFunction(func) => {
                 let func_clone = func.clone();
 
-                Python::with_gil(|py| {
+                Python::attach(|py| {
                     let arity = self.arity();
                     let table_size = if arity == 0 { 1 } else { (self.set_size as usize).pow(arity as u32) };
                     let mut table = Vec::with_capacity(table_size);
@@ -223,7 +224,7 @@ impl PyAbstractOperationNew {
                             self.set_size,
                             arity as usize,
                         );
-                        let py_args = PyList::new_bound(py, &args);
+                        let py_args = PyList::new(py, &args)?;
                         let result = func_clone.call1(py, (py_args,))?;
                         let result_int: i32 = result.extract(py)?;
                         table.push(result_int);
@@ -237,7 +238,7 @@ impl PyAbstractOperationNew {
                 let func_clone = func.clone();
                 let universe_clone = universe.clone();
 
-                Python::with_gil(|py| {
+                Python::attach(|py| {
                     let arity = self.arity();
                     let table_size = if arity == 0 { 1 } else { (self.set_size as usize).pow(arity as u32) };
                     let mut table = Vec::with_capacity(table_size);
@@ -248,13 +249,13 @@ impl PyAbstractOperationNew {
                             self.set_size,
                             arity as usize,
                         );
-                        let universe_args: Vec<PyObject> = args
+                        let universe_args: Vec<Py<PyAny>> = args
                             .iter()
                             .map(|&index| {
                                 universe_clone.element_or_error(index, "Operation argument")
                             })
                             .collect::<PyResult<_>>()?;
-                        let py_args = PyList::new_bound(py, &universe_args);
+                        let py_args = PyList::new(py, &universe_args)?;
                         let result = func_clone.call1(py, (py_args,))?;
 
                         let result_index = universe_clone

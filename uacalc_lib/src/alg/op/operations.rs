@@ -2,6 +2,7 @@
 
 use crate::resource::{limit_string_to_py, ua_to_py};
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyDict};
 
@@ -21,7 +22,7 @@ fn extract_dyn_op(op: &Bound<'_, PyAny>) -> PyResult<Box<dyn uacalc::alg::op::Op
 }
 
 fn extract_op_list(ops: &Bound<'_, PyAny>) -> PyResult<Vec<Box<dyn uacalc::alg::op::Operation>>> {
-    let seq = ops.iter()?;
+    let seq = ops.try_iter()?;
     let mut out = Vec::new();
     for item in seq {
         out.push(extract_dyn_op(&item?)?);
@@ -30,7 +31,7 @@ fn extract_op_list(ops: &Bound<'_, PyAny>) -> PyResult<Vec<Box<dyn uacalc::alg::
 }
 
 /// Python wrapper for Operations utility class
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyOperations;
 
 #[pymethods]
@@ -602,9 +603,9 @@ impl PyOperations {
     }
 
     #[staticmethod]
-    fn make_map(py: Python<'_>, ops: &Bound<'_, PyAny>) -> PyResult<PyObject> {
+    fn make_map(py: Python<'_>, ops: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
         let rust_ops = extract_op_list(ops)?;
-        let dict = PyDict::new_bound(py);
+        let dict = PyDict::new(py);
         for op in rust_ops {
             let py_op = PyIntOperation::from_dyn_op(op.as_ref())?;
             let sym = PyOperationSymbol::from_inner(op.symbol().clone());

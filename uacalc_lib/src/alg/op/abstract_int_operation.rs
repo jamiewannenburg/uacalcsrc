@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use uacalc::alg::op::{Operation, AbstractIntOperation};
@@ -6,11 +7,11 @@ use uacalc::alg::op::{Operation, AbstractIntOperation};
 /// Python wrapper for AbstractIntOperation
 #[derive(Debug, Clone)]
 enum IntOperationEvaluationMode {
-    Function(PyObject),
+    Function(Py<PyAny>),
     Table(Vec<i32>),
 }
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyAbstractIntOperation {
     inner: AbstractIntOperation,
     evaluation_mode: Option<IntOperationEvaluationMode>,
@@ -53,7 +54,7 @@ impl PyAbstractIntOperation {
 
     /// Create a new AbstractIntOperation from a Python function evaluating on int args (as used in tests).
     #[staticmethod]
-    fn from_int_value_at_function(name: &str, arity: i32, set_size: i32, int_value_at_fn: PyObject) -> PyResult<Self> {
+    fn from_int_value_at_function(name: &str, arity: i32, set_size: i32, int_value_at_fn: Py<PyAny>) -> PyResult<Self> {
         match AbstractIntOperation::new_safe(name, arity, set_size) {
             Ok(inner) => Ok(PyAbstractIntOperation { inner, evaluation_mode: Some(IntOperationEvaluationMode::Function(int_value_at_fn)) }),
             Err(e) => Err(PyValueError::new_err(e)),
@@ -137,8 +138,8 @@ impl PyAbstractIntOperation {
 
         match &self.evaluation_mode {
             Some(IntOperationEvaluationMode::Function(func)) => {
-                Python::with_gil(|py| {
-                    let py_args = PyList::new_bound(py, &args);
+                Python::attach(|py| {
+                    let py_args = PyList::new(py, &args)?;
                     let result = func.call1(py, (py_args,))?;
                     let result_int: i32 = result.extract(py)?;
                     if result_int < 0 || result_int >= self.get_set_size() {
@@ -170,7 +171,7 @@ impl PyAbstractIntOperation {
             None => return Err(PyValueError::new_err("No evaluation function to make table from")),
         };
 
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let arity = self.arity();
             let set_size = self.get_set_size();
             let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
@@ -184,7 +185,7 @@ impl PyAbstractIntOperation {
             }
 
             for args in all_args {
-                let py_args = PyList::new_bound(py, &args);
+                let py_args = PyList::new(py, &args)?;
                 let result = func.call1(py, (py_args,))?;
                 let result_int: i32 = result.extract(py)?;
                 if result_int < 0 || result_int >= set_size {

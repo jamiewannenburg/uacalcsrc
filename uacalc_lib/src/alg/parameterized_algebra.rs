@@ -1,10 +1,11 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use std::collections::HashMap;
 use crate::alg::op::parameterized_operation::PyParameterizedOperation;
 
 /// Python wrapper for ParameterizedAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyParameterizedAlgebra {
     inner: uacalc::alg::ParameterizedAlgebra,
 }

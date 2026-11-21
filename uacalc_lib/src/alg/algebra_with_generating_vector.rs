@@ -1,10 +1,11 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use crate::alg::PyBasicAlgebra;
 use uacalc::alg::BasicAlgebra;
 
 /// Python wrapper for AlgebraWithGeneratingVector
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyAlgebraWithGeneratingVector {
     inner: uacalc::alg::AlgebraWithGeneratingVector<i32>,
     algebra: uacalc::alg::BasicAlgebra<i32>,

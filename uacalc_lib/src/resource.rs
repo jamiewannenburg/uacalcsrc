@@ -1,5 +1,6 @@
 use pyo3::exceptions::{PyKeyboardInterrupt, PyMemoryError, PyTimeoutError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use std::sync::Once;
 use std::time::Duration;
 use uacalc::resource::{self, set_signal_hook, UaError};
@@ -9,7 +10,7 @@ static SIGNAL_HOOK_ONCE: Once = Once::new();
 fn install_signal_hook() {
     SIGNAL_HOOK_ONCE.call_once(|| {
         set_signal_hook(Some(Box::new(|| {
-            Python::with_gil(|py| py.check_signals().map_err(|_| UaError::Interrupted))
+            Python::attach(|py| py.check_signals().map_err(|_| UaError::Interrupted))
         })));
     });
 }

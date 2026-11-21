@@ -1,8 +1,9 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 
 /// Python wrapper for BasicSet
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBasicSet {
     inner: uacalc::alg::sublat::BasicSet,
 }

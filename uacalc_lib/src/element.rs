@@ -1,5 +1,6 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::{PyAny, PyDict};
 use uacalc::alg::SubProductAlgebra;
 use uacalc::terms::Term;
@@ -29,10 +30,10 @@ impl PyElement {
 #[pyclass(name = "SubProductElement")]
 pub struct PySubProductElement {
     element: IntArray,
-    algebra: PyObject,
+    algebra: Py<PyAny>,
 }
 
-fn with_subproduct<F, R>(py: Python<'_>, alg: &PyObject, f: F) -> PyResult<R>
+fn with_subproduct<F, R>(py: Python<'_>, alg: &Py<PyAny>, f: F) -> PyResult<R>
 where
     F: FnOnce(&SubProductAlgebra<i32>) -> PyResult<R>,
 {
@@ -58,14 +59,14 @@ fn array_string(ia: &IntArray) -> String {
 #[pymethods]
 impl PySubProductElement {
     #[new]
-    fn new(elt: &Bound<'_, PyAny>, alg: PyObject) -> PyResult<Self> {
+    fn new(elt: &Bound<'_, PyAny>, alg: Py<PyAny>) -> PyResult<Self> {
         Ok(PySubProductElement {
             element: extract_int_array(elt)?,
             algebra: alg,
         })
     }
 
-    fn get_algebra(&self, py: Python<'_>) -> PyObject {
+    fn get_algebra(&self, py: Python<'_>) -> Py<PyAny> {
         self.algebra.clone_ref(py)
     }
 
@@ -77,7 +78,7 @@ impl PySubProductElement {
         })
     }
 
-    fn get_term(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn get_term(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         with_subproduct(py, &self.algebra, |alg| match alg.get_term(&self.element) {
             Some(term) => Ok(Some(term_to_py(py, term)?)),
             None => Ok(None),
@@ -99,7 +100,7 @@ impl PySubProductElement {
         })
     }
 
-    fn get_variable_map(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn get_variable_map(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         with_subproduct(py, &self.algebra, |alg| {
             let term: &dyn Term = alg
                 .get_term(&self.element)
@@ -107,7 +108,7 @@ impl PySubProductElement {
             let vars_map = alg
                 .get_variable_to_generator_map()
                 .ok_or_else(|| PyValueError::new_err("null"))?;
-            let dict = PyDict::new_bound(py);
+            let dict = PyDict::new(py);
             for name in term.get_variable_list() {
                 let var = uacalc::terms::VariableImp::new(&name);
                 let key = Py::new(py, PyVariableImp { inner: var.clone() })?;
@@ -121,19 +122,19 @@ impl PySubProductElement {
                     }
                 }
             }
-            Ok(dict.to_object(py))
+            Ok(dict.into_py_any(py)?)
         })
     }
 
-    fn get_parent(&self, py: Python<'_>) -> PyObject {
+    fn get_parent(&self, py: Python<'_>) -> Py<PyAny> {
         py.None()
     }
 
-    fn get_parent_array(&self, py: Python<'_>) -> PyObject {
+    fn get_parent_array(&self, py: Python<'_>) -> Py<PyAny> {
         py.None()
     }
 
-    fn parent_index_array(&self, py: Python<'_>) -> PyObject {
+    fn parent_index_array(&self, py: Python<'_>) -> Py<PyAny> {
         py.None()
     }
 

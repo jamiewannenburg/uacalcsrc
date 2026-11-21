@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use uacalc::util::IntArrayTrait;
@@ -16,7 +17,7 @@ fn extract_partition(obj: &Bound<'_, PyAny>) -> PyResult<Partition> {
 
 fn extract_partition_list(obj: &Bound<'_, PyAny>) -> PyResult<Vec<Partition>> {
     let mut out = Vec::new();
-    for item in obj.iter()? {
+    for item in obj.try_iter()? {
         out.push(extract_partition(&item?)?);
     }
     Ok(out)
@@ -27,7 +28,7 @@ fn wrap(inner: Partition) -> PyPartition {
 }
 
 /// Python wrapper for Partition
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPartition {
     pub(crate) inner: uacalc::alg::conlat::partition::Partition,
 }
@@ -362,6 +363,7 @@ impl PyPartition {
     ///   max_len (int, optional): The max length, or -1
     /// Returns:
     ///   str: String rep
+    #[pyo3(signature = (print_type, max_len=None))]
     fn to_string_with_type(&self, print_type: &crate::alg::conlat::print_type::PyPrintType, max_len: Option<i32>) -> String {
         self.inner.to_string_with_type(print_type.inner, max_len.unwrap_or(-1))
     }
@@ -593,7 +595,7 @@ impl PyPartition {
     }
 }
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPartitionPairsIter {
     pairs: Vec<Vec<i32>>,
     index: usize,

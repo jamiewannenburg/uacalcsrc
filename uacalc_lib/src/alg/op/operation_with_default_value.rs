@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 
@@ -8,7 +9,7 @@ use super::int_operation::PyIntOperation;
 use uacalc::alg::op::Operation;
 
 /// Python wrapper for OperationWithDefaultValue
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyOperationWithDefaultValue {
     pub(crate) inner: uacalc::alg::op::OperationWithDefaultValue,
 }

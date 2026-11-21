@@ -4,6 +4,7 @@
  */
 
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use crate::alg::PyBasicAlgebra;
 use crate::alg::homomorphism::PyHomomorphism;
@@ -478,18 +479,18 @@ fn quasi_critical_congruences(a: &PyBasicAlgebra) -> PyResult<Vec<PyPartition>> 
 /// # Raises
 /// `ValueError` if there's an error during computation
 #[pyfunction]
-fn quasi_critical(py: Python, a: &PyBasicAlgebra) -> PyResult<Option<PyObject>> {
+fn quasi_critical(py: Python, a: &PyBasicAlgebra) -> PyResult<Option<Py<PyAny>>> {
     use pyo3::types::PyDict;
     
     let a_box = Box::new(a.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
     
     match algebras::quasi_critical(a_box, None) {
         Ok(Some(map)) => {
-            let py_dict = PyDict::new_bound(py);
+            let py_dict = PyDict::new(py);
             for (partition, gens) in map {
                 let py_partition = PyPartition::from_inner(partition);
-                // Convert PyPartition to PyObject for use as dict key
-                let py_partition_obj = Py::new(py, py_partition)?.into_py(py);
+                // Convert PyPartition to Py<PyAny> for use as dict key
+                let py_partition_obj = Py::new(py, py_partition)?.into_any();
                 py_dict.set_item(py_partition_obj, gens)?;
             }
             Ok(Some(py_dict.into()))
@@ -585,7 +586,7 @@ fn unary_clone_alg_from_partitions(
 /// # Raises
 /// `ValueError` if there's an error (e.g., empty operations list)
 #[pyfunction]
-fn find_in_clone(py: Python, ops: Vec<PyRef<PyIntOperation>>, alg: &PyBasicAlgebra) -> PyResult<PyObject> {
+fn find_in_clone(py: Python, ops: Vec<PyRef<PyIntOperation>>, alg: &PyBasicAlgebra) -> PyResult<Py<PyAny>> {
     use pyo3::types::PyDict;
     use std::sync::Arc;
     use crate::alg::op::operation_symbol::PyOperationSymbol;
@@ -597,11 +598,11 @@ fn find_in_clone(py: Python, ops: Vec<PyRef<PyIntOperation>>, alg: &PyBasicAlgeb
     
     match algebras::find_in_clone(&rust_ops, &alg.inner, None) {
         Ok(map) => {
-            let py_dict = PyDict::new_bound(py);
+            let py_dict = PyDict::new(py);
             for (sym, term) in map {
                 let py_sym = PyOperationSymbol::from_inner(sym);
                 let term_str = format!("{}", term);
-                let py_sym_obj = Py::new(py, py_sym)?.into_py(py);
+                let py_sym_obj = Py::new(py, py_sym)?.into_any();
                 py_dict.set_item(py_sym_obj, term_str)?;
             }
             Ok(py_dict.into())

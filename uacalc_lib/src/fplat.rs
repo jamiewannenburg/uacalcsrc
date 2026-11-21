@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::PyList;
 use uacalc::terms::{VariableImp, Variable};
 use uacalc::lat::Order;
@@ -6,7 +7,7 @@ use std::sync::Arc;
 
 /// Python wrapper for PartiallyDefinedLattice
 /// This mirrors the Java implementation with proper Order trait usage
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPartiallyDefinedLattice {
     pub name: String,
     pub order: Arc<dyn Order<VariableImp> + Send + Sync>,
@@ -28,12 +29,12 @@ impl PyPartiallyDefinedLattice {
     #[new]
     fn new(name: String, joins: &Bound<'_, PyAny>, meets: &Bound<'_, PyAny>) -> PyResult<Self> {
         // Convert Python lists to Rust vectors
-        let joins_list: &Bound<'_, PyList> = joins.downcast()?;
-        let meets_list: &Bound<'_, PyList> = meets.downcast()?;
+        let joins_list = joins.cast::<PyList>()?;
+        let meets_list = meets.cast::<PyList>()?;
         
         let mut rust_joins = Vec::new();
         for join_py in joins_list {
-            let join_list: &Bound<'_, PyList> = join_py.downcast()?;
+            let join_list = join_py.cast::<PyList>()?;
             let mut join = Vec::new();
             for var_py in join_list {
                 let var: PyVariableImp = var_py.extract()?;
@@ -44,7 +45,7 @@ impl PyPartiallyDefinedLattice {
         
         let mut rust_meets = Vec::new();
         for meet_py in meets_list {
-            let meet_list: &Bound<'_, PyList> = meet_py.downcast()?;
+            let meet_list = meet_py.cast::<PyList>()?;
             let mut meet = Vec::new();
             for var_py in meet_list {
                 let var: PyVariableImp = var_py.extract()?;

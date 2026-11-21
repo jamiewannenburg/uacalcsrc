@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyList};
 use uacalc::alg::*;
@@ -11,7 +12,7 @@ use crate::alg::subalgebra::PySubalgebra;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 use crate::alg::universe_map::PyUniverseMap;
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyReductAlgebra {
     inner: uacalc::alg::ReductAlgebra,
     super_alg: uacalc::alg::BasicAlgebra<i32>,
@@ -107,7 +108,7 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     Dict[int, int]: The universe order mapping
-    fn get_universe_order(&self, _py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn get_universe_order(&self, _py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         // Java ReductAlgebra.getUniverseOrder() returns null.
         Ok(None)
     }
@@ -119,12 +120,12 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     int: The element at the given index
-    fn get_element(&self, py: Python<'_>, index: usize) -> Option<PyObject> {
+    fn get_element(&self, py: Python<'_>, index: usize) -> Option<Py<PyAny>> {
         let element = self.inner.get_element(index)?;
         if let Some(map) = &self.element_map {
             map.element(element as usize)
         } else {
-            Some(element.into_py(py))
+            Some(element.into_py_any(py).unwrap())
         }
     }
     
@@ -181,7 +182,7 @@ impl PyReductAlgebra {
     }
 
     /// Java `operations()`.
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         let mut result = Vec::new();
         for op in self.inner.operations() {
             result.push(operation_to_py(py, op.as_ref())?);
@@ -189,7 +190,7 @@ impl PyReductAlgebra {
         Ok(result)
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         crate::alg::convert::get_operation_by_symbol(py, self.inner.operations(), sym)
     }
 
@@ -313,7 +314,7 @@ impl PyReductAlgebra {
 
 
 /// Python wrapper for UnaryTermsMonoid
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyUnaryTermsMonoid {
     inner: uacalc::alg::UnaryTermsMonoid,
 }

@@ -7,6 +7,7 @@ use crate::util::PyIntArray;
 use crate::resource::ua_to_py;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::{PyAny, PyDict, PyList};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -15,14 +16,14 @@ use uacalc::terms::Term;
 use uacalc::util::int_array::IntArray;
 
 /// Python wrapper for Closer
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyCloser {
     inner: Closer<i32>,
 }
 
 fn extract_int_arrays(gens: &Bound<'_, PyAny>) -> PyResult<Vec<IntArray>> {
     let mut out = Vec::new();
-    for item in gens.iter()? {
+    for item in gens.try_iter()? {
         let item = item?;
         if let Ok(ia) = item.extract::<PyRef<PyIntArray>>() {
             out.push(ia.inner.clone());
@@ -108,13 +109,13 @@ impl PyCloser {
     }
 
     fn close(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
-        py.allow_threads(|| self.inner.close_checked())
+        py.detach(|| self.inner.close_checked())
             .map(|result| to_py_int_arrays(&result))
             .map_err(|e| ua_to_py(e, py))
     }
 
     fn sg_close(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
-        py.allow_threads(|| self.inner.sg_close())
+        py.detach(|| self.inner.sg_close())
             .map(|result| to_py_int_arrays(&result))
             .map_err(|e| ua_to_py(e, py))
     }
@@ -127,28 +128,28 @@ impl PyCloser {
         closed_mark: usize,
     ) -> PyResult<Vec<PyIntArray>> {
         let rust_elems = extract_int_arrays(elems)?;
-        py.allow_threads(|| self.inner.sg_close_from(Some(rust_elems), closed_mark))
+        py.detach(|| self.inner.sg_close_from(Some(rust_elems), closed_mark))
             .map(|result| to_py_int_arrays(&result))
             .map_err(|e| ua_to_py(e, py))
     }
 
     fn sg_close_power(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
-        py.allow_threads(|| self.inner.sg_close_power())
+        py.detach(|| self.inner.sg_close_power())
             .map(|result| to_py_int_arrays(&result))
             .map_err(|e| ua_to_py(e, py))
     }
 
     fn sg_close_parallel(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
-        py.allow_threads(|| self.inner.sg_close_parallel())
+        py.detach(|| self.inner.sg_close_parallel())
             .map(|result| to_py_int_arrays(&result))
             .map_err(|e| ua_to_py(e, py))
     }
 
-    fn get_term_map(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn get_term_map(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         let Some(map) = self.inner.get_term_map() else {
             return Ok(None);
         };
-        let dict = PyDict::new_bound(py);
+        let dict = PyDict::new(py);
         for (ia, term) in map {
             let key = Py::new(py, PyIntArray { inner: ia.clone() })?;
             dict.set_item(key, term_to_py(py, term.as_ref())?)?;
@@ -195,6 +196,7 @@ impl PyCloser {
             .map(|ia| PyIntArray { inner: ia.clone() })
     }
 
+    #[pyo3(signature = (element=None))]
     fn set_element_to_find(&mut self, element: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match element {
             None => self.inner.set_element_to_find(None),
@@ -305,11 +307,11 @@ impl PyCloser {
             .setup_congruence_constraint(alpha.inner.clone(), index, elem_index);
     }
 
-    fn get_homomorphism(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn get_homomorphism(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         let Some(map) = self.inner.get_homomorphism() else {
             return Ok(None);
         };
-        let dict = PyDict::new_bound(py);
+        let dict = PyDict::new(py);
         for (ia, img) in map {
             let key = Py::new(py, PyIntArray { inner: ia.clone() })?;
             dict.set_item(key, *img)?;
@@ -317,6 +319,7 @@ impl PyCloser {
         Ok(Some(dict.into()))
     }
 
+    #[pyo3(signature = (homomorphism=None))]
     fn set_homomorphism(&mut self, homomorphism: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match homomorphism {
             None => {
@@ -324,14 +327,14 @@ impl PyCloser {
                 Ok(())
             }
             Some(obj) => {
-                if let Ok(list) = obj.downcast::<PyList>() {
+                if let Ok(list) = obj.cast::<PyList>() {
                     let gens: Vec<i32> = list.extract()?;
                     self.inner
                         .set_homomorphism_from_gens(gens)
                         .map_err(PyValueError::new_err)
                 } else {
                     let mut rust_map = HashMap::new();
-                    for item in obj.call_method0("items")?.iter()? {
+                    for item in obj.call_method0("items")?.try_iter()? {
                         let pair = item?;
                         let key = extract_int_array(&pair.get_item(0)?)?;
                         let val: i32 = pair.get_item(1)?.extract()?;
@@ -355,6 +358,7 @@ impl PyCloser {
         )?))
     }
 
+    #[pyo3(signature = (alg=None))]
     fn set_image_algebra(&mut self, alg: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match alg {
             None => {
@@ -380,17 +384,18 @@ impl PyCloser {
             .map(|inner| PyEquation { inner })
     }
 
-    fn get_term_map_for_operations(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn get_term_map_for_operations(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         let Some(map) = self.inner.get_term_map_for_operations() else {
             return Ok(None);
         };
-        let dict = PyDict::new_bound(py);
+        let dict = PyDict::new(py);
         for (sym, term) in map {
             dict.set_item(sym.name(), term_to_py(py, term.as_ref())?)?;
         }
         Ok(Some(dict.into()))
     }
 
+    #[pyo3(signature = (alg=None))]
     fn set_root_algebra(&mut self, alg: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match alg {
             None => self.inner.set_root_algebra(None),
@@ -402,6 +407,7 @@ impl PyCloser {
         Ok(())
     }
 
+    #[pyo3(signature = (operations=None))]
     fn set_operations(&mut self, operations: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match operations {
             None => {
@@ -410,7 +416,7 @@ impl PyCloser {
             }
             Some(ops) => {
                 let mut rust_ops = Vec::new();
-                for item in ops.iter()? {
+                for item in ops.try_iter()? {
                     let item = item?;
                     if let Ok(op) =
                         item.extract::<PyRef<crate::alg::op::int_operation::PyIntOperation>>()
@@ -447,7 +453,7 @@ fn py_term_map(
     term_map: &Bound<'_, PyAny>,
 ) -> PyResult<HashMap<IntArray, Box<dyn Term>>> {
     let mut rust_map = HashMap::new();
-    for item in term_map.call_method0("items")?.iter()? {
+    for item in term_map.call_method0("items")?.try_iter()? {
         let pair = item?;
         let key = extract_int_array(&pair.get_item(0)?)?;
         let term = py_to_term(&pair.get_item(1)?)?;
@@ -460,7 +466,7 @@ fn py_term_map(
 #[pyfunction]
 #[pyo3(name = "_stress_sg_close_power")]
 fn _stress_sg_close_power(py: Python<'_>, closer: &mut PyCloser, repeats: usize) -> PyResult<()> {
-    py.allow_threads(|| closer.inner.sg_close_power_stress(repeats))
+    py.detach(|| closer.inner.sg_close_power_stress(repeats))
         .map_err(|e| ua_to_py(e, py))
 }
 

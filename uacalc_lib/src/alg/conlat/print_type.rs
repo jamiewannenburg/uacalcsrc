@@ -1,8 +1,9 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 
 /// Python wrapper for PrintType
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PyPrintType {
     pub(crate) inner: uacalc::alg::conlat::partition::PrintType,

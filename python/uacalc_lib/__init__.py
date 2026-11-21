@@ -12,14 +12,14 @@ for IDEs and type checkers.
 from __future__ import annotations
 
 import importlib.util
+import pathlib
 import sys
-from pathlib import Path
 
 # For maturin's mixed rust/python pattern with PyO3:
 # When we have an __init__.py, Python imports this file instead of the native extension.
 # We need to explicitly load the native extension and expose its contents.
 
-_package_dir = Path(__file__).resolve().parent
+_package_dir = pathlib.Path(__file__).resolve().parent
 _native_loaded = False
 
 
@@ -28,14 +28,14 @@ def _abi_tag() -> str:
     return f"cp{vi.major}{vi.minor}"
 
 
-def _find_repo_root(start: Path) -> Path | None:
+def _find_repo_root(start: pathlib.Path) -> pathlib.Path | None:
     for directory in (start, *start.parents):
         if (directory / "pyproject.toml").is_file() and (directory / "uacalc_lib" / "Cargo.toml").is_file():
             return directory
     return None
 
 
-def _extension_candidates() -> list[Path]:
+def _extension_candidates() -> list[pathlib.Path]:
     """Return native modules to try, newest first.
 
   - Always consider extensions co-located with this ``__init__.py`` (wheel / editable install).
@@ -62,12 +62,12 @@ def _extension_candidates() -> list[Path]:
         if dev_native.is_dir() and dev_native.resolve() != _package_dir.resolve():
             roots.append(dev_native)
     elif os.environ.get("UACALC_LIB_DEVELOP") == "1":
-        forced = Path(os.environ.get("UACALC_LIB_REPO", ".")).resolve() / "python" / "uacalc_lib"
+        forced = pathlib.Path(os.environ.get("UACALC_LIB_REPO", ".")).resolve() / "python" / "uacalc_lib"
         if forced.is_dir():
             roots.append(forced)
 
-    seen: set[Path] = set()
-    matches: list[Path] = []
+    seen: set[pathlib.Path] = set()
+    matches: list[pathlib.Path] = []
     for root in roots:
         for pattern in patterns:
             for path in root.glob(pattern):
@@ -80,24 +80,51 @@ def _extension_candidates() -> list[Path]:
     return matches
 
 
+_stdlib_modules = frozenset({"importlib", "sys"})
+
 for ext_file in _extension_candidates():
     try:
         spec = importlib.util.spec_from_file_location("uacalc_lib", ext_file)
-        if spec and spec.loader:
+        if not (spec and spec.loader):
+            continue
+        _package = sys.modules[__name__]
+        _held = sys.modules.pop(__name__, None)
+        try:
             _native = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(_native)
             for name in dir(_native):
+                if name in _stdlib_modules:
+                    continue
                 if not name.startswith("_") or name in (
                     "__file__",
                     "__name__",
                     "__package__",
                     "__doc__",
                 ):
-                    setattr(sys.modules[__name__], name, getattr(_native, name))
+                    setattr(_package, name, getattr(_native, name))
             _native_loaded = True
             break
+        finally:
+            sys.modules[__name__] = _package
+            if _held is not None and _held is not _package:
+                pass  # keep the live package in sys.modules
     except Exception:
         continue
+
+if _native_loaded:
+    _pkg = sys.modules[__name__]
+    for _leak in (
+        "_native",
+        "_temp_module",
+        "_held",
+        "_package",
+        "_stdlib_modules",
+        "importlib",
+        "sys",
+        "pathlib",
+        "importlib.util",
+    ):
+        _pkg.__dict__.pop(_leak, None)
 
 if not _native_loaded:
     try:

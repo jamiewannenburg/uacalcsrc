@@ -50,6 +50,7 @@ pub use algebra_with_generating_vector::PyAlgebraWithGeneratingVector;
 
 // Module registration function
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use crate::alg::homomorphism::PyHomomorphism;
 use crate::alg::algebra_from_minimal_sets::PyAlgebraFromMinimalSets;
 use crate::alg::free_algebra::PyFreeAlgebra;
@@ -120,10 +121,10 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyPool>()?;
     m.add_class::<PyAlgebraWithGeneratingVector>()?;
 
-    let parallel_module = PyModule::new_bound(_py, "parallel")?;
+    let parallel_module = PyModule::new(_py, "parallel")?;
     crate::alg::parallel::register_parallel_module(_py, &parallel_module)?;
     m.add_submodule(&parallel_module)?;
-    let sys = PyModule::import_bound(_py, "sys")?;
+    let sys = PyModule::import(_py, "sys")?;
     sys.getattr("modules")?
         .set_item("uacalc_lib.alg.parallel", &parallel_module)?;
 

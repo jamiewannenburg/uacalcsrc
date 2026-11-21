@@ -52,7 +52,7 @@ cargo doc --no-deps --all-features
 ### Prerequisites
 - **Java 8+**: Required for building Java components
 - **Rust**: For building the core Rust application
-- **Python 3.8+**: For Python bindings
+- **Python 3.11–3.13**: For Python bindings (3.11, 3.12, and 3.13 are tested in CI)
 - **Ant**: For building Java components (`sudo apt install ant` on Ubuntu/Debian)
 
 ### Build and Run

@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyList};
 use std::sync::Arc;
@@ -9,7 +10,7 @@ use crate::alg::PyBasicAlgebra;
 use crate::terms::{PyVariableImp, PyNonVariableTerm};
 
 /// Python wrapper for TermOperationImp
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyTermOperationImp {
     pub(crate) inner: TermOperationImp,
 }

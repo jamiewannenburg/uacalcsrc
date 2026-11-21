@@ -1,11 +1,12 @@
 //! Python wrapper for MaltsevDecompositionIterator
 
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use crate::alg::PyBasicAlgebra;
 
 /// Python wrapper for MaltsevDecompositionIterator
-#[pyclass]
+#[pyclass(skip_from_py_object, unsendable)]
 pub struct PyMaltsevDecompositionIterator {
     inner: std::cell::RefCell<uacalc::alg::MaltsevDecompositionIterator>,
 }
@@ -48,14 +49,14 @@ impl PyMaltsevDecompositionIterator {
     /// Python iterator protocol - get next element
     /// 
     /// Returns a dictionary with the algebra's cardinality (matching Java behavior)
-    fn __next__(&self, py: Python) -> PyResult<Option<PyObject>> {
+    fn __next__(&self, py: Python) -> PyResult<Option<Py<PyAny>>> {
         let mut iter = self.inner.borrow_mut();
         
         match iter.next() {
             Some(alg) => {
                 // Return cardinality as a dictionary (matching Java main method output)
                 let cardinality = alg.cardinality();
-                let dict = pyo3::types::PyDict::new_bound(py);
+                let dict = pyo3::types::PyDict::new(py);
                 dict.set_item("cardinality", cardinality)?;
                 Ok(Some(dict.into()))
             }
