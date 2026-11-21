@@ -323,7 +323,7 @@ impl PySubalgebraLattice {
     }
 
     /// Java ``makeSg(List)`` / ``makeSg(List, closedMark)``.
-    #[pyo3(signature = (gens, *, closed_mark=None))]
+    #[pyo3(signature = (gens, closed_mark=None))]
     fn make_sg(&self, gens: Vec<i32>, closed_mark: Option<usize>) -> PyBasicSet {
         let mark = closed_mark.unwrap_or(0);
         PyBasicSet::from_inner(self.inner.lock().unwrap().make_sg(gens, mark))

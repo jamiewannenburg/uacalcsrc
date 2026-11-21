@@ -118,7 +118,13 @@ def extract_runtime_exports() -> Optional[Dict[str, Set[str]]]:
         import uacalc_lib  # pylint: disable=import-outside-toplevel
     except ImportError:
         return None
-    skip = {"general_algebra"}  # historical pyi module name, not a real submodule
+    skip = {
+        "general_algebra",  # historical pyi module name, not a real submodule
+        "importlib",
+        "sys",
+        "_native",
+        "_rust",
+    }
     exports: Dict[str, Set[str]] = {"uacalc_lib": set()}
     for name in dir(uacalc_lib):
         if name.startswith("_"):
