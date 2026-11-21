@@ -347,28 +347,44 @@ pub fn make_module_operation(modulus: i32, coeffs: &[i32]) -> Result<Box<dyn Ope
     int_op_string(make_int_operation(sym, modulus, table))
 }
 
-/// Make a composition operation for transformation semigroups.
-///
-/// Creates a binary operation that composes two transformations.
-/// Each transformation is encoded as a Horner integer representing a function from {0..n-1} to {0..n-1}.
-/// The operation composes two transformations: comp(f, g) = f ∘ g, where (f ∘ g)(x) = f(g(x)).
-///
-/// # Arguments
-/// * `n` - The size of the underlying set {0..n-1}
-/// * `pow` - The size of the transformation semigroup (should be n^n)
-///
-/// # Returns
-/// A binary operation on the transformation semigroup
-pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, String> {
-    use crate::util::horner;
-    
+/// Number of self-maps of an `n`-element set (`n^n`).
+fn transformation_count(n: i32) -> Result<i32, String> {
     if n <= 0 {
         return Err("Set size must be positive".to_string());
     }
-    if pow <= 0 {
-        return Err("Transformation semigroup size must be positive".to_string());
+    let mut pow: i32 = 1;
+    for _ in 0..n {
+        pow = pow.checked_mul(n).ok_or_else(|| {
+            format!("n^n does not fit in i32 (n={n})")
+        })?;
     }
-    
+    Ok(pow)
+}
+
+/// Make a composition operation for transformation semigroups.
+///
+/// Composes two self-maps of an `n`-element set. Each map is a length-`n`
+/// tuple encoded as a Horner integer in base `n`, so the universe has `n^n`
+/// elements and `pow` must be that count. `comp(f, g) = f ∘ g`, where
+/// `(f ∘ g)(x) = f(g(x))`.
+///
+/// The value table is indexed in base `pow` (Horner of the argument pair).
+/// Java's `makeTable` indexes with base 2 and never allocates `valueTable`,
+/// so that bug is not a returned table; `intValueAt` on a valid call matches.
+///
+/// # Arguments
+/// * `n` - The size of the underlying set `{0..n-1}`
+/// * `pow` - Must equal `n^n`
+pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, String> {
+    use crate::util::horner;
+
+    let expected = transformation_count(n)?;
+    if pow != expected {
+        return Err(format!(
+            "pow must be n^n (the number of self-maps of an n-element set); got n={n}, pow={pow}, expected {expected}"
+        ));
+    }
+
     // Java Operations.makeCompositionOp uses symbol "comp" and evaluates
     // intValueAt via Horner.hornerInv(args[i], n, n) then Horner.horner(comp, n).
     let sym = OperationSymbol::new_safe("comp", 2, false)?;
@@ -380,13 +396,18 @@ pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, Strin
         let g = horner::horner_inv_same_size(args[1], n, n as usize);
         let mut comp = vec![0i32; n as usize];
         for i in 0..n as usize {
-            let gi = g[i] as usize;
-            comp[i] = if gi < f.len() { f[gi] } else { 0 };
+            let gi = g[i];
+            if gi < 0 || gi >= n {
+                return Err(format!(
+                    "decoded map coordinate {gi} is outside 0..{n}"
+                ));
+            }
+            comp[i] = f[gi as usize];
         }
         value_table.push(horner::horner_same_size(&comp, n));
     }
 
-    int_op_string(make_int_operation_allowing_out_of_range(sym, pow, value_table))
+    int_op_string(make_int_operation(sym, pow, value_table))
 }
 
 // =============================================================================
@@ -418,18 +439,6 @@ pub fn make_int_operation_precharged(
     value_table: Vec<i32>,
 ) -> Result<Box<dyn Operation>, crate::resource::UaError> {
     let op = IntOperation::new(symbol, alg_size, value_table).map_err(UaError::Message)?;
-    Ok(Box::new(op))
-}
-
-/// Like [`make_int_operation`] when composition encodings may exceed `set_size` (Java parity).
-pub fn make_int_operation_allowing_out_of_range(
-    symbol: OperationSymbol,
-    alg_size: i32,
-    value_table: Vec<i32>,
-) -> Result<Box<dyn Operation>, crate::resource::UaError> {
-    crate::resource::try_charge((value_table.len() as u64).saturating_mul(4))?;
-    let op =
-        IntOperation::new_allowing_out_of_range(symbol, alg_size, value_table).map_err(UaError::Message)?;
     Ok(Box::new(op))
 }
 
@@ -876,15 +885,30 @@ mod tests {
     }
 
     #[test]
-    fn test_make_composition_op_n3_pow2_out_of_range_table() {
-        let op = make_composition_op(3, 2).unwrap();
-        assert_eq!(op.symbol().name(), "comp");
-        assert_eq!(op.arity(), 2);
-        assert_eq!(op.get_set_size(), 2);
-        assert_eq!(op.int_value_at(&[0, 0]).unwrap(), 0);
-        assert_eq!(op.int_value_at(&[1, 0]).unwrap(), 13);
-        assert_eq!(op.int_value_at(&[0, 1]).unwrap(), 0);
-        assert_eq!(op.int_value_at(&[1, 1]).unwrap(), 12);
+    fn test_make_composition_op_rejects_pow_not_n_to_the_n() {
+        let err = make_composition_op(3, 2).unwrap_err();
+        assert!(
+            err.contains("pow must be n^n"),
+            "{err}"
+        );
+        assert!(err.contains("expected 27"), "{err}");
+        let overflow = make_composition_op(10, 10).unwrap_err();
+        assert!(overflow.contains("does not fit in i32"), "{overflow}");
+    }
+
+    #[test]
+    fn test_make_composition_op_n3_pow27_sample() {
+        let op = make_composition_op(3, 27).unwrap();
+        assert_eq!(op.get_set_size(), 27);
+        assert_eq!(op.get_table().unwrap().len(), 27 * 27);
+        // Identity [0,1,2] encodes as 21; constants and a mixed pair.
+        assert_eq!(op.int_value_at(&[0, 5]).unwrap(), 0);
+        assert_eq!(op.value_at(&[0, 5]).unwrap(), 0);
+        assert_eq!(op.int_value_at(&[21, 21]).unwrap(), 21);
+        assert_eq!(op.value_at(&[1, 3]).unwrap(), 10);
+        // Table index is Horner base pow, not base 2: index([1, 3]) = 1 + 27*3.
+        let table = op.get_table().unwrap();
+        assert_eq!(table[1 + 27 * 3], 10);
     }
 
     #[test]

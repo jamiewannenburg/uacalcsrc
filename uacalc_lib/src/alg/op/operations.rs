@@ -586,7 +586,7 @@ impl PyOperations {
                 let sym = op.symbol().clone();
                 let set_size = op.get_set_size();
                 let table = op.get_table().unwrap().to_vec();
-                let inner = uacalc::alg::op::IntOperation::new_allowing_out_of_range(sym, set_size, table)
+                let inner = uacalc::alg::op::IntOperation::new(sym, set_size, table)
                     .map_err(PyValueError::new_err)?;
                 Ok(PyIntOperation { inner })
             },

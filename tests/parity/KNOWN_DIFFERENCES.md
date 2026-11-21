@@ -341,6 +341,23 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 - **Status**: Accepted (Known Java bug)
 - **Tests**: `test_unary_terms_monoid_element_index_java_stub`
 
+### org.uacalc.alg.op.Operations.makeCompositionOp makeTable
+
+- **Java behavior**: `makeTable` stores `valueTable[Horner.horner(args, 2)]`
+  (base 2, not base `pow`). `valueTable` is never allocated, so the call throws
+  `NullPointerException` and `getTable()` stays null. The colliding entries are
+  not a returned table. `intValueAt` decodes with base `n` and is correct when
+  `pow == n^n`. `(n, pow) = (3, 2)` is not a legal universe (`3^3 = 27`).
+- **Python behavior**: `pow != n^n` raises `ValueError`. The table is indexed
+  in base `pow`. `intValueAt` / `valueAt` match Java on valid calls.
+- **Status**: Documented (Known Java bug:
+  `Operations.makeCompositionOp.makeTable` indexes with Horner base 2 and
+  `valueTable` is never allocated). No strict xfail: the wrong table is not
+  observable from `getTable()` or the operations wrapper.
+- **Tests**: `test_make_composition_op` (`DumpComposition` asserts `getTable()`
+  is null and `makeTable` throws, and compares `intValueAt` / `valueAt` for
+  `(2, 4)` and a sample of `(3, 27)`).
+
 ---
 
 ## org.uacalc.alg (Subalgebra / products / quotients)

@@ -32,6 +32,60 @@ except ImportError as _exc:
     guard_import_skip("uacalc_lib", _exc)
 
 
+def _horner_same_size(values, size):
+    ans = 0
+    for digit in reversed(values):
+        ans = size * ans + digit
+    return ans
+
+
+def _assert_composition_matches_java(n, pow, pairs):
+    """pairs is None for every argument pair, else a list of 'i,j' strings."""
+    from test_utils import build_java_command
+
+    cmd = build_java_command("DumpComposition", [str(n), str(pow)] + (["ALL"] if pairs is None else pairs))
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, cwd=project_root)
+    if result.returncode != 0:
+        pytest.fail(f"DumpComposition failed:\n{result.stderr}\n{result.stdout}")
+
+    ints = {}
+    vals = {}
+    get_table = None
+    make_table = None
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        if not parts:
+            continue
+        if parts[0] == "GET_TABLE":
+            get_table = parts[1]
+            continue
+        if parts[0] == "MAKE_TABLE":
+            make_table = parts[1]
+            continue
+        if parts[0] == "INT" and len(parts) == 4:
+            ints[(int(parts[1]), int(parts[2]))] = int(parts[3])
+        elif parts[0] == "VAL" and len(parts) == 4:
+            vals[(int(parts[1]), int(parts[2]))] = [int(x) for x in parts[3].split(",") if x != ""]
+
+    assert get_table == "null"
+    assert make_table == "java.lang.NullPointerException"
+    assert ints, "DumpComposition produced no intValueAt rows"
+
+    op = Operations.make_composition_op(n, pow)
+    assert op.symbol().name() == "comp"
+    assert op.arity() == 2
+    assert op.get_set_size() == pow
+    table = op.get_table()
+    assert table is not None and len(table) == pow * pow
+
+    for (i, j), java_int in ints.items():
+        image = vals[(i, j)]
+        assert _horner_same_size(image, n) == java_int
+        assert op.int_value_at([i, j]) == java_int
+        assert op.value_at([i, j]) == java_int
+        assert table[i + pow * j] == java_int
+
+
 def run_java_wrapper(command, args):
     """Run Java wrapper and return JSON output."""
     from test_utils import build_java_command
@@ -517,16 +571,13 @@ class TestOperations:
         assert java_result["data"]["coeffs"] == "[1, 2, 1]"
     
     def test_make_composition_op(self):
-        """Test makeCompositionOp (Java uses symbol name 'comp', not CLI wrapper label)."""
-        op = Operations.make_composition_op(3, 2)
+        """makeCompositionOp(n, pow) requires pow == n^n and matches Java intValueAt/valueAt."""
+        with pytest.raises(ValueError, match=r"pow must be n\^n"):
+            Operations.make_composition_op(3, 2)
 
-        assert op.symbol().name() == "comp"
-        assert op.arity() == 2
-        assert op.get_set_size() == 2
-        assert op.int_value_at([0, 0]) == 0
-        assert op.int_value_at([1, 0]) == 13
-        assert op.int_value_at([0, 1]) == 0
-        assert op.int_value_at([1, 1]) == 12
+        _assert_composition_matches_java(2, 4, None)
+        sample = ["0,0", "1,0", "0,1", "3,1", "2,2", "26,0", "0,26", "5,13", "13,5", "26,26", "1,3", "21,21"]
+        _assert_composition_matches_java(3, 27, sample)
     
     # =============================================================================
     # Utility Methods
