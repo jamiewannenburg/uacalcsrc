@@ -6,9 +6,11 @@ name: Jython compatibility
 on:
   push:
     branches:
+      - master
       - jython
   pull_request:
     branches:
+      - master
       - jython
   workflow_dispatch:
 
