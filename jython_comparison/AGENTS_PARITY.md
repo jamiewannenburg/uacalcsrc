@@ -68,7 +68,7 @@ python jython_comparison/scripts/validate_parity_slices.py
 
 ### CI and local checks
 
-GitHub Actions `test.yml` runs `pytest python/uacalc/tests` (with `uacalc_lib` installed from the built wheel). That suite includes `test_jython_examples_parity.py`, which subprocess-invokes `validate_parity_slices.py` and `generate_parity_inventory.py --verify` via `verify_fresh`. You do **not** need a separate workflow step for those scripts unless you want failure faster before the full pytest install — in that case run the two commands above locally or in a small pre-check job.
+GitHub Actions `test.yml` runs the **Jython parity** job (`tests/parity`, tooling checks, `run_comparison.py`) and a **Python matrix** job that runs `pytest python/uacalc/tests` (with `uacalc_lib` installed from the built wheel). The Python suite includes `test_jython_examples_parity.py`, which subprocess-invokes `validate_parity_slices.py` and `generate_parity_inventory.py --verify` via `verify_fresh`. Inventory tooling is also exercised directly in the parity job; you do **not** need extra workflow steps unless you want failure faster before the full pytest install — in that case run the two commands above locally or in a small pre-check job.
 
 After changing `python/org/uacalc/` or Java wrappers, regenerate `parity_inventory.yaml` in the same PR so `verify_fresh` stays green.
 

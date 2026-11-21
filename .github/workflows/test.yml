@@ -1,18 +1,19 @@
+# Tests: Rust (strict), Jython parity, and Python matrix on master / jython.
 name: Tests
 
 on:
   push:
     branches:
       - master
-      - rust-again
+      - jython
   pull_request:
     branches:
       - master
-      - rust-again
+      - jython
   workflow_dispatch:
     inputs:
       python-versions:
-        description: 'Python versions to test (comma-separated, e.g., "3.9,3.11" or "all" for all versions)'
+        description: 'Python versions to test (comma-separated, e.g., "3.11,3.12" or "all" for all versions)'
         required: false
         default: 'all'
         type: string
@@ -23,6 +24,11 @@ on:
         type: boolean
       skip-python-tests:
         description: 'Skip Python tests'
+        required: false
+        default: false
+        type: boolean
+      skip-jython-parity:
+        description: 'Skip Jython parity job'
         required: false
         default: false
         type: boolean
@@ -41,12 +47,10 @@ jobs:
         id: set-matrix
         run: |
           if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            # Default to all versions for push/PR
-            echo 'python-versions=["3.9","3.10","3.11","3.12"]' >> $GITHUB_OUTPUT
+            echo 'python-versions=["3.11","3.12"]' >> $GITHUB_OUTPUT
           elif [ "${{ inputs.python-versions }}" = "all" ] || [ -z "${{ inputs.python-versions }}" ]; then
-            echo 'python-versions=["3.9","3.10","3.11","3.12"]' >> $GITHUB_OUTPUT
+            echo 'python-versions=["3.11","3.12"]' >> $GITHUB_OUTPUT
           else
-            # Convert comma-separated string to JSON array
             VERSIONS="${{ inputs.python-versions }}"
             IFS=',' read -ra VERSION_ARRAY <<< "$VERSIONS"
             JSON_VERSIONS="["
@@ -61,8 +65,9 @@ jobs:
           fi
 
   rust-tests:
-    name: Rust Tests
+    name: Rust tests
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip-rust-tests }}
     steps:
       - name: Checkout repository
@@ -73,7 +78,7 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Cache cargo registry
+      - name: Cache cargo
         uses: actions/cache@v5
         with:
           path: |
@@ -89,8 +94,8 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          distribution: temurin
+          java-version: "11"
 
       - name: Install Ant
         run: sudo apt-get update && sudo apt-get install -y ant
@@ -99,32 +104,105 @@ jobs:
         run: ant compile-wrappers
 
       - name: Run Rust tests (main crate)
+        env:
+          UACALC_STRICT_TESTS: "1"
         run: cargo test --all-features
 
-      - name: Install cargo-tarpaulin
+  jython-parity:
+    name: Jython parity (bindings + golden tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip-jython-parity }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install -y ant
+
+      - name: Cache uacalc.jar
+        id: uacalc-jar
+        uses: actions/cache@v5
+        with:
+          path: jars/uacalc.jar
+          key: ${{ runner.os }}-uacalc-jar-${{ hashFiles('org/**/*.java', 'org/**/*.png', 'org/**/*.gif', 'org/**/*.jpg', 'resources/algebras/**', 'build.xml', 'manifest') }}
+
+      - name: Build uacalc.jar from Java sources
+        if: steps.uacalc-jar.outputs.cache-hit != 'true'
+        run: ant dist-jar
+
+      - name: Confirm jars/uacalc.jar
         run: |
-          if ! command -v cargo-tarpaulin &> /dev/null; then
-            cargo install cargo-tarpaulin
-          else
-            echo "cargo-tarpaulin is already installed"
+          test -f jars/uacalc.jar
+          ls -l jars/uacalc.jar
+
+      - name: Install Jython 2.7.3
+        shell: bash
+        run: |
+          curl -fsSL -o /tmp/jython-installer.jar \
+            "https://repo1.maven.org/maven2/org/python/jython-installer/2.7.3/jython-installer-2.7.3.jar"
+          java -jar /tmp/jython-installer.jar -s -d "$HOME/jython" -t standard
+          echo "$HOME/jython/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Jython
+        run: jython --version
+
+      - name: Build Java wrappers
+        run: ant compile-wrappers
+
+      - name: Install Maturin
+        run: python -m pip install maturin
+
+      - name: Build Python bindings
+        run: maturin build --release --out dist
+
+      - name: Install wheel and test dependencies
+        run: |
+          python -m pip install dist/*.whl
+          python -m pip install -e ".[test,jython_comparison]"
+
+      - name: Pytest (parity + Jython example tests)
+        env:
+          UACALC_STRICT_TESTS: "1"
+        run: |
+          set -o pipefail
+          python -m pytest tests/parity python/uacalc/tests/test_jython_examples_parity.py \
+            python/uacalc/tests/test_java_surface.py python/uacalc/tests/test_type_stubs.py \
+            -v --tb=short -rs | tee pytest-parity.log
+          if grep -E 'missing .*/uacalc\.jar|jython or uacalc\.jar not available' pytest-parity.log; then
+            echo "::error::uacalc.jar-dependent tests still skipped"
+            exit 1
           fi
 
-      - name: Generate Rust coverage
+      - name: Jython tooling checks
         run: |
-          cargo tarpaulin --out Xml --out Html --output-dir coverage/rust --all-features
-        continue-on-error: true
+          python tools/validate_type_stubs.py
+          python tools/jython_contracts_cli.py validate
+          python tools/jython_contracts_cli.py check-covers
+          python jython_comparison/scripts/generate_parity_inventory.py --verify
+          python tools/jython_contracts_cli.py parity-coverage
 
-      - name: Upload Rust coverage
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: rust-coverage
-          path: coverage/rust/
-          retention-days: 30
+      - name: Jython vs CPython (contract scripts)
+        run: python jython_comparison/run_comparison.py -q
 
   python-tests:
     name: Python Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip-python-tests }}
     needs: setup
     strategy:
@@ -146,8 +224,8 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          distribution: temurin
+          java-version: "11"
 
       - name: Install Ant
         run: sudo apt-get update && sudo apt-get install -y ant
@@ -194,29 +272,54 @@ jobs:
             .pytest_cache/
           retention-days: 7
 
+  jython-summary:
+    name: Jython workflow summary
+    runs-on: ubuntu-latest
+    needs: [rust-tests, jython-parity]
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          echo "## Jython compatibility (subset)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Rust tests: ${{ needs.rust-tests.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Jython parity: ${{ needs.jython-parity.result }}" >> "$GITHUB_STEP_SUMMARY"
+          rust="${{ needs.rust-tests.result }}"
+          jy="${{ needs.jython-parity.result }}"
+          if [ "$rust" = "failure" ] || [ "$jy" = "failure" ]; then
+            echo "❌ One or more Jython workflow jobs failed" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$rust" = "cancelled" ] || [ "$jy" = "cancelled" ]; then
+            echo "⚠️ One or more Jython workflow jobs were cancelled" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "✅ Jython subset passed or was skipped" >> "$GITHUB_STEP_SUMMARY"
+
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [rust-tests, python-tests]
+    needs: [rust-tests, jython-parity, python-tests, jython-summary]
     if: always()
     steps:
       - name: Check test results
         run: |
           echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Rust tests: ${{ needs.rust-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Jython parity: ${{ needs.jython-parity.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Python tests: ${{ needs.python-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          
-          # Check if any job failed (but allow skipped jobs)
+          echo "- Jython summary gate: ${{ needs.jython-summary.result }}" >> $GITHUB_STEP_SUMMARY
+
           RUST_RESULT="${{ needs.rust-tests.result }}"
+          JYTHON_RESULT="${{ needs.jython-parity.result }}"
           PYTHON_RESULT="${{ needs.python-tests.result }}"
-          
-          if [ "$RUST_RESULT" = "failure" ] || [ "$PYTHON_RESULT" = "failure" ]; then
+          JYTHON_SUMMARY="${{ needs.jython-summary.result }}"
+
+          if [ "$RUST_RESULT" = "failure" ] || [ "$JYTHON_RESULT" = "failure" ] || [ "$PYTHON_RESULT" = "failure" ] || [ "$JYTHON_SUMMARY" = "failure" ]; then
             echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
             exit 1
-          elif [ "$RUST_RESULT" = "cancelled" ] || [ "$PYTHON_RESULT" = "cancelled" ]; then
+          elif [ "$RUST_RESULT" = "cancelled" ] || [ "$JYTHON_RESULT" = "cancelled" ] || [ "$PYTHON_RESULT" = "cancelled" ] || [ "$JYTHON_SUMMARY" = "cancelled" ]; then
             echo "⚠️ Some tests were cancelled" >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "✅ All tests passed or were skipped" >> $GITHUB_STEP_SUMMARY
           fi
-
