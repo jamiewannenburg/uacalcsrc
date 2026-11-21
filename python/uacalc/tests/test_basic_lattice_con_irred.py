@@ -59,6 +59,9 @@ def parse_java_irred_sections(stdout: str) -> tuple[set[tuple[tuple[int, ...], .
         if line == "MEET_IRREDUCIBLES":
             section = "meet"
             continue
+        # CongruenceLattice construction prints diagnostic lines to stdout.
+        if not line.startswith("["):
+            continue
         parsed = parse_blocks_line(line)
         if section == "join":
             join_set.add(parsed)
