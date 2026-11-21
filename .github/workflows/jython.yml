@@ -19,6 +19,7 @@ jobs:
   rust-tests:
     name: Rust tests
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -54,11 +55,14 @@ jobs:
         run: ant compile-wrappers
 
       - name: Run Rust tests (main crate)
+        env:
+          UACALC_STRICT_TESTS: "1"
         run: cargo test --all-features
 
   jython-parity:
     name: Jython parity (bindings + golden tests)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -123,6 +127,8 @@ jobs:
           python -m pip install -e ".[test,jython_comparison]"
 
       - name: Pytest (parity + Jython example tests)
+        env:
+          UACALC_STRICT_TESTS: "1"
         run: |
           set -o pipefail
           python -m pytest tests/parity python/uacalc/tests/test_jython_examples_parity.py \
@@ -147,6 +153,7 @@ jobs:
   jython-summary:
     name: Jython workflow summary
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: [rust-tests, jython-parity]
     if: always()
     steps:

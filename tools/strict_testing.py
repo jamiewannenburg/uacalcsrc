@@ -61,5 +61,5 @@ def _skip_reason(report) -> str:
 
 
 def pytest_configure(config) -> None:
-    if is_strict():
+    if is_strict() and not config.pluginmanager.has_plugin("uacalc_strict_skip"):
         config.pluginmanager.register(StrictSkipPlugin(), "uacalc_strict_skip")
