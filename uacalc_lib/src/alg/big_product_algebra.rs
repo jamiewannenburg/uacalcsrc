@@ -6,6 +6,7 @@ use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::PyAny;
 use std::sync::Arc;
 use uacalc::alg::{Algebra, BigProductAlgebra, SmallAlgebra};
@@ -34,7 +35,7 @@ impl PyBigProductAlgebra {
     #[staticmethod]
     fn new_from_algebras_named(name: String, algebras: &Bound<'_, PyAny>) -> PyResult<Self> {
         let mut rust_algs: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>> = Vec::new();
-        for item in algebras.iter()? {
+        for item in algebras.try_iter()? {
             rust_algs.push(extract_boxed_small_algebra(&item?)?);
         }
         match BigProductAlgebra::<i32>::new_with_name_safe(name, rust_algs) {
@@ -166,12 +167,12 @@ impl PyBigProductAlgebra {
     }
 
     /// Java stub: always null.
-    fn projection_kernel(&self, _k: i32) -> Option<PyObject> {
+    fn projection_kernel(&self, _k: i32) -> Option<Py<PyAny>> {
         None
     }
 
     #[allow(non_snake_case)]
-    fn projectionKernel(&self, k: i32) -> Option<PyObject> {
+    fn projectionKernel(&self, k: i32) -> Option<Py<PyAny>> {
         self.projection_kernel(k)
     }
 
@@ -199,7 +200,7 @@ impl PyBigProductAlgebra {
         self.get_constant_symbol(constant)
     }
 
-    fn get_constant_term(&self, py: Python<'_>, constant: &PyIntArray) -> PyResult<PyObject> {
+    fn get_constant_term(&self, py: Python<'_>, constant: &PyIntArray) -> PyResult<Py<PyAny>> {
         let mut alg = (*self.inner).clone();
         match alg.get_constant_term(&constant.inner) {
             Ok(term) => term_to_py(py, term.as_ref()),
@@ -208,7 +209,7 @@ impl PyBigProductAlgebra {
     }
 
     #[allow(non_snake_case)]
-    fn getConstantTerm(&self, py: Python<'_>, constant: &PyIntArray) -> PyResult<PyObject> {
+    fn getConstantTerm(&self, py: Python<'_>, constant: &PyIntArray) -> PyResult<Py<PyAny>> {
         self.get_constant_term(py, constant)
     }
 

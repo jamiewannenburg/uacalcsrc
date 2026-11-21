@@ -47,9 +47,9 @@ jobs:
         id: set-matrix
         run: |
           if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            echo 'python-versions=["3.11","3.12"]' >> $GITHUB_OUTPUT
+            echo 'python-versions=["3.11","3.12","3.13"]' >> $GITHUB_OUTPUT
           elif [ "${{ inputs.python-versions }}" = "all" ] || [ -z "${{ inputs.python-versions }}" ]; then
-            echo 'python-versions=["3.11","3.12"]' >> $GITHUB_OUTPUT
+            echo 'python-versions=["3.11","3.12","3.13"]' >> $GITHUB_OUTPUT
           else
             VERSIONS="${{ inputs.python-versions }}"
             IFS=',' read -ra VERSION_ARRAY <<< "$VERSIONS"

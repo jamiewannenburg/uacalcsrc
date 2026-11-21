@@ -1,5 +1,6 @@
 /// Python wrapper for SmallAlgebra (simplified for bindings)
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use uacalc::alg::BasicAlgebra;
 use uacalc::alg::SmallAlgebra;
 use uacalc::alg::Algebra;

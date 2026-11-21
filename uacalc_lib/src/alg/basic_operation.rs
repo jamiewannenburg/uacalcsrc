@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::op::{Operation, BasicOperation};
 use crate::alg::op::operation_symbol::PyOperationSymbol;
@@ -6,7 +7,7 @@ use crate::alg::op::operation_symbol as op_mod_symbol;
 use pyo3::types::PyAny;
 
 /// Python wrapper for BasicOperation
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBasicOperation {
     inner: BasicOperation,
 }

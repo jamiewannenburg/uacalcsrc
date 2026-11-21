@@ -1,8 +1,9 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 
 /// Python wrapper for TypeFinder
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyTypeFinder {
     inner: uacalc::alg::conlat::TypeFinder<i32>,
 }

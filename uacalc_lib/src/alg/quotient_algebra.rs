@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use uacalc::alg::{Algebra, SmallAlgebra};
@@ -15,17 +16,17 @@ use crate::alg::op::similarity_type::PySimilarityType;
 use crate::alg::sublat::subalgebra_lattice::PySubalgebraLattice;
 
 /// Python wrapper for QuotientAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyQuotientAlgebra {
     inner: uacalc::alg::QuotientAlgebra<i32>,
-    super_obj: PyObject,
+    super_obj: Py<PyAny>,
 }
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyQuotientElement {
     index: usize,
     index_in_super: i32,
-    super_elem: PyObject,
+    super_elem: Py<PyAny>,
     congruence_str: String,
     algebra: Py<PyQuotientAlgebra>,
 }
@@ -48,7 +49,7 @@ impl PyQuotientAlgebra {
         .map_err(PyValueError::new_err)?;
         Ok(PyQuotientAlgebra {
             inner,
-            super_obj: alg.clone().into_py(py),
+            super_obj: alg.clone().into_py_any(py)?,
         })
     }
 
@@ -92,7 +93,7 @@ impl PyQuotientAlgebra {
         algebra_type_java_name(SmallAlgebra::algebra_type(&self.inner))
     }
 
-    fn super_algebra(&self, py: Python<'_>) -> PyObject {
+    fn super_algebra(&self, py: Python<'_>) -> Py<PyAny> {
         self.super_obj.clone_ref(py)
     }
 
@@ -154,7 +155,7 @@ impl PyQuotientAlgebra {
         } else if let Ok(get) = super_obj.getattr(py, "get_element") {
             get.call1(py, (index_in_super,))?
         } else {
-            index_in_super.into_py(py)
+            index_in_super.into_py_any(py)?
         };
         Ok(PyQuotientElement {
             index: k,
@@ -165,11 +166,11 @@ impl PyQuotientAlgebra {
         })
     }
 
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&self.inner))
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         let name = if let Ok(s) = sym.extract::<String>() {
             s
         } else if let Ok(n) = sym.call_method0("name") {
@@ -198,11 +199,11 @@ impl PyQuotientAlgebra {
         self.inner.make_operation_tables();
     }
 
-    fn parent(&self) -> Option<PyObject> {
+    fn parent(&self) -> Option<Py<PyAny>> {
         None
     }
 
-    fn parents(&self) -> Option<Vec<PyObject>> {
+    fn parents(&self) -> Option<Vec<Py<PyAny>>> {
         None
     }
 
@@ -247,7 +248,7 @@ impl PyQuotientElement {
         self.algebra.clone_ref(py)
     }
 
-    fn super_algebra(&self, py: Python<'_>) -> PyObject {
+    fn super_algebra(&self, py: Python<'_>) -> Py<PyAny> {
         self.algebra.borrow(py).super_algebra(py)
     }
 

@@ -1,11 +1,12 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::lat::{Lattice, Order};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PyBasicSet;
 
 /// Python wrapper for SubalgebraLattice
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySubalgebraLattice {
     pub(crate) inner: std::sync::Arc<std::sync::Mutex<uacalc::alg::sublat::SubalgebraLattice<i32>>>,
 }
@@ -110,7 +111,7 @@ impl PySubalgebraLattice {
     fn one_generated_subalgebras(&mut self, py: Python<'_>) -> PyResult<Vec<PyBasicSet>> {
         let lat = std::sync::Arc::clone(&self.inner);
         let one_gens = py
-            .allow_threads(move || {
+            .detach(move || {
                 let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
@@ -131,7 +132,7 @@ impl PySubalgebraLattice {
     fn join_irreducibles(&mut self, py: Python<'_>) -> PyResult<Vec<PyBasicSet>> {
         let lat = std::sync::Arc::clone(&self.inner);
         let jis = py
-            .allow_threads(move || {
+            .detach(move || {
                 let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
@@ -230,7 +231,7 @@ impl PySubalgebraLattice {
     fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyBasicSet>> {
         let lat = std::sync::Arc::clone(&self.inner);
         let univ = py
-            .allow_threads(move || {
+            .detach(move || {
                 let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
@@ -251,7 +252,7 @@ impl PySubalgebraLattice {
     fn cardinality(&mut self, py: Python<'_>) -> PyResult<i32> {
         let lat = std::sync::Arc::clone(&self.inner);
         let n = py
-            .allow_threads(move || {
+            .detach(move || {
                 let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock().unwrap().cardinality_checked()
             })
@@ -270,7 +271,7 @@ impl PySubalgebraLattice {
         let element = element.get_inner().clone();
         let lat = std::sync::Arc::clone(&self.inner);
         let filtered = py
-            .allow_threads(move || {
+            .detach(move || {
                 let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
@@ -411,7 +412,7 @@ impl PySubalgebraLattice {
 fn stress_sub_universe(py: Python<'_>, lat: &PySubalgebraLattice, repeats: usize) -> PyResult<i32> {
     let alg = lat.inner.lock().unwrap().get_algebra().clone_box();
     let n = py
-        .allow_threads(move || {
+        .detach(move || {
             let mut fresh = uacalc::alg::sublat::SubalgebraLattice::new_safe(alg)
                 .map_err(|s| uacalc::resource::UaError::message(s))?;
             fresh.universe_stress(repeats)

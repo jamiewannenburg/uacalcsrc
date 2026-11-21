@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use uacalc::alg::*;
@@ -9,7 +10,7 @@ use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 use crate::alg::op::similarity_type::PySimilarityType;
 
 /// Python wrapper for ProductAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyProductAlgebra {
     inner: uacalc::alg::ProductAlgebra,
     factors: Vec<uacalc::alg::BasicAlgebra<i32>>,
@@ -132,11 +133,11 @@ impl PyProductAlgebra {
         PySimilarityType::from_inner(Algebra::similarity_type(&self.inner).clone())
     }
 
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&self.inner))
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         let name = if let Ok(s) = sym.extract::<String>() {
             s
         } else if let Ok(n) = sym.call_method0("name") {
@@ -183,12 +184,12 @@ impl PyProductAlgebra {
     }
 
     /// Java stub: always null.
-    fn projection_kernel(&self, _k: i32) -> Option<PyObject> {
+    fn projection_kernel(&self, _k: i32) -> Option<Py<PyAny>> {
         None
     }
 
     /// Java stub: always empty.
-    fn sg_close(&self, _elems: Vec<Bound<'_, PyAny>>) -> Vec<PyObject> {
+    fn sg_close(&self, _elems: Vec<Bound<'_, PyAny>>) -> Vec<Py<PyAny>> {
         Vec::new()
     }
 

@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use uacalc::util::IntArrayTrait;
@@ -16,7 +17,7 @@ fn extract_partition(obj: &Bound<'_, PyAny>) -> PyResult<Partition> {
 
 fn extract_partition_list(obj: &Bound<'_, PyAny>) -> PyResult<Vec<Partition>> {
     let mut out = Vec::new();
-    for item in obj.iter()? {
+    for item in obj.try_iter()? {
         out.push(extract_partition(&item?)?);
     }
     Ok(out)
@@ -27,7 +28,7 @@ fn wrap(inner: Partition) -> PyPartition {
 }
 
 /// Python wrapper for Partition
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPartition {
     pub(crate) inner: uacalc::alg::conlat::partition::Partition,
 }
@@ -593,7 +594,7 @@ impl PyPartition {
     }
 }
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPartitionPairsIter {
     pairs: Vec<Vec<i32>>,
     index: usize,

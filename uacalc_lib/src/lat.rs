@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::types::PyDict;
 use uacalc::lat::*;
@@ -114,7 +115,7 @@ where
 }
 
 /// Python wrapper for DivisibilityOrder
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyDivisibilityOrder {
     inner: uacalc::lat::DivisibilityOrder,
 }
@@ -146,7 +147,7 @@ impl PyDivisibilityOrder {
 }
 
 /// Python wrapper for PrefixOrder
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPrefixOrder {
     inner: uacalc::lat::PrefixOrder,
 }
@@ -178,7 +179,7 @@ impl PyPrefixOrder {
 }
 
 /// Python wrapper for NaturalOrder
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyNaturalOrder {
     inner: uacalc::lat::NaturalOrder,
 }
@@ -267,7 +268,7 @@ fn maximals_natural_string(elems: Vec<String>) -> PyResult<Vec<String>> {
 ///
 /// Accepts an object with a callable `leq` attribute (Jython `Order`
 /// implementations, `DivisibilityOrder`, …) or a two-argument callable.
-fn extract_leq_fn(order: &Bound<'_, PyAny>) -> PyResult<PyObject> {
+fn extract_leq_fn(order: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
     if let Ok(leq) = order.getattr("leq") {
         if leq.is_callable() {
             return Ok(leq.unbind());
@@ -281,7 +282,7 @@ fn extract_leq_fn(order: &Bound<'_, PyAny>) -> PyResult<PyObject> {
     ))
 }
 
-fn call_leq(py: Python<'_>, leq_fn: &PyObject, a: &PyObject, b: &PyObject) -> PyResult<bool> {
+fn call_leq(py: Python<'_>, leq_fn: &Py<PyAny>, a: &Py<PyAny>, b: &Py<PyAny>) -> PyResult<bool> {
     let value = leq_fn.call1(py, (a.clone_ref(py), b.clone_ref(py)))?;
     value.extract(py)
 }
@@ -292,12 +293,12 @@ fn call_leq(py: Python<'_>, leq_fn: &PyObject, a: &PyObject, b: &PyObject) -> Py
 /// so the algorithm stays in Rust while `leq` is evaluated in Python. Elements
 /// may be any Python objects (ints, lists, user classes).
 #[pyfunction]
-fn maximals(py: Python<'_>, elems: Vec<PyObject>, order: &Bound<'_, PyAny>) -> PyResult<Vec<PyObject>> {
+fn maximals(py: Python<'_>, elems: Vec<Py<PyAny>>, order: &Bound<'_, PyAny>) -> PyResult<Vec<Py<PyAny>>> {
     let leq_fn = extract_leq_fn(order)?;
-    let mut ans: Vec<PyObject> = Vec::new();
+    let mut ans: Vec<Py<PyAny>> = Vec::new();
     for candidate in elems {
         let mut candidate_below = false;
-        let mut new_ans: Vec<PyObject> = Vec::new();
+        let mut new_ans: Vec<Py<PyAny>> = Vec::new();
         for e in &ans {
             if call_leq(py, &leq_fn, &candidate, e)? {
                 candidate_below = true;
@@ -338,7 +339,7 @@ fn ordered_sets_main() -> PyResult<String> {
 }
 
 /// Python wrapper for DiamondLattice
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyDiamondLattice {
     inner: uacalc::lat::DiamondLattice,
 }
@@ -435,7 +436,7 @@ impl PyDiamondLattice {
 }
 
 /// Python wrapper for BooleanLattice
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBooleanLattice {
     inner: uacalc::lat::BooleanLattice,
 }
@@ -672,7 +673,7 @@ fn py_lattice_from_join_with_universe(
 ///
 /// Java `SmallLattice` is an interface; this is the missing binding so the
 /// library can return a real object instead of a ValueError about the wrapper.
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySmallLattice {
     universe: Vec<uacalc::alg::conlat::Partition>,
     upper_covers: Vec<Vec<usize>>,
@@ -692,15 +693,15 @@ impl PySmallLattice {
     }
 
     /// Universe as a list of Partition objects.
-    fn universe(&self, py: Python) -> PyResult<PyObject> {
+    fn universe(&self, py: Python) -> PyResult<Py<PyAny>> {
         let mut py_objects = Vec::new();
         for part in &self.universe {
             let py_partition = crate::alg::conlat::partition::PyPartition {
                 inner: part.clone(),
             };
-            py_objects.push(py_partition.into_py(py));
+            py_objects.push(py_partition.into_py_any(py)?);
         }
-        Ok(py_objects.into_py(py))
+        Ok(py_objects.into_py_any(py)?)
     }
 
     /// Indices of the upper covers of the element at `index` (Java `upperCoversIndices`).
@@ -719,7 +720,7 @@ impl PySmallLattice {
 
 /// Convert a congruence lattice to a small lattice
 #[pyfunction]
-fn py_con_to_small_lattice(con: &Bound<'_, PyAny>, py: Python) -> PyResult<PyObject> {
+fn py_con_to_small_lattice(con: &Bound<'_, PyAny>, py: Python) -> PyResult<Py<PyAny>> {
     use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
     if let Ok(py_con_lat) = con.extract::<PyRef<'_, PyCongruenceLattice>>() {
@@ -736,7 +737,7 @@ fn py_con_to_small_lattice(con: &Bound<'_, PyAny>, py: Python) -> PyResult<PyObj
                     upper_covers,
                     name,
                 }
-                .into_py(py))
+                .into_py_any(py)?)
             }
             Err(e) => Err(PyValueError::new_err(format!(
                 "Failed to convert congruence lattice to small lattice: {}",
@@ -752,7 +753,7 @@ fn py_con_to_small_lattice(con: &Bound<'_, PyAny>, py: Python) -> PyResult<PyObj
 
 /// Create the dual of a basic lattice
 #[pyfunction]
-fn py_dual(lat: &Bound<'_, PyAny>, _py: Python) -> PyResult<PyObject> {
+fn py_dual(lat: &Bound<'_, PyAny>, _py: Python) -> PyResult<Py<PyAny>> {
     // Try to extract PyBasicLattice
     if let Ok(_py_basic_lat) = lat.extract::<PyRef<'_, PyBasicLattice>>() {
         // The dual function takes ownership of BasicLattice, which is problematic from Python
@@ -765,7 +766,7 @@ fn py_dual(lat: &Bound<'_, PyAny>, _py: Python) -> PyResult<PyObject> {
 }
 
 /// Python wrapper for LatticeGraphData
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyLatticeGraphData {
     inner: uacalc::lat::LatticeGraphData,
 }
@@ -797,8 +798,8 @@ impl PyLatticeGraphData {
     }
     
     /// Convert to NetworkX DiGraph if networkx is available
-    fn to_networkx(&self, py: Python) -> PyResult<PyObject> {
-        match py.import_bound("networkx") {
+    fn to_networkx(&self, py: Python) -> PyResult<Py<PyAny>> {
+        match py.import("networkx") {
             Ok(nx) => {
                 let graph = nx.getattr("DiGraph")?.call0()?;
                 
@@ -810,7 +811,7 @@ impl PyLatticeGraphData {
                     // Set node attributes via the nodes view
                     if let Ok(nodes_view) = graph.getattr("nodes") {
                         if let Ok(node_attrs) = nodes_view.call_method1("__getitem__", (node.id,)) {
-                            if let Ok(node_dict) = node_attrs.downcast::<PyDict>() {
+                            if let Ok(node_dict) = node_attrs.cast::<PyDict>() {
                                 node_dict.set_item("label", node.label.clone())?;
                             }
                         }
@@ -825,7 +826,7 @@ impl PyLatticeGraphData {
                     if let Some(ref label) = edge.label {
                         if let Ok(edges_view) = graph.getattr("edges") {
                             if let Ok(edge_attrs) = edges_view.call_method1("__getitem__", ((edge.source, edge.target),)) {
-                                if let Ok(edge_dict) = edge_attrs.downcast::<PyDict>() {
+                                if let Ok(edge_dict) = edge_attrs.cast::<PyDict>() {
                                     edge_dict.set_item("label", label.clone())?;
                                 }
                             }
@@ -862,7 +863,7 @@ impl PyLatticeGraphData {
 
 /// Python wrapper for BasicLattice
 /// This is a type-erased wrapper that can hold BasicLattice<Partition> or BasicLattice<BasicSet>
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBasicLattice {
     pub(crate) inner: BasicLatticeInner,
 }
@@ -964,7 +965,7 @@ impl PyBasicLattice {
     }
     
     /// Convert to NetworkX DiGraph if networkx is available
-    fn to_networkx(&self, py: Python) -> PyResult<PyObject> {
+    fn to_networkx(&self, py: Python) -> PyResult<Py<PyAny>> {
         let graph_data = self.to_graph_data()?;
         graph_data.to_networkx(py)
     }
@@ -1197,7 +1198,7 @@ impl PyBasicLattice {
     /// Returns:
     ///     For BasicLattice<Partition>: List[Partition] - List of join irreducible elements
     ///     For BasicLattice<i32>: List[int] - List of join irreducible elements
-    fn join_irreducibles(&self, py: Python) -> PyResult<PyObject> {
+    fn join_irreducibles(&self, py: Python) -> PyResult<Py<PyAny>> {
         match &self.inner {
             BasicLatticeInner::Partition(inner) => {
                 let mut inner = inner.lock().unwrap();
@@ -1210,9 +1211,9 @@ impl PyBasicLattice {
                     let po_elem: &uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition> = po_elem_arc.deref();
                     let part = po_elem.get_underlying_object();
                     let py_partition = crate::alg::conlat::partition::PyPartition { inner: part.clone() };
-                    py_objects.push(py_partition.into_py(py));
+                    py_objects.push(py_partition.into_py_any(py)?);
                 }
-                Ok(py_objects.into_py(py))
+                Ok(py_objects.into_py_any(py)?)
             }
             BasicLatticeInner::Int32(inner) => {
                 let mut inner = inner.lock().unwrap();
@@ -1224,7 +1225,7 @@ impl PyBasicLattice {
                     let val = po_elem.get_underlying_object();
                     result.push(*val);
                 }
-                Ok(result.into_py(py))
+                Ok(result.into_py_any(py)?)
             }
             _ => Err(PyValueError::new_err("join_irreducibles() is only available for BasicLattice<Partition> or BasicLattice<i32>")),
         }
@@ -1235,7 +1236,7 @@ impl PyBasicLattice {
     /// Returns:
     ///     For BasicLattice<Partition>: Partition - The zero (bottom) element
     ///     For BasicLattice<i32>: int - The zero (bottom) element
-    fn zero(&self, py: Python) -> PyResult<PyObject> {
+    fn zero(&self, py: Python) -> PyResult<Py<PyAny>> {
         match &self.inner {
             BasicLatticeInner::Partition(inner) => {
                 let inner = inner.lock().unwrap();
@@ -1244,27 +1245,27 @@ impl PyBasicLattice {
                 let po_elem: &uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition> = zero.deref();
                 let part = po_elem.get_underlying_object();
                 let py_partition = crate::alg::conlat::partition::PyPartition { inner: part.clone() };
-                Ok(py_partition.into_py(py))
+                Ok(py_partition.into_py_any(py)?)
             }
             BasicLatticeInner::Int32(inner) => {
                 let inner = inner.lock().unwrap();
                 let zero = inner.zero();
                 let po_elem: &uacalc::lat::ordered_set::POElem<i32> = zero.deref();
                 let val = po_elem.get_underlying_object();
-                Ok(val.into_py(py))
+                Ok(val.into_py_any(py)?)
             }
             _ => Err(PyValueError::new_err("zero() is only available for BasicLattice<Partition> or BasicLattice<i32>")),
         }
     }
 
     /// Top element (Java `one`).
-    fn one(&self, py: Python) -> PyResult<PyObject> {
+    fn one(&self, py: Python) -> PyResult<Py<PyAny>> {
         match &self.inner {
             BasicLatticeInner::Int32(inner) => {
                 let inner = inner.lock().unwrap();
                 let one = inner.one();
                 let po_elem: &uacalc::lat::ordered_set::POElem<i32> = one.deref();
-                Ok((*po_elem.get_underlying_object()).into_py(py))
+                Ok((*po_elem.get_underlying_object()).into_py_any(py)?)
             }
             _ => Err(PyValueError::new_err("one() is only available for BasicLattice<i32> created from operations")),
         }
@@ -1297,7 +1298,7 @@ impl PyBasicLattice {
     /// Returns:
     ///     For BasicLattice<Partition>: List[Partition] - List of meet irreducible elements
     ///     For BasicLattice<i32>: List[int] - List of meet irreducible elements
-    fn meet_irreducibles(&self, py: Python) -> PyResult<PyObject> {
+    fn meet_irreducibles(&self, py: Python) -> PyResult<Py<PyAny>> {
         match &self.inner {
             BasicLatticeInner::Partition(inner) => {
                 let mut inner = inner.lock().unwrap();
@@ -1309,16 +1310,16 @@ impl PyBasicLattice {
                         po_elem_arc.deref();
                     let part = po_elem.get_underlying_object();
                     let py_partition = crate::alg::conlat::partition::PyPartition { inner: part.clone() };
-                    py_objects.push(py_partition.into_py(py));
+                    py_objects.push(py_partition.into_py_any(py)?);
                 }
-                Ok(py_objects.into_py(py))
+                Ok(py_objects.into_py_any(py)?)
             }
             BasicLatticeInner::Int32(inner) => {
                 let mut inner = inner.lock().unwrap();
                 let mis: &[std::sync::Arc<uacalc::lat::ordered_set::POElem<i32>>] =
                     uacalc::lat::BasicLattice::meet_irreducibles(&mut *inner);
                 let result: Vec<i32> = mis.iter().map(|e| *e.get_underlying_object()).collect();
-                Ok(result.into_py(py))
+                Ok(result.into_py_any(py)?)
             }
             _ => Err(PyValueError::new_err(
                 "meet_irreducibles() is only available for BasicLattice<Partition> or BasicLattice<i32>",
@@ -1625,7 +1626,7 @@ impl PyBasicLattice {
 
 /// Python wrapper for OrderedSet<i32>
 /// This provides Python bindings for creating and manipulating partially ordered sets
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyOrderedSet {
     inner: std::sync::Arc<std::sync::Mutex<uacalc::lat::ordered_set::OrderedSet<i32>>>,
 }
@@ -1822,7 +1823,7 @@ impl PyOrderedSet {
     }
     
     /// Convert to NetworkX DiGraph if networkx is available
-    fn to_networkx(&self, py: Python, edge_labels: Option<&Bound<'_, PyDict>>) -> PyResult<PyObject> {
+    fn to_networkx(&self, py: Python, edge_labels: Option<&Bound<'_, PyDict>>) -> PyResult<Py<PyAny>> {
         let graph_data = self.to_graph_data(edge_labels)?;
         graph_data.to_networkx(py)
     }
@@ -1923,7 +1924,7 @@ impl PyOrderedSet {
 }
 
 /// Python wrapper for OrderedSet<Partition>
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyOrderedSetPartition {
     pub(crate) inner: std::sync::Arc<std::sync::Mutex<uacalc::lat::ordered_set::OrderedSet<uacalc::alg::conlat::partition::Partition>>>,
 }
@@ -1976,7 +1977,7 @@ impl PyOrderedSetPartition {
 }
 
 /// Python wrapper for OrderedSet<BasicSet>
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyOrderedSetBasicSet {
     pub(crate) inner: std::sync::Arc<std::sync::Mutex<uacalc::lat::ordered_set::OrderedSet<uacalc::alg::sublat::BasicSet>>>,
 }

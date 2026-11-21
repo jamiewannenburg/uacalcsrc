@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use std::collections::HashMap;
@@ -12,7 +13,7 @@ use crate::alg::power_algebra::PyPowerAlgebra;
 use crate::alg::sublat::subalgebra_lattice::PySubalgebraLattice;
 
 /// Python wrapper for MatrixPowerAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyMatrixPowerAlgebra {
     inner: uacalc::alg::MatrixPowerAlgebra,
     root: uacalc::alg::BasicAlgebra<i32>,
@@ -162,11 +163,11 @@ impl PyMatrixPowerAlgebra {
         algebra_type_java_name(self.inner.algebra_type())
     }
 
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&self.inner))
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         get_operation_by_symbol(py, Algebra::operations(&self.inner), sym)
     }
 

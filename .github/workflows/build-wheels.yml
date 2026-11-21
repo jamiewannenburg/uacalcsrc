@@ -43,6 +43,10 @@ jobs:
             arch: x86_64
             python-version: "3.12"
             target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            arch: x86_64
+            python-version: "3.13"
+            target: x86_64-unknown-linux-gnu
           # Linux aarch64 (using manylinux container)
           # - os: ubuntu-latest
           #   arch: aarch64
@@ -61,6 +65,9 @@ jobs:
           - os: macos-latest
             arch: universal2
             python-version: "3.12"
+          - os: macos-latest
+            arch: universal2
+            python-version: "3.13"
           # Windows x86_64
           - os: windows-latest
             arch: x86_64
@@ -69,6 +76,10 @@ jobs:
           - os: windows-latest
             arch: x86_64
             python-version: "3.12"
+            target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            arch: x86_64
+            python-version: "3.13"
             target: x86_64-pc-windows-msvc
 
     steps:

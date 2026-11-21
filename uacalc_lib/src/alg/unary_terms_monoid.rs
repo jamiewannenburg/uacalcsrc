@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use uacalc::alg::*;
@@ -10,7 +11,7 @@ use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
 
 /// Python wrapper for UnaryTermsMonoid
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyUnaryTermsMonoid {
     inner: uacalc::alg::UnaryTermsMonoid,
     generating: uacalc::alg::BasicAlgebra<i32>,
@@ -67,11 +68,11 @@ impl PyUnaryTermsMonoid {
         algebra_type_java_name(self.inner.algebra_type())
     }
 
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&self.inner))
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         get_operation_by_symbol(py, Algebra::operations(&self.inner), sym)
     }
 
@@ -145,7 +146,7 @@ impl PyUnaryTermsMonoid {
 
     /// Java `UnaryTermsMonoid.getUniverseList()` returns the unary term list
     /// (`List<Term>`), not the free-algebra `IntArray` coordinates.
-    fn get_universe_list(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn get_universe_list(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         self.inner
             .unary_term_list
             .iter()

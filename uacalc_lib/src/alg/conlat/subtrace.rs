@@ -1,10 +1,11 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::util::IntArrayTrait;
 use uacalc::alg::conlat::Subtrace;
 
 /// Python wrapper for Subtrace
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySubtrace {
     inner: Subtrace,
 }

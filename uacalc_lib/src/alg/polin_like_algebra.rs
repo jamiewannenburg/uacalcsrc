@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use uacalc::alg::{SmallAlgebra, Algebra};
@@ -13,7 +14,7 @@ use crate::alg::PySubalgebraLattice;
 use crate::alg::op::operation::PyBasicOperation;
 
 /// Python wrapper for PolinLikeAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object, unsendable)]
 pub struct PyPolinLikeAlgebra {
     inner: std::cell::RefCell<uacalc::alg::PolinLikeAlgebra<i32>>,
 }
@@ -101,11 +102,11 @@ impl PyPolinLikeAlgebra {
         algebra_type_java_name(self.inner.borrow().algebra_type())
     }
 
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&*self.inner.borrow()))
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         get_operation_by_symbol(py, Algebra::operations(&*self.inner.borrow()), sym)
     }
 
@@ -203,7 +204,7 @@ impl PyPolinLikeAlgebra {
     fn construct_polin_algebra(
         alg: &Bound<'_, PyAny>,
         elem: &Bound<'_, PyAny>,
-    ) -> Option<PyObject> {
+    ) -> Option<Py<PyAny>> {
         let _ = (alg, elem);
         None
     }
@@ -213,7 +214,7 @@ impl PyPolinLikeAlgebra {
         &self,
         py: Python<'_>,
         sym: &Bound<'_, PyAny>,
-    ) -> PyResult<Option<PyObject>> {
+    ) -> PyResult<Option<Py<PyAny>>> {
         let name = if let Ok(s) = sym.extract::<String>() {
             s
         } else if let Ok(n) = sym.call_method0("name") {

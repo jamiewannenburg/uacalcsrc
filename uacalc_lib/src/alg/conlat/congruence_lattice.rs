@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::types::PyAny;
 
@@ -8,7 +9,7 @@ use crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation;
 use crate::util::PyIntArray;
 
 /// Python wrapper for CongruenceLattice
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyCongruenceLattice {
     pub(crate) inner: uacalc::alg::conlat::CongruenceLattice<i32>,
 }
@@ -52,7 +53,7 @@ impl PyCongruenceLattice {
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
-        py.allow_threads(|| {
+        py.detach(|| {
             let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
             self.inner.con_cardinality_checked()
         })
@@ -136,7 +137,7 @@ impl PyCongruenceLattice {
     }
 
     fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
-        py.allow_threads(|| {
+        py.detach(|| {
             let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
             self.inner.universe_checked()
         })
@@ -576,7 +577,7 @@ impl PyCongruenceLattice {
 fn stress_con_universe(py: Python<'_>, lat: &PyCongruenceLattice, repeats: usize) -> PyResult<i32> {
     let alg = lat.inner.alg.clone_box();
     let n = py
-        .allow_threads(move || {
+        .detach(move || {
             let mut fresh = uacalc::alg::conlat::CongruenceLattice::new(alg);
             fresh.con_universe_stress(repeats)
         })
@@ -590,7 +591,7 @@ pub fn register_stress_con_universe(m: &Bound<'_, PyModule>) -> PyResult<()> {
 }
 
 /// Python wrapper for CongruenceLattice<IntArray>
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyCongruenceLatticeIntArray {
     pub(crate) inner: uacalc::alg::conlat::CongruenceLattice<uacalc::util::int_array::IntArray>,
 }
@@ -604,7 +605,7 @@ impl PyCongruenceLatticeIntArray {
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
-        py.allow_threads(|| {
+        py.detach(|| {
             let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
             self.inner.con_cardinality_checked()
         })
@@ -690,7 +691,7 @@ impl PyCongruenceLatticeIntArray {
     }
 
     fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
-        py.allow_threads(|| {
+        py.detach(|| {
             let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
             self.inner.universe_checked()
         })

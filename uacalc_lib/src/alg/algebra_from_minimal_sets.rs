@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyList};
 use uacalc::alg::*;
@@ -8,7 +9,7 @@ use crate::alg::convert::{
 use crate::alg::PyBasicAlgebra;
 
 /// Python wrapper for AlgebraFromMinimalSets
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyAlgebraFromMinimalSets {
     inner: uacalc::alg::AlgebraFromMinimalSets,
 }
@@ -64,7 +65,7 @@ impl PyAlgebraFromMinimalSets {
         let maps_opt = if let Some(maps_list) = maps {
             let mut maps_vec = Vec::new();
             for item in maps_list.iter() {
-                let map_list: &Bound<'_, PyList> = item.downcast()?;
+                let map_list = item.cast::<PyList>()?;
                 let mut map_vec = Vec::new();
                 for val in map_list.iter() {
                     map_vec.push(val.extract::<i32>()?);
@@ -159,7 +160,7 @@ impl PyAlgebraFromMinimalSets {
         let maps_opt = if let Some(maps_list) = maps {
             let mut maps_vec = Vec::new();
             for item in maps_list.iter() {
-                let map_list: &Bound<'_, PyList> = item.downcast()?;
+                let map_list = item.cast::<PyList>()?;
                 let mut map_vec = Vec::new();
                 for val in map_list.iter() {
                     map_vec.push(val.extract::<i32>()?);
@@ -227,11 +228,11 @@ impl PyAlgebraFromMinimalSets {
         algebra_type_java_name(self.inner.algebra_type())
     }
 
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         operations_to_py(py, Algebra::operations(&self.inner))
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         get_operation_by_symbol(py, Algebra::operations(&self.inner), sym)
     }
 

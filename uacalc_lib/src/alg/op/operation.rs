@@ -1,12 +1,13 @@
 //! Python wrapper for BasicOperation
 
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::op::{Operation, BasicOperation};
 use super::operation_symbol::PyOperationSymbol;
 
 /// Python wrapper for BasicOperation
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBasicOperation {
     pub(crate) inner: BasicOperation,
 }

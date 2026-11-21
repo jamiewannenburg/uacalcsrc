@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use uacalc::eq::{Equation, equations, Presentation};
@@ -10,7 +11,7 @@ use crate::alg::op::operation_symbol::PyOperationSymbol;
 use crate::terms::{term_to_py, PyVariableImp};
 
 /// Python wrapper for Equation
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct PyEquation {
     pub inner: Equation,
@@ -60,12 +61,12 @@ impl PyEquation {
     }
 
     /// Left-hand term object (Java ``Equation.leftSide()``).
-    fn left_side_term(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn left_side_term(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         term_to_py(py, self.inner.left_side())
     }
 
     /// Right-hand term object (Java ``Equation.rightSide()``).
-    fn right_side_term(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn right_side_term(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         term_to_py(py, self.inner.right_side())
     }
 
@@ -237,7 +238,7 @@ pub fn register_eq_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> 
 }
 
 /// Python wrapper for Presentation
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPresentation {
     inner: Presentation,
 }

@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 
 use uacalc::alg::op::SimilarityType;
@@ -8,7 +9,7 @@ use crate::alg as root_alg;
 use crate::alg::op::operation_symbol::PyOperationSymbol;
 
 /// Python wrapper for SimilarityType
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySimilarityType {
     inner: uacalc::alg::op::SimilarityType,
 }

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 
 /// Stable Python-facing labels for a dense Rust universe `0..n`.
 ///
@@ -10,13 +11,13 @@ use pyo3::prelude::*;
 /// crossing the Python boundary retain their original representation.
 #[derive(Clone, Debug)]
 pub(crate) struct PyUniverseMap {
-    labels: Arc<Vec<PyObject>>,
+    labels: Arc<Vec<Py<PyAny>>>,
 }
 
 impl PyUniverseMap {
     pub(crate) fn from_objects(
         py: Python<'_>,
-        labels: Vec<PyObject>,
+        labels: Vec<Py<PyAny>>,
         deduplicate: bool,
     ) -> PyResult<Self> {
         if !deduplicate {
@@ -29,7 +30,7 @@ impl PyUniverseMap {
         for label in labels {
             let duplicate = unique
                 .iter()
-                .try_fold(false, |found, existing: &PyObject| {
+                .try_fold(false, |found, existing: &Py<PyAny>| {
                     if found {
                         Ok(true)
                     } else {
@@ -53,11 +54,11 @@ impl PyUniverseMap {
         self.labels.is_empty()
     }
 
-    pub(crate) fn labels(&self) -> &[PyObject] {
+    pub(crate) fn labels(&self) -> &[Py<PyAny>] {
         self.labels.as_slice()
     }
 
-    pub(crate) fn labels_owned(&self) -> Vec<PyObject> {
+    pub(crate) fn labels_owned(&self) -> Vec<Py<PyAny>> {
         self.labels.as_ref().clone()
     }
 
@@ -70,7 +71,7 @@ impl PyUniverseMap {
         })
     }
 
-    pub(crate) fn element(&self, index: usize) -> Option<PyObject> {
+    pub(crate) fn element(&self, index: usize) -> Option<Py<PyAny>> {
         self.labels.get(index).cloned()
     }
 
@@ -78,7 +79,7 @@ impl PyUniverseMap {
         &self,
         index: i32,
         context: &str,
-    ) -> PyResult<PyObject> {
+    ) -> PyResult<Py<PyAny>> {
         if index < 0 {
             return Err(PyValueError::new_err(format!(
                 "{} index {} is negative",

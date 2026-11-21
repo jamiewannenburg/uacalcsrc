@@ -1,9 +1,10 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use uacalc::alg::CloserTiming;
 use crate::alg::big_product_algebra::PyBigProductAlgebra;
 
 /// Python wrapper for CloserTiming
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyCloserTiming {
     inner: CloserTiming,
 }

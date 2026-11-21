@@ -4,11 +4,12 @@
 //! in real Python environments and handle edge cases properly.
 
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::PyDict;
 
 #[test]
 fn test_python_script_execution() {
-    Python::with_gil(|py| {
+    Python::attach(|py| {
         let code = r#"
 import uacalc_lib
 print("UACalc imported successfully")
@@ -22,7 +23,7 @@ print("Available modules:", [m for m in dir(uacalc_lib) if not m.startswith('_')
 
 #[test]
 fn test_python_exception_handling() {
-    Python::with_gil(|py| {
+    Python::attach(|py| {
         let code = r#"
 import uacalc_lib
 try:
@@ -39,7 +40,7 @@ except AttributeError:
 
 #[test]
 fn test_python_memory_cleanup() {
-    Python::with_gil(|py| {
+    Python::attach(|py| {
         // Test that Python objects are properly cleaned up
         let code = r#"
 import uacalc_lib
@@ -59,7 +60,7 @@ print("Memory cleanup test completed")
 
 #[test]
 fn test_python_type_checking() {
-    Python::with_gil(|py| {
+    Python::attach(|py| {
         let code = r#"
 import uacalc_lib
 from typing import get_type_hints

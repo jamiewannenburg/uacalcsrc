@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use std::fs::File;
 use std::path::Path;
@@ -75,7 +76,7 @@ impl PyMace4AlgebraIterator {
 }
 
 /// Python wrapper for Mace4Reader
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyMace4Reader {
     // We don't store the reader directly to avoid Send issues
     // Instead, we'll create it fresh for each operation
@@ -213,7 +214,7 @@ impl PyMace4Reader {
 }
 
 /// Python wrapper for AlgebraReader
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyAlgebraReader {
     file_path: Option<String>,
 }
@@ -323,7 +324,7 @@ impl PyAlgebraReader {
 }
 
 /// Python wrapper for BadAlgebraFileException
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBadAlgebraFileException {
     inner: uacalc::io::BadAlgebraFileException,
 }
@@ -378,7 +379,7 @@ impl PyBadAlgebraFileException {
 }
 
 /// Python wrapper for ExtFileFilter
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyExtFileFilter {
     inner: uacalc::io::ExtFileFilter,
 }
@@ -493,7 +494,7 @@ impl PyExtFileFilter {
 }
 
 /// Python wrapper for AlgebraWriter
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyAlgebraWriter {
     // We don't store the writer directly to avoid Send issues
     // Instead, we'll create it fresh for each operation

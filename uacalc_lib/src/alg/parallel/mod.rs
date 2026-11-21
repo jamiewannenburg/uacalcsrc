@@ -1,5 +1,6 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::PyAny;
 use std::collections::HashMap;
 use std::sync::atomic::AtomicUsize;
@@ -14,7 +15,7 @@ use crate::alg::op::operation::PyBasicOperation;
 use crate::util::PyIntArray;
 
 /// Python wrapper for Pool
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPool;
 
 #[pymethods]
@@ -60,7 +61,7 @@ fn extract_int_array(elem: &Bound<'_, PyAny>) -> PyResult<IntArray> {
 
 fn extract_int_arrays(gens: &Bound<'_, PyAny>) -> PyResult<Vec<IntArray>> {
     let mut out = Vec::new();
-    for item in gens.iter()? {
+    for item in gens.try_iter()? {
         out.push(extract_int_array(&item?)?);
     }
     Ok(out)
@@ -113,7 +114,7 @@ fn extract_elts_found(elts_found: &Bound<'_, PyAny>, fallback: usize) -> usize {
 }
 
 /// Python wrapper for SingleClose (one parallel closure pass).
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PySingleClose {
     inner: Option<SingleClose>,
 }
@@ -146,7 +147,7 @@ impl PySingleClose {
                 dummy_term_map(&univ)
             } else if let Ok(items) = m.call_method0("items") {
                 let mut rust_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
-                for item in items.iter()? {
+                for item in items.try_iter()? {
                     let pair = item?;
                     let key = extract_int_array(&pair.get_item(0)?)?;
                     rust_map.insert(

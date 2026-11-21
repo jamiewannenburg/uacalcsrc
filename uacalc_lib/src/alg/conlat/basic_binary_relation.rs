@@ -1,10 +1,11 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::conlat::{BasicBinaryRelation, BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
 
 /// Python wrapper for BasicBinaryRelation
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyBasicBinaryRelation {
     pub(crate) inner: BasicBinaryRelation,
 }
@@ -250,10 +251,10 @@ impl PyBasicBinaryRelation {
     }
 
     /// Python iterator support
-    fn __iter__(&self) -> PyResult<PyObject> {
+    fn __iter__(&self) -> PyResult<Py<PyAny>> {
         let pairs = self.get_pairs();
-        Python::with_gil(|py| {
-            let list = pyo3::types::PyList::new_bound(py, pairs);
+        Python::attach(|py| {
+            let list = pyo3::types::PyList::new(py, pairs)?;
             Ok(list.into())
         })
     }

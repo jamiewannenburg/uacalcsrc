@@ -11,10 +11,10 @@ name = "uacalc_lib"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.21", features = ["extension-module"] }
+pyo3 = { version = "0.30", features = ["extension-module", "py-clone"] }
 uacalc = { path = ".." }
 
 [dev-dependencies]
 # Test dependencies for Python bindings
-pyo3 = { version = "0.21", features = ["extension-module", "auto-initialize"] }
+pyo3 = { version = "0.30", features = ["extension-module", "auto-initialize", "py-clone"] }
 tempfile = "3.0"

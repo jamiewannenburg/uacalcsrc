@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
 use uacalc::alg::op::Operation;
@@ -7,7 +8,7 @@ use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::partition::PyPartition;
 
 /// Python wrapper for MaltsevProductDecomposition
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyMaltsevProductDecomposition {
     inner: uacalc::alg::MaltsevProductDecomposition,
 }

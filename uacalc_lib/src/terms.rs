@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use uacalc::terms::{VariableImp, NonVariableTerm, Term, Variable};
@@ -8,7 +9,7 @@ use crate::alg::PyBasicAlgebra;
 use crate::alg::op::term_operation_imp::PyTermOperationImp;
 
 /// Python wrapper for VariableImp
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct PyVariableImp {
     pub(crate) inner: VariableImp,
@@ -183,13 +184,13 @@ impl PyVariableImp {
     }
 
     /// Children of this term; ``None`` for a variable (Java returns null).
-    fn get_children(&self) -> Option<Vec<PyObject>> {
+    fn get_children(&self) -> Option<Vec<Py<PyAny>>> {
         None
     }
 
     /// Substitute terms for variables according to the given map (keys are names).
-    fn substitute(&self, var_map: HashMap<String, Bound<'_, PyAny>>) -> PyResult<PyObject> {
-        Python::with_gil(|py| {
+    fn substitute(&self, var_map: HashMap<String, Bound<'_, PyAny>>) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
             let rust_map = python_var_map_to_rust(var_map)?;
             let result = self.inner.substitute(&rust_map)
                 .map_err(PyValueError::new_err)?;
@@ -211,7 +212,7 @@ impl PyVariableImp {
 }
 
 /// Python wrapper for NonVariableTerm
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyNonVariableTerm {
     pub(crate) inner: NonVariableTerm,
 }
@@ -369,8 +370,8 @@ impl PyNonVariableTerm {
     ///
     /// # Returns
     /// The term with substitutions applied
-    fn substitute(&self, var_map: std::collections::HashMap<String, Bound<'_, PyAny>>) -> PyResult<PyObject> {
-        Python::with_gil(|py| {
+    fn substitute(&self, var_map: std::collections::HashMap<String, Bound<'_, PyAny>>) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
             let rust_map = python_var_map_to_rust(var_map)?;
             let result = self.inner.substitute(&rust_map)
                 .map_err(|e| PyValueError::new_err(e))?;
@@ -402,7 +403,7 @@ impl PyNonVariableTerm {
     }
 
     /// Immediate children of this term (empty list for a constant).
-    fn get_children(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn get_children(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         let children = self.inner.get_children().unwrap_or_default();
         let mut out = Vec::with_capacity(children.len());
         for child in children {
@@ -439,7 +440,7 @@ impl PyNonVariableTerm {
 }
 
 /// Python wrapper for Taylor
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyTaylor {
     pub(crate) inner: uacalc::terms::Taylor,
 }
@@ -524,8 +525,8 @@ impl PyTaylor {
     /// 
     /// # Returns
     /// The canonical form of the term
-    fn canonical_form(&self, term: &Bound<'_, PyAny>) -> PyResult<PyObject> {
-        Python::with_gil(|py| {
+    fn canonical_form(&self, term: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
             // Try to extract as PyVariableImp first
             if let Ok(var) = term.extract::<PyRef<PyVariableImp>>() {
                 let term_ref: &dyn Term = &var.inner;
@@ -536,10 +537,10 @@ impl PyTaylor {
                     let py_var = PyVariableImp {
                         inner: VariableImp::new(&var_name),
                     };
-                    Ok(py_var.into_py(py))
+                    Ok(py_var.into_py_any(py)?)
                 } else {
                     let py_term = reconstruct_non_variable_term(canonical.as_ref())?;
-                    Ok(py_term.into_py(py))
+                    Ok(py_term.into_py_any(py)?)
                 }
             } else if let Ok(nvt) = term.extract::<PyRef<PyNonVariableTerm>>() {
                 let term_ref: &dyn Term = &nvt.inner;
@@ -550,10 +551,10 @@ impl PyTaylor {
                     let py_var = PyVariableImp {
                         inner: VariableImp::new(&var_name),
                     };
-                    Ok(py_var.into_py(py))
+                    Ok(py_var.into_py_any(py)?)
                 } else {
                     let py_term = reconstruct_non_variable_term(canonical.as_ref())?;
-                    Ok(py_term.into_py(py))
+                    Ok(py_term.into_py_any(py)?)
                 }
             } else {
                 Err(PyValueError::new_err(
@@ -572,8 +573,8 @@ impl PyTaylor {
         arr: Vec<i32>,
         start: Option<i32>,
         len: Option<i32>,
-    ) -> PyResult<PyObject> {
-        Python::with_gil(|py| {
+    ) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
             let term = match (start, len) {
                 (Some(s), Some(l)) => {
                     let start = s.max(0) as usize;
@@ -591,8 +592,8 @@ impl PyTaylor {
     /// Java's success path returns `null` (it only prints). CPython returns the
     /// interpreting term when one is found; the org.uacalc shim discards it so
     /// Jython goldens stay `None`.
-    fn interprets(&self, g: &PyTaylor, level: i32) -> PyResult<Option<PyObject>> {
-        Python::with_gil(|py| match self.inner.interprets(&g.inner, level) {
+    fn interprets(&self, g: &PyTaylor, level: i32) -> PyResult<Option<Py<PyAny>>> {
+        Python::attach(|py| match self.inner.interprets(&g.inner, level) {
             Some(term) => Ok(Some(term_to_py(py, term.as_ref())?)),
             None => Ok(None),
         })
@@ -604,7 +605,7 @@ impl PyTaylor {
         f: &PyOperationSymbol,
         depth: i32,
         var_list: Vec<Bound<'_, PyAny>>,
-    ) -> PyResult<PyObject> {
+    ) -> PyResult<Py<PyAny>> {
         let mut vars = Vec::new();
         for v in var_list {
             if let Ok(var) = v.extract::<PyRef<PyVariableImp>>() {
@@ -616,7 +617,7 @@ impl PyTaylor {
             }
         }
         let sym = f.get_inner();
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let term = self.inner.make_balanced_taylor_term(&sym, depth, &vars);
             term_to_py(py, term.as_ref())
         })
@@ -746,8 +747,8 @@ impl PyTaylor {
 /// assert term.to_string() == "f(x,y)"
 /// ```
 #[pyfunction]
-fn string_to_term(s: String) -> PyResult<PyObject> {
-    Python::with_gil(|py| {
+fn string_to_term(s: String) -> PyResult<Py<PyAny>> {
+    Python::attach(|py| {
         match uacalc::terms::string_to_term(&s) {
             Ok(term) => {
                 // Check if it's a variable or non-variable term
@@ -757,13 +758,13 @@ fn string_to_term(s: String) -> PyResult<PyObject> {
                     let py_var = PyVariableImp {
                         inner: VariableImp::new(&var_name),
                     };
-                    Ok(py_var.into_py(py))
+                    Ok(py_var.into_py_any(py)?)
                 } else {
                     // It's a non-variable term, but we need to reconstruct it
                     // from the boxed term - for now, create from the original implementation
                     // This is a bit hacky but works
                     let py_term = reconstruct_non_variable_term(term.as_ref())?;
-                    Ok(py_term.into_py(py))
+                    Ok(py_term.into_py_any(py)?)
                 }
             }
             Err(e) => Err(PyValueError::new_err(e)),
@@ -803,15 +804,15 @@ fn extract_term(obj: &Bound<'_, PyAny>) -> PyResult<Box<dyn Term>> {
 }
 
 /// Convert a core ``Term`` into a Python ``VariableImp`` or ``NonVariableTerm``.
-pub(crate) fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<PyObject> {
+pub(crate) fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<Py<PyAny>> {
     if term.isa_variable() {
         let var_name = format!("{}", term);
         Ok(PyVariableImp {
             inner: VariableImp::new(&var_name),
         }
-        .into_py(py))
+        .into_py_any(py)?)
     } else {
-        Ok(reconstruct_non_variable_term(term)?.into_py(py))
+        Ok(reconstruct_non_variable_term(term)?.into_py_any(py)?)
     }
 }
 
@@ -893,8 +894,8 @@ fn is_valid_op_name_string(s: String) -> bool {
 /// flattened = uacalc_lib.terms.flatten(term)
 /// ```
 #[pyfunction]
-fn flatten(term: &Bound<'_, PyAny>) -> PyResult<PyObject> {
-    Python::with_gil(|py| {
+fn flatten(term: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
+    Python::attach(|py| {
         // Try to extract as PyVariableImp first
         if let Ok(var) = term.extract::<PyRef<PyVariableImp>>() {
             let term_ref: &dyn Term = &var.inner;
@@ -905,10 +906,10 @@ fn flatten(term: &Bound<'_, PyAny>) -> PyResult<PyObject> {
                 let py_var = PyVariableImp {
                     inner: VariableImp::new(&var_name),
                 };
-                Ok(py_var.into_py(py))
+                Ok(py_var.into_py_any(py)?)
             } else {
                 let py_term = reconstruct_non_variable_term(flattened.as_ref())?;
-                Ok(py_term.into_py(py))
+                Ok(py_term.into_py_any(py)?)
             }
         } else if let Ok(nvt) = term.extract::<PyRef<PyNonVariableTerm>>() {
             let term_ref: &dyn Term = &nvt.inner;
@@ -919,10 +920,10 @@ fn flatten(term: &Bound<'_, PyAny>) -> PyResult<PyObject> {
                 let py_var = PyVariableImp {
                     inner: VariableImp::new(&var_name),
                 };
-                Ok(py_var.into_py(py))
+                Ok(py_var.into_py_any(py)?)
             } else {
                 let py_term = reconstruct_non_variable_term(flattened.as_ref())?;
-                Ok(py_term.into_py(py))
+                Ok(py_term.into_py_any(py)?)
             }
         } else {
             Err(PyValueError::new_err(

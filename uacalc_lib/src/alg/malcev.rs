@@ -4,6 +4,7 @@
  */
 
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::types::PyAny;
 use pyo3::Bound;
@@ -75,7 +76,7 @@ fn ua_err_to_py(e: UaError) -> PyErr {
     PyValueError::new_err(e.to_string())
 }
 
-fn btree_set_to_py(py: Python<'_>, set: BTreeSet<i32>) -> PyResult<PyObject> {
+fn btree_set_to_py(py: Python<'_>, set: BTreeSet<i32>) -> PyResult<Py<PyAny>> {
     let py_set = pyo3::types::PySet::empty(py)?;
     for v in set {
         py_set.add(v)?;
@@ -510,7 +511,7 @@ fn sd_meet_idempotent(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<usize>>> 
 /// # Returns
 /// True if a Day quadruple exists, False otherwise
 #[pyfunction]
-fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: PyObject) -> PyResult<bool> {
+fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: Py<PyAny>) -> PyResult<bool> {
     Err(PyValueError::new_err("Day quadruple test requires congruence lattice; use find_day_quadruple_in_square instead"))
 }
 
@@ -729,10 +730,10 @@ fn omitted_ideal_idempotent(
     py: Python<'_>,
     algebra: &Bound<'_, PyAny>,
     types_found: Option<Bound<'_, PyAny>>,
-) -> PyResult<PyObject> {
+) -> PyResult<Py<PyAny>> {
     if let Some(found) = types_found {
         let mut set = BTreeSet::new();
-        let iter = found.iter().map_err(|_| {
+        let iter = found.try_iter().map_err(|_| {
             PyTypeError::new_err(
                 "omitted_ideal_idempotent: types_found must be an iterable of ints",
             )

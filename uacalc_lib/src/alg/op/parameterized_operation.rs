@@ -1,8 +1,9 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use std::collections::HashMap;
 
 /// Python wrapper for ParameterizedOperation
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct PyParameterizedOperation {
     inner: uacalc::alg::op::ParameterizedOperation,

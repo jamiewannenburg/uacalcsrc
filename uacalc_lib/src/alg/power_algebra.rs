@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyAny;
 use std::collections::hash_map::DefaultHasher;
@@ -12,7 +13,7 @@ use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 use crate::alg::op::similarity_type::PySimilarityType;
 
 /// Python wrapper for PowerAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPowerAlgebra {
     inner: uacalc::alg::PowerAlgebra,
     root: uacalc::alg::BasicAlgebra<i32>,
@@ -195,7 +196,7 @@ impl PyPowerAlgebra {
         Algebra::input_size(&self.inner)
     }
 
-    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         let name = if let Ok(s) = sym.extract::<String>() {
             s
         } else if let Ok(n) = sym.call_method0("name") {
@@ -224,7 +225,7 @@ impl PyPowerAlgebra {
         }
     }
 
-    fn projection_kernel(&self, _k: i32) -> Option<PyObject> {
+    fn projection_kernel(&self, _k: i32) -> Option<Py<PyAny>> {
         None
     }
 
@@ -239,7 +240,7 @@ impl PyPowerAlgebra {
     ///     
     /// Note: This reconstructs operations from their symbol and table data
     /// to avoid deep cloning through trait objects.
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         // Materialize Horner-encoded tables via int_value_at so C2^n matches
         // Java ProductAlgebra / PowerAlgebra (not a cyclic-on-n table).
         operations_to_py(py, Algebra::operations(&self.inner))

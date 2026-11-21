@@ -11,13 +11,14 @@ use crate::terms::PyVariableImp;
 use crate::util::PyIntArray;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use pyo3::types::{PyAny, PyTuple};
 use std::collections::HashMap;
 use uacalc::alg::{Algebra, SmallAlgebra};
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 
 /// Python wrapper for FreeAlgebra
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyFreeAlgebra {
     inner: uacalc::alg::FreeAlgebra,
     element_map: Option<PyUniverseMap>,
@@ -28,16 +29,16 @@ impl PyFreeAlgebra {
         &self.inner
     }
 
-    fn element_to_python(&self, py: Python<'_>, element: IntArray) -> PyResult<PyObject> {
+    fn element_to_python(&self, py: Python<'_>, element: IntArray) -> PyResult<Py<PyAny>> {
         if let Some(map) = &self.element_map {
             let labels = element
                 .as_slice()
                 .iter()
                 .map(|&index| map.element_or_error(index, "Free algebra coordinate"))
                 .collect::<PyResult<Vec<_>>>()?;
-            Ok(PyTuple::new_bound(py, labels).to_object(py))
+            Ok(PyTuple::new(py, labels)?.into_py_any(py)?)
         } else {
-            Ok(Py::new(py, PyIntArray { inner: element })?.to_object(py))
+            Ok(Py::new(py, PyIntArray { inner: element })?.into_any())
         }
     }
 
@@ -53,7 +54,7 @@ impl PyFreeAlgebra {
             .element_map
             .as_ref()
             .ok_or_else(|| PyValueError::new_err("Expected an IntArray free-algebra element"))?;
-        let coordinates: Vec<PyObject> = element.extract().map_err(|_| {
+        let coordinates: Vec<Py<PyAny>> = element.extract().map_err(|_| {
             PyValueError::new_err("Expected an IntArray or a sequence of base-algebra elements")
         })?;
         let indices = coordinates
@@ -196,7 +197,7 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     List[Term]: Idempotent terms (VariableImp / NonVariableTerm)
-    fn get_idempotent_terms(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn get_idempotent_terms(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         match self.inner.get_idempotent_terms() {
             Ok(terms) => terms.iter().map(|t| term_to_py(py, t.as_ref())).collect(),
             Err(e) => Err(PyValueError::new_err(e)),
@@ -215,7 +216,7 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     Optional[Operation]: The automorphism operation, or None if fewer than 2 generators
-    fn switch_x_and_y_automorphism(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn switch_x_and_y_automorphism(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         match self.inner.switch_x_and_y_automorphism() {
             Ok(Some(op)) => Ok(Some(operation_to_py(py, op.as_ref())?)),
             Ok(None) => Ok(None),
@@ -351,7 +352,7 @@ impl PyFreeAlgebra {
     }
 
     /// Java `operations()` — table-backed ops so `intValueAt` works from Python.
-    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         let mut result = Vec::new();
         for op in self.inner.operations() {
             result.push(operation_to_py(py, op.as_ref())?);
@@ -360,7 +361,7 @@ impl PyFreeAlgebra {
     }
 
     /// Java `getTerms()`.
-    fn get_terms(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn get_terms(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         match self.inner.get_inner().get_terms() {
             Some(terms) => terms.iter().map(|t| term_to_py(py, t.as_ref())).collect(),
             None => Ok(Vec::new()),
@@ -368,7 +369,7 @@ impl PyFreeAlgebra {
     }
 
     /// Java `getTerm(elt)`.
-    fn get_term(&self, py: Python<'_>, element: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+    fn get_term(&self, py: Python<'_>, element: &Bound<'_, PyAny>) -> PyResult<Option<Py<PyAny>>> {
         let element = self.element_from_python(py, element)?;
         match self.inner.get_inner().get_term(&element) {
             Some(term) => Ok(Some(term_to_py(py, term)?)),
@@ -381,7 +382,7 @@ impl PyFreeAlgebra {
         &self,
         py: Python<'_>,
         term: &Bound<'_, PyAny>,
-    ) -> PyResult<Option<PyObject>> {
+    ) -> PyResult<Option<Py<PyAny>>> {
         let rust_term = py_to_term(term)?;
         self.inner
             .get_inner()
@@ -401,7 +402,7 @@ impl PyFreeAlgebra {
     }
 
     /// Java `generators()`.
-    fn generators(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn generators(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         self.inner
             .get_inner()
             .generators()
@@ -423,7 +424,7 @@ impl PyFreeAlgebra {
     }
 
     /// Java `getVariableToGeneratorMap()`.
-    fn get_variable_to_generator_map(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+    fn get_variable_to_generator_map(&self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         match self.inner.get_inner().get_variable_to_generator_map() {
             Some(map) => Ok(Some(vars_map_to_py(py, map)?)),
             None => Ok(None),
@@ -434,7 +435,7 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     List[IntArray]: The universe elements
-    fn get_universe_list(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+    fn get_universe_list(&self, py: Python<'_>) -> PyResult<Vec<Py<PyAny>>> {
         self.inner
             .universe()
             .map(|element| self.element_to_python(py, element))
@@ -458,7 +459,7 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     IntArray: The element at the given index
-    fn get_element(&self, py: Python<'_>, index: usize) -> PyResult<Option<PyObject>> {
+    fn get_element(&self, py: Python<'_>, index: usize) -> PyResult<Option<Py<PyAny>>> {
         self.inner
             .get_element(index)
             .map(|element| self.element_to_python(py, element))

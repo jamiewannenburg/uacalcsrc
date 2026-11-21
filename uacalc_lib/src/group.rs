@@ -1,9 +1,10 @@
 use pyo3::prelude::*;
+use pyo3::conversion::IntoPyObjectExt;
 use uacalc::group::PermutationGroup;
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 use crate::alg::basic_algebra::PyBasicAlgebra;
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 pub struct PyPermutationGroup {
     inner: PermutationGroup,
 }
