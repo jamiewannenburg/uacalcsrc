@@ -956,7 +956,7 @@ where
     // Compute thetaPrime = [theta,theta] using commutator2
     let theta_prime = {
         let con_lat = f2.get_inner_mut().con();
-        con_lat.commutator2(&theta, &theta)
+        con_lat.commutator2(&theta, &theta)?
     };
     
     // If thetaPrime relates 0 and 1, then d(x,y,z) = z is a difference term

@@ -7,11 +7,15 @@
 
 use std::collections::HashSet;
 use std::sync::Arc;
+use std::fmt::{Debug, Display};
+
 use uacalc::alg::conlat::CongruenceLattice;
 use uacalc::alg::{
     Algebra, BasicAlgebra, BigProductAlgebra, QuotientAlgebra, SmallAlgebra, SubProductAlgebra,
 };
 use uacalc::alg::conlat::Partition;
+use uacalc::alg::op::{Operation, OperationSymbol};
+use uacalc::resource::test_isolation_guard;
 use uacalc::alg::sublat::SubalgebraLattice;
 use uacalc::common::MemoryMonitor;
 use uacalc::element::{Element, SubProductElement};
@@ -71,12 +75,132 @@ fn con_coatoms_not_none() {
     );
 }
 
+#[derive(Clone)]
+struct BoomOp {
+    symbol: OperationSymbol,
+}
+
+impl BoomOp {
+    fn new() -> Self {
+        Self {
+            symbol: OperationSymbol::new("boom", 0, false),
+        }
+    }
+}
+
+impl Display for BoomOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "BoomOp")
+    }
+}
+
+impl Debug for BoomOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "BoomOp")
+    }
+}
+
+impl Operation for BoomOp {
+    fn arity(&self) -> i32 {
+        0
+    }
+
+    fn get_set_size(&self) -> i32 {
+        2
+    }
+
+    fn symbol(&self) -> &OperationSymbol {
+        &self.symbol
+    }
+
+    fn value_at(&self, args: &[i32]) -> Result<i32, String> {
+        self.int_value_at(args)
+    }
+
+    fn value_at_arrays(&self, _args: &[&[i32]]) -> Result<Vec<i32>, String> {
+        Err("boom".to_string())
+    }
+
+    fn int_value_at(&self, _args: &[i32]) -> Result<i32, String> {
+        Err("boom".to_string())
+    }
+
+    fn int_value_at_horner(&self, _arg: i32) -> Result<i32, String> {
+        Err("boom".to_string())
+    }
+
+    fn make_table(&mut self) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn get_table(&self) -> Option<&[i32]> {
+        None
+    }
+
+    fn get_table_force(&mut self, _make_table: bool) -> Result<&[i32], String> {
+        Err("boom".to_string())
+    }
+
+    fn is_table_based(&self) -> bool {
+        false
+    }
+
+    fn is_idempotent(&self) -> Result<bool, String> {
+        Ok(false)
+    }
+
+    fn is_associative(&self) -> Result<bool, String> {
+        Ok(false)
+    }
+
+    fn is_commutative(&self) -> Result<bool, String> {
+        Ok(false)
+    }
+
+    fn is_totally_symmetric(&self) -> Result<bool, String> {
+        Ok(false)
+    }
+
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(self.clone())
+    }
+
+    fn is_maltsev(&self) -> Result<bool, String> {
+        Ok(false)
+    }
+
+    fn is_total(&self) -> Result<bool, String> {
+        Ok(false)
+    }
+}
+
+fn boom_alg() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
+    let univ: HashSet<i32> = [0, 1].into_iter().collect();
+    let ops: Vec<Box<dyn Operation>> = vec![Box::new(BoomOp::new())];
+    Box::new(BasicAlgebra::new("BoomAlg".to_string(), univ, ops))
+}
+
 #[test]
-#[ignore = "Rust gap: commutator2 swallows internal Err and returns zero"]
 fn commutator2_does_not_swallow_errors() {
-    // When implemented, commutator2_matching_java errors must surface rather
-    // than silently returning the zero congruence.
-    panic!("commutator2 still swallows Err as zero");
+    let _guard = test_isolation_guard();
+    let mut con = CongruenceLattice::new(boom_alg());
+    let zero = con.zero();
+    let one = con.one();
+    let result = con.commutator2(&zero, &one);
+    match result {
+        Ok(part) => {
+            assert_ne!(
+                part.number_of_blocks(),
+                zero.number_of_blocks(),
+                "commutator2 must not silently return the zero congruence on failure"
+            );
+            panic!("commutator2 should return Err when make_int_operations fails");
+        }
+        Err(msg) => assert!(
+            msg.contains("boom"),
+            "error should propagate underlying failure, got: {msg}"
+        ),
+    }
 }
 
 #[test]
