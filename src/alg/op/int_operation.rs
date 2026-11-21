@@ -75,6 +75,45 @@ impl IntOperation {
             table: table.into(),
         })
     }
+
+    /// Like [`Self::new`] but allows table entries outside `[0, set_size)` (Java `makeCompositionOp`).
+    pub fn new_allowing_out_of_range(
+        symbol: OperationSymbol,
+        set_size: i32,
+        table: Vec<i32>,
+    ) -> Result<Self, String> {
+        if set_size <= 0 {
+            return Err("Set size must be positive".to_string());
+        }
+
+        let expected_size = if symbol.arity() == 0 {
+            1
+        } else {
+            (set_size as usize).pow(symbol.arity() as u32)
+        };
+
+        if table.len() != expected_size {
+            return Err(format!(
+                "Table size {} doesn't match expected size {} for arity {} and set size {}",
+                table.len(), expected_size, symbol.arity(), set_size
+            ));
+        }
+
+        for (i, &value) in table.iter().enumerate() {
+            if value < 0 {
+                return Err(format!(
+                    "Table value {} at index {} is negative",
+                    value, i
+                ));
+            }
+        }
+
+        Ok(IntOperation {
+            symbol,
+            set_size,
+            table: table.into(),
+        })
+    }
     
     /// Create a simple binary XOR operation for testing.
     /// 

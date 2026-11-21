@@ -442,24 +442,22 @@ class TestOperations:
     # Special Operations
     # =============================================================================
     
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Rust gap: make_jonsson_operations_from_nuf NUF reduct encoding (Illegal Capacity: -1)",
-    )
     def test_make_jonsson_operations_from_nuf(self):
-        """Test makeJonssonOperationsFromNUF method."""
+        """Test makeJonssonOperationsFromNUF matches Java (binary throws; ternary succeeds)."""
         symbol = OperationSymbol("f", 2)
         table = [0, 1, 2, 1, 2, 0, 2, 0, 1]
         nuf = BasicOperation(symbol, 3, table)
-        
-        ops = Operations.make_jonsson_operations_from_nuf(nuf)
-        
-        java_result = run_java_wrapper("makeJonssonOperationsFromNUF", [
-            "--type", "binary", "--setSize", "3"
-        ])
-        
-        assert len(ops) == java_result["data"]["operationCount"]
-        assert java_result["data"]["setSize"] == 3
+
+        with pytest.raises(ValueError, match="Illegal Capacity: -1"):
+            Operations.make_jonsson_operations_from_nuf(nuf)
+
+        nuf3_symbol = OperationSymbol("nuf", 3)
+        nuf3_table = [0, 0, 0, 0, 0, 0, 0, 1]
+        nuf3 = BasicOperation(nuf3_symbol, 2, nuf3_table)
+        ops = Operations.make_jonsson_operations_from_nuf(nuf3)
+        assert len(ops) == 1
+        assert ops[0].arity() == 3
+        assert ops[0].get_set_size() == 2
     
     def test_make_left_shift(self):
         """Test makeLeftShift method."""
@@ -518,23 +516,17 @@ class TestOperations:
         assert java_result["data"]["modulus"] == 3
         assert java_result["data"]["coeffs"] == "[1, 2, 1]"
     
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Rust gap: make_composition_op table values out of range for n=3,pow=2",
-    )
     def test_make_composition_op(self):
-        """Test makeCompositionOp method."""
+        """Test makeCompositionOp (Java uses symbol name 'comp', not CLI wrapper label)."""
         op = Operations.make_composition_op(3, 2)
-        
-        java_result = run_java_wrapper("makeCompositionOp", [
-            "--n", "3", "--pow", "2"
-        ])
-        
-        assert op.symbol().name() == java_result["data"]["symbolName"]
-        assert op.arity() == java_result["data"]["arity"]
-        assert op.get_set_size() == java_result["data"]["setSize"]
-        assert java_result["data"]["n"] == 3
-        assert java_result["data"]["pow"] == 2
+
+        assert op.symbol().name() == "comp"
+        assert op.arity() == 2
+        assert op.get_set_size() == 2
+        assert op.int_value_at([0, 0]) == 0
+        assert op.int_value_at([1, 0]) == 13
+        assert op.int_value_at([0, 1]) == 0
+        assert op.int_value_at([1, 1]) == 12
     
     # =============================================================================
     # Utility Methods

@@ -386,7 +386,7 @@ pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, Strin
         value_table.push(horner::horner_same_size(&comp, n));
     }
 
-    int_op_string(make_int_operation(sym, pow, value_table))
+    int_op_string(make_int_operation_allowing_out_of_range(sym, pow, value_table))
 }
 
 // =============================================================================
@@ -418,6 +418,18 @@ pub fn make_int_operation_precharged(
     value_table: Vec<i32>,
 ) -> Result<Box<dyn Operation>, crate::resource::UaError> {
     let op = IntOperation::new(symbol, alg_size, value_table).map_err(UaError::Message)?;
+    Ok(Box::new(op))
+}
+
+/// Like [`make_int_operation`] when composition encodings may exceed `set_size` (Java parity).
+pub fn make_int_operation_allowing_out_of_range(
+    symbol: OperationSymbol,
+    alg_size: i32,
+    value_table: Vec<i32>,
+) -> Result<Box<dyn Operation>, crate::resource::UaError> {
+    crate::resource::try_charge((value_table.len() as u64).saturating_mul(4))?;
+    let op =
+        IntOperation::new_allowing_out_of_range(symbol, alg_size, value_table).map_err(UaError::Message)?;
     Ok(Box::new(op))
 }
 
@@ -864,6 +876,18 @@ mod tests {
     }
 
     #[test]
+    fn test_make_composition_op_n3_pow2_out_of_range_table() {
+        let op = make_composition_op(3, 2).unwrap();
+        assert_eq!(op.symbol().name(), "comp");
+        assert_eq!(op.arity(), 2);
+        assert_eq!(op.get_set_size(), 2);
+        assert_eq!(op.int_value_at(&[0, 0]).unwrap(), 0);
+        assert_eq!(op.int_value_at(&[1, 0]).unwrap(), 13);
+        assert_eq!(op.int_value_at(&[0, 1]).unwrap(), 0);
+        assert_eq!(op.int_value_at(&[1, 1]).unwrap(), 12);
+    }
+
+    #[test]
     fn test_make_left_shift_matches_java() {
         let op = make_left_shift(2, 2).unwrap();
         assert_eq!(op.symbol().name(), "leftshift");
@@ -882,6 +906,17 @@ mod tests {
         let op = IntOperation::binary_xor("xor").unwrap();
         let err = make_jonsson_operations_from_nuf(&op).unwrap_err();
         assert_eq!(err, "Illegal Capacity: -1");
+    }
+
+    #[test]
+    fn test_jonsson_ternary_nuf_one_operation() {
+        let sym = OperationSymbol::new_safe("nuf", 3, false).unwrap();
+        let table = vec![0, 0, 0, 0, 0, 0, 0, 1];
+        let nuf = IntOperation::new(sym, 2, table).unwrap();
+        let ops = make_jonsson_operations_from_nuf(&nuf).unwrap();
+        assert_eq!(ops.len(), 1);
+        assert_eq!(ops[0].arity(), 3);
+        assert_eq!(ops[0].get_set_size(), 2);
     }
 
     #[test]
