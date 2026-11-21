@@ -1797,6 +1797,7 @@ impl PyOrderedSet {
     ///
     /// Returns:
     ///     LatticeGraphData: Graph data structure for visualization
+    #[pyo3(signature = (edge_labels=None))]
     fn to_graph_data(&self, edge_labels: Option<&Bound<'_, PyDict>>) -> PyResult<PyLatticeGraphData> {
         use uacalc::lat::ordered_set::Edge;
         use std::collections::HashMap;
@@ -1823,6 +1824,7 @@ impl PyOrderedSet {
     }
     
     /// Convert to NetworkX DiGraph if networkx is available
+    #[pyo3(signature = (edge_labels=None))]
     fn to_networkx(&self, py: Python, edge_labels: Option<&Bound<'_, PyDict>>) -> PyResult<Py<PyAny>> {
         let graph_data = self.to_graph_data(edge_labels)?;
         graph_data.to_networkx(py)
@@ -1866,6 +1868,7 @@ impl PyOrderedSet {
     /// Returns:
     ///     OrderedSet: An OrderedSet representing the lattice structure
     #[staticmethod]
+    #[pyo3(signature = (lattice, *, name=None))]
     fn from_lattice(lattice: &Bound<'_, PyAny>, name: Option<String>) -> PyResult<PyOrderedSet> {
         // Try to extract as BasicLattice
         if let Ok(basic_lat) = lattice.extract::<PyRef<'_, PyBasicLattice>>() {

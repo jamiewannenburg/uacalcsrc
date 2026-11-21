@@ -315,6 +315,7 @@ impl PyCongruenceLattice {
     ///
     /// Returns:
     ///     BasicLattice: The BasicLattice view, or None if creation fails
+    #[pyo3(signature = (make_if_null=None))]
     fn get_basic_lattice(&mut self, make_if_null: Option<bool>) -> PyResult<Option<crate::lat::PyBasicLattice>> {
         use uacalc::lat::Lattice;
         use crate::lat::PyBasicLattice;

@@ -78,6 +78,7 @@ impl PyOperationSymbol {
     ///
     /// Returns:
     ///     str: String representation of the operation symbol
+    #[pyo3(signature = (show_arity=None))]
     fn to_string_with_arity(&self, show_arity: Option<bool>) -> String {
         self.inner.to_string_with_arity(show_arity.unwrap_or(false))
     }

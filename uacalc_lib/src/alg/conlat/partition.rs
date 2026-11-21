@@ -363,6 +363,7 @@ impl PyPartition {
     ///   max_len (int, optional): The max length, or -1
     /// Returns:
     ///   str: String rep
+    #[pyo3(signature = (print_type, *, max_len=None))]
     fn to_string_with_type(&self, print_type: &crate::alg::conlat::print_type::PyPrintType, max_len: Option<i32>) -> String {
         self.inner.to_string_with_type(print_type.inner, max_len.unwrap_or(-1))
     }

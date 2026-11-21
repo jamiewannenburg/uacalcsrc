@@ -196,6 +196,7 @@ impl PyCloser {
             .map(|ia| PyIntArray { inner: ia.clone() })
     }
 
+    #[pyo3(signature = (element=None))]
     fn set_element_to_find(&mut self, element: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match element {
             None => self.inner.set_element_to_find(None),
@@ -318,6 +319,7 @@ impl PyCloser {
         Ok(Some(dict.into()))
     }
 
+    #[pyo3(signature = (homomorphism=None))]
     fn set_homomorphism(&mut self, homomorphism: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match homomorphism {
             None => {
@@ -356,6 +358,7 @@ impl PyCloser {
         )?))
     }
 
+    #[pyo3(signature = (alg=None))]
     fn set_image_algebra(&mut self, alg: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match alg {
             None => {
@@ -392,6 +395,7 @@ impl PyCloser {
         Ok(Some(dict.into()))
     }
 
+    #[pyo3(signature = (alg=None))]
     fn set_root_algebra(&mut self, alg: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match alg {
             None => self.inner.set_root_algebra(None),
@@ -403,6 +407,7 @@ impl PyCloser {
         Ok(())
     }
 
+    #[pyo3(signature = (operations=None))]
     fn set_operations(&mut self, operations: Option<&Bound<'_, PyAny>>) -> PyResult<()> {
         match operations {
             None => {
