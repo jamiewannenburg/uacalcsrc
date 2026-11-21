@@ -1293,8 +1293,26 @@ impl PyBasicLattice {
     }
 
     /// Meet-irreducible elements.
+    ///
+    /// Returns:
+    ///     For BasicLattice<Partition>: List[Partition] - List of meet irreducible elements
+    ///     For BasicLattice<i32>: List[int] - List of meet irreducible elements
     fn meet_irreducibles(&self, py: Python) -> PyResult<PyObject> {
         match &self.inner {
+            BasicLatticeInner::Partition(inner) => {
+                let mut inner = inner.lock().unwrap();
+                let mis: &[std::sync::Arc<uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition>>] =
+                    uacalc::lat::BasicLattice::meet_irreducibles(&mut *inner);
+                let mut py_objects = Vec::new();
+                for po_elem_arc in mis {
+                    let po_elem: &uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition> =
+                        po_elem_arc.deref();
+                    let part = po_elem.get_underlying_object();
+                    let py_partition = crate::alg::conlat::partition::PyPartition { inner: part.clone() };
+                    py_objects.push(py_partition.into_py(py));
+                }
+                Ok(py_objects.into_py(py))
+            }
             BasicLatticeInner::Int32(inner) => {
                 let mut inner = inner.lock().unwrap();
                 let mis: &[std::sync::Arc<uacalc::lat::ordered_set::POElem<i32>>] =
@@ -1302,7 +1320,9 @@ impl PyBasicLattice {
                 let result: Vec<i32> = mis.iter().map(|e| *e.get_underlying_object()).collect();
                 Ok(result.into_py(py))
             }
-            _ => Err(PyValueError::new_err("meet_irreducibles() is only available for BasicLattice<i32>")),
+            _ => Err(PyValueError::new_err(
+                "meet_irreducibles() is only available for BasicLattice<Partition> or BasicLattice<i32>",
+            )),
         }
     }
 
