@@ -89,7 +89,7 @@ def run_java_dump(algebra_path: Path) -> tuple[set[tuple[tuple[int, ...], ...]],
 
 def load_n5_algebra():
     if not N5_PATH.is_file():
-        pytest.skip(f"{N5_PATH} not found")
+        pytest.skip(f"Environment: {N5_PATH} not found")
     reader = AlgebraReader.new_from_file(str(N5_PATH))
     return reader.read_algebra_file()
 
