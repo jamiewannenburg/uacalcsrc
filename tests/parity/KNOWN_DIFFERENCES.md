@@ -334,6 +334,29 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 - **Tests**: `small_get_element_null`
 - **Owner vs shim**: Shim — argument coercion. Not a library defect.
 
+### org.uacalc.alg.UnaryTermsMonoid.elementIndex
+
+- **Java behavior**: stub `return 0` for every argument
+- **Python behavior**: index of that term in `getUniverseList()`
+- **Status**: Accepted (Known Java bug)
+- **Tests**: `test_unary_terms_monoid_element_index_java_stub`
+
+### org.uacalc.alg.op.Operations.makeCompositionOp
+
+- **Java behavior**: accepts `pow != n^n` (for example `(3, 2)`) and
+  `intValueAt` then returns codes outside `0..pow`. `makeTable` is an
+  unfinished stub: `valueTable` is never allocated, the first write throws
+  `NullPointerException`, `getTable()` stays null, and the write index uses
+  Horner base 2. That stub is never invoked by the operations wrapper.
+- **Rust/Python behavior**: `pow != n^n` is rejected (`ValueError` in Python).
+  Valid calls compute `intValueAt` on demand (no eager `pow^2` table). A table
+  is built only for `n <= 4`, or when a memory limit is set and the bytes fit.
+- **Status**: Documented. Java accepts invalid input; Rust and Python reject
+  it. No Known Java bug label and no xfail: the stub table is not a returned
+  result.
+- **Tests**: `test_make_composition_op` rejects `(3, 2)` and compares
+  `intValueAt` / `valueAt` for `(2, 4)` and a sample of `(3, 27)`.
+
 ---
 
 ## org.uacalc.alg (Subalgebra / products / quotients)

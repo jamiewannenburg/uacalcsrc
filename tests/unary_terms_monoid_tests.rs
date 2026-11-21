@@ -111,8 +111,12 @@ mod unary_terms_monoid_tests {
     fn test_unary_terms_monoid_element_index() {
         let alg = create_test_algebra();
         let monoid = UnaryTermsMonoid::new_safe(alg).unwrap();
-        
-        // Get an element and find its index
+
+        for (i, term) in monoid.unary_term_list.iter().enumerate() {
+            assert_eq!(monoid.element_index_term(term.as_ref()), Some(i));
+        }
+
+        // IntArray coordinates still round-trip
         if let Some(elem) = monoid.get_element(0) {
             let idx = monoid.element_index(&elem);
             assert_eq!(idx, Some(0));

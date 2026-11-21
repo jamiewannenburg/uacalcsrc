@@ -205,8 +205,11 @@ impl PyCongruenceLattice {
         PyPartition { inner: self.inner.delta(&alpha.inner, &beta.inner) }
     }
 
-    fn commutator2(&mut self, alpha: &PyPartition, beta: &PyPartition) -> PyPartition {
-        PyPartition { inner: self.inner.commutator2(&alpha.inner, &beta.inner) }
+    fn commutator2(&mut self, alpha: &PyPartition, beta: &PyPartition) -> PyResult<PyPartition> {
+        match self.inner.commutator2(&alpha.inner, &beta.inner) {
+            Ok(part) => Ok(PyPartition { inner: part }),
+            Err(e) => Err(PyRuntimeError::new_err(e)),
+        }
     }
 
     fn centralizes(&self, s: &PyBasicBinaryRelation, t: &PyBasicBinaryRelation, delta: &PyPartition) -> bool {
@@ -756,8 +759,11 @@ impl PyCongruenceLatticeIntArray {
         PyPartition { inner: self.inner.delta(&alpha.inner, &beta.inner) }
     }
 
-    fn commutator2(&mut self, alpha: &PyPartition, beta: &PyPartition) -> PyPartition {
-        PyPartition { inner: self.inner.commutator2(&alpha.inner, &beta.inner) }
+    fn commutator2(&mut self, alpha: &PyPartition, beta: &PyPartition) -> PyResult<PyPartition> {
+        match self.inner.commutator2(&alpha.inner, &beta.inner) {
+            Ok(part) => Ok(PyPartition { inner: part }),
+            Err(e) => Err(PyRuntimeError::new_err(e)),
+        }
     }
 
     fn centralizes(&self, s: &PyBasicBinaryRelation, t: &PyBasicBinaryRelation, delta: &PyPartition) -> bool {

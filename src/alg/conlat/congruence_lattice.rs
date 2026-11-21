@@ -1931,11 +1931,12 @@ where
     /// `B = congruenceAsAlgebra(A, beta)`, `Delta = Delta(beta, alpha)`,
     /// then the join of `Cg(x, y)` for every pair `(x, y)` in a Delta-block
     /// of some diagonal `(a, a)`.
-    pub fn commutator2(&mut self, alpha: &Partition, beta: &Partition) -> Partition {
-        match self.commutator2_matching_java(alpha, beta) {
-            Ok(part) => part,
-            Err(_) => self.zero(),
-        }
+    pub fn commutator2(
+        &mut self,
+        alpha: &Partition,
+        beta: &Partition,
+    ) -> Result<Partition, String> {
+        self.commutator2_matching_java(alpha, beta)
     }
 
     fn commutator2_matching_java(
@@ -1948,7 +1949,7 @@ where
         let snapshot = BasicAlgebra::new(self.alg.name().to_string(), universe, ops);
         let alg_box = Box::new(snapshot) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         let b_alg = Subalgebra::<i32>::congruence_as_algebra(alg_box, beta)?;
-        let delta = self.delta(beta, alpha);
+        let delta = self.delta_matching_java(beta, alpha)?;
         let blocks = delta.get_blocks();
         let n = self.alg_size as i32;
         let mut ans = self.zero();

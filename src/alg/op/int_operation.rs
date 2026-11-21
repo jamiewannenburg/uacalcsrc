@@ -75,7 +75,7 @@ impl IntOperation {
             table: table.into(),
         })
     }
-    
+
     /// Create a simple binary XOR operation for testing.
     /// 
     /// # Arguments

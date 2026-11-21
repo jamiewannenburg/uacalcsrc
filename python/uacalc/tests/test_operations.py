@@ -32,6 +32,60 @@ except ImportError as _exc:
     guard_import_skip("uacalc_lib", _exc)
 
 
+def _horner_same_size(values, size):
+    ans = 0
+    for digit in reversed(values):
+        ans = size * ans + digit
+    return ans
+
+
+def _assert_composition_matches_java(n, pow, pairs):
+    """pairs is None for every argument pair, else a list of 'i,j' strings."""
+    from test_utils import build_java_command
+
+    cmd = build_java_command("DumpComposition", [str(n), str(pow)] + (["ALL"] if pairs is None else pairs))
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, cwd=project_root)
+    if result.returncode != 0:
+        pytest.fail(f"DumpComposition failed:\n{result.stderr}\n{result.stdout}")
+
+    ints = {}
+    vals = {}
+    get_table = None
+    make_table = None
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        if not parts:
+            continue
+        if parts[0] == "GET_TABLE":
+            get_table = parts[1]
+            continue
+        if parts[0] == "MAKE_TABLE":
+            make_table = parts[1]
+            continue
+        if parts[0] == "INT" and len(parts) == 4:
+            ints[(int(parts[1]), int(parts[2]))] = int(parts[3])
+        elif parts[0] == "VAL" and len(parts) == 4:
+            vals[(int(parts[1]), int(parts[2]))] = [int(x) for x in parts[3].split(",") if x != ""]
+
+    assert get_table == "null"
+    assert make_table == "java.lang.NullPointerException"
+    assert ints, "DumpComposition produced no intValueAt rows"
+
+    op = Operations.make_composition_op(n, pow)
+    assert op.symbol().name() == "comp"
+    assert op.arity() == 2
+    assert op.get_set_size() == pow
+    table = op.get_table()
+    assert table is not None and len(table) == pow * pow
+
+    for (i, j), java_int in ints.items():
+        image = vals[(i, j)]
+        assert _horner_same_size(image, n) == java_int
+        assert op.int_value_at([i, j]) == java_int
+        assert op.value_at([i, j]) == java_int
+        assert table[i + pow * j] == java_int
+
+
 def run_java_wrapper(command, args):
     """Run Java wrapper and return JSON output."""
     from test_utils import build_java_command
@@ -442,24 +496,22 @@ class TestOperations:
     # Special Operations
     # =============================================================================
     
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Rust gap: make_jonsson_operations_from_nuf NUF reduct encoding (Illegal Capacity: -1)",
-    )
     def test_make_jonsson_operations_from_nuf(self):
-        """Test makeJonssonOperationsFromNUF method."""
+        """Test makeJonssonOperationsFromNUF matches Java (binary throws; ternary succeeds)."""
         symbol = OperationSymbol("f", 2)
         table = [0, 1, 2, 1, 2, 0, 2, 0, 1]
         nuf = BasicOperation(symbol, 3, table)
-        
-        ops = Operations.make_jonsson_operations_from_nuf(nuf)
-        
-        java_result = run_java_wrapper("makeJonssonOperationsFromNUF", [
-            "--type", "binary", "--setSize", "3"
-        ])
-        
-        assert len(ops) == java_result["data"]["operationCount"]
-        assert java_result["data"]["setSize"] == 3
+
+        with pytest.raises(ValueError, match="Illegal Capacity: -1"):
+            Operations.make_jonsson_operations_from_nuf(nuf)
+
+        nuf3_symbol = OperationSymbol("nuf", 3)
+        nuf3_table = [0, 0, 0, 0, 0, 0, 0, 1]
+        nuf3 = BasicOperation(nuf3_symbol, 2, nuf3_table)
+        ops = Operations.make_jonsson_operations_from_nuf(nuf3)
+        assert len(ops) == 1
+        assert ops[0].arity() == 3
+        assert ops[0].get_set_size() == 2
     
     def test_make_left_shift(self):
         """Test makeLeftShift method."""
@@ -518,23 +570,14 @@ class TestOperations:
         assert java_result["data"]["modulus"] == 3
         assert java_result["data"]["coeffs"] == "[1, 2, 1]"
     
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Rust gap: make_composition_op table values out of range for n=3,pow=2",
-    )
     def test_make_composition_op(self):
-        """Test makeCompositionOp method."""
-        op = Operations.make_composition_op(3, 2)
-        
-        java_result = run_java_wrapper("makeCompositionOp", [
-            "--n", "3", "--pow", "2"
-        ])
-        
-        assert op.symbol().name() == java_result["data"]["symbolName"]
-        assert op.arity() == java_result["data"]["arity"]
-        assert op.get_set_size() == java_result["data"]["setSize"]
-        assert java_result["data"]["n"] == 3
-        assert java_result["data"]["pow"] == 2
+        """makeCompositionOp(n, pow) requires pow == n^n and matches Java intValueAt/valueAt."""
+        with pytest.raises(ValueError, match=r"pow must be n\^n"):
+            Operations.make_composition_op(3, 2)
+
+        _assert_composition_matches_java(2, 4, None)
+        sample = ["0,0", "1,0", "0,1", "3,1", "2,2", "26,0", "0,26", "5,13", "13,5", "26,26", "1,3", "21,21"]
+        _assert_composition_matches_java(3, 27, sample)
     
     # =============================================================================
     # Utility Methods

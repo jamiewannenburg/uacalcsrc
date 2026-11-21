@@ -582,11 +582,19 @@ impl PyOperations {
     #[staticmethod]
     fn make_composition_op(n: i32, pow: i32) -> PyResult<PyIntOperation> {
         match uacalc::alg::op::ops::make_composition_op(n, pow) {
-            Ok(op) => {
+            Ok(mut op) => {
+                // n <= 4 fills the table (Java's makeTable bound). Larger n stays
+                // computed in Rust; this binding only returns an int table.
+                op.make_table().map_err(PyValueError::new_err)?;
+                let table = op.get_table().map(|t| t.to_vec()).ok_or_else(|| {
+                    PyValueError::new_err(
+                        "composition is computed on demand; a value table is materialized only for n <= 4",
+                    )
+                })?;
                 let sym = op.symbol().clone();
                 let set_size = op.get_set_size();
-                let table = op.get_table().unwrap().to_vec();
-                let inner = uacalc::alg::op::IntOperation::new(sym, set_size, table).map_err(PyValueError::new_err)?;
+                let inner = uacalc::alg::op::IntOperation::new(sym, set_size, table)
+                    .map_err(PyValueError::new_err)?;
                 Ok(PyIntOperation { inner })
             },
             Err(e) => Err(PyValueError::new_err(e)),

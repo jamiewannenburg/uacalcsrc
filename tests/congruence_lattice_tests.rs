@@ -375,7 +375,7 @@ fn test_commutator2_zero_one() {
     // Java: commutator2(zero, one) joins only diagonal Cg(i,i), so stays zero.
     let zero = con_lat.zero();
     let one = con_lat.one();
-    let commutator = con_lat.commutator2(&zero, &one);
+    let commutator = con_lat.commutator2(&zero, &one).expect("commutator2");
     
     assert_eq!(commutator.number_of_blocks(), 3);
 }

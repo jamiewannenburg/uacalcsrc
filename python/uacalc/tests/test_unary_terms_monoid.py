@@ -148,10 +148,6 @@ class TestUnaryTermsMonoid:
         monoid.set_name(new_name)
         assert monoid.name() == new_name
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Rust gap: UnaryTermsMonoid.get_universe_list yields term objects; element_index expects IntArray",
-    )
     def test_unary_terms_monoid_universe(self, test_config, base_algebra):
         """Test UnaryTermsMonoid universe operations."""
         # Access the classes through the module
@@ -171,17 +167,25 @@ class TestUnaryTermsMonoid:
             element = monoid.get_element(0)
             assert element is not None
         
-        # Test element_index
-        if len(universe_list) > 0:
-            first_element = universe_list[0]
-            if hasattr(first_element, "to_array"):
-                index = monoid.element_index(first_element.to_array())
-            elif hasattr(first_element, "get_array"):
-                index = monoid.element_index(first_element.get_array())
-            else:
-                index = monoid.element_index(first_element)
+        for i, term in enumerate(universe_list):
+            index = monoid.element_index(term)
             assert index is not None
-            assert index == 0
+            assert index == i
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="Known Java bug: UnaryTermsMonoid.elementIndex always returns 0",
+    )
+    def test_unary_terms_monoid_element_index_java_stub(self, base_algebra):
+        """Java elementIndex is a stub that always returns 0."""
+        alg_module = uacalc_lib.alg
+        UnaryTermsMonoid = getattr(alg_module, 'UnaryTermsMonoid')
+        monoid = UnaryTermsMonoid(base_algebra)
+        universe_list = monoid.get_universe_list()
+        assert monoid.cardinality() > 1
+        assert len(universe_list) > 1
+        # Java stub behavior (wrong): every term maps to index 0
+        assert monoid.element_index(universe_list[1]) == 0
 
     def test_unary_terms_monoid_java_comparison(self, test_config):
         """Test UnaryTermsMonoid against Java implementation using a test algebra file."""
