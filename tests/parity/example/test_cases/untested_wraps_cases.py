@@ -48,18 +48,20 @@ _LIST = dict(skip_string_check=True, notes="Java List toString vs Python list.")
 _NONE = dict(skip_string_check=True, notes="Java null vs Python None.")
 
 _REDUCT_XFAIL = (
-    "Type1.reductAlg builds a size-8 matrix-power reduct and looks up terms by IntArray identity"
+    "Rust gap: Type1.reductAlg builds a size-8 matrix-power reduct and looks up "
+    "terms by IntArray identity"
 )
 _HASKARY_XFAIL = (
-    "HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close; "
-    "GUI/IO-environment-bound"
+    "Environment: HasKaryNU.hasNUHorowitz uses ProgressReport and a large "
+    "BigProduct close (heavy / GUI-adjacent)"
 )
 _PARALLEL8_XFAIL = (
-    "Incomplete Java 8 stream closer; constructor is not a portable API"
+    "Known Java bug: Incomplete Java 8 stream ParallelClose8; constructor is not "
+    "a portable API"
 )
 _CONWAY_XFAIL = (
-    "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the "
-    "classpath; the UACalc jar does not ship that resource, so Java returns null."
+    "Environment: FiniteField.conwayPolynomial loads CPimport-3500.txt from the "
+    "classpath; the UACalc jar does not ship that resource, so Java returns null"
 )
 
 

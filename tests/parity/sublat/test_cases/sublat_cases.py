@@ -43,7 +43,8 @@ _ALG = dict(skip_string_check=True, notes="Java Algebra toString is Class@hex; v
 _SET = dict(skip_string_check=True, notes="BasicSet identity toString vs Python; elements compared.")
 
 _DIAGRAM_XFAIL = (
-    "getDiagram() returns a latdraw Diagram; Swing/latdraw GUI is out of scope."
+    "Environment: getDiagram() returns a latdraw Diagram; Swing/latdraw GUI is "
+    "out of scope."
 )
 _UNION_INDEX_XFAIL = (
     "Known Java bug: BasicSet.union uses lst.contains(i) on the loop index, not "

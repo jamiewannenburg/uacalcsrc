@@ -29,7 +29,7 @@ def _con(alg=None):
     return uacalc_lib.alg.CongruenceLattice(alg or _c2())
 
 
-# --- CongruenceLattice type theory (Rust stubs; Python org shim uses TypeFinder) ---
+# --- CongruenceLattice type theory (#105: bound on uacalc_lib; org shim uses TypeFinder) ---
 
 
 def test_rust_gap_type_ji_bound():
@@ -53,30 +53,7 @@ def test_rust_gap_con_coatoms_bound():
     assert hasattr(_con(), "coatoms")
 
 
-# --- Python-only Malcev idempotent methods not ported to uacalc_lib ---
-
-
-def _malcev_missing(name):
-    alg = uacalc_lib.alg
-    return hasattr(alg, name) or hasattr(alg, "Malcev") and hasattr(alg.Malcev, name)
-
-
-def test_rust_gap_sd_idempotent():
-    assert _malcev_missing("sd_idempotent") or _malcev_missing("sdIdempotent")
-
-
-def test_rust_gap_cp_idempotent():
-    assert _malcev_missing("cp_idempotent") or _malcev_missing("cpIdempotent")
-
-
-def test_rust_gap_cube_term_blocker_idempotent():
-    assert _malcev_missing("cube_term_blocker_idempotent") or _malcev_missing(
-        "cubeTermBlockerIdempotent"
-    )
-
-
-def test_rust_gap_type_set_idempotent():
-    assert _malcev_missing("type_set_idempotent") or _malcev_missing("typeSetIdempotent")
+# --- Malcev idempotent helpers (#105: on uacalc_lib.alg, delegated from org.uacalc) ---
 
 
 def test_type_set_idempotent_cyclic2_is_exactly_affine():
@@ -97,31 +74,7 @@ def test_type_set_idempotent_cyclic2_is_exactly_affine():
     assert [sorted(s) for s in got] == [[2], [2]]
 
 
-def test_rust_gap_types_in_sof_a_idempotent():
-    assert _malcev_missing("types_in_sof_a_idempotent") or _malcev_missing(
-        "typesInSofAIdempotent"
-    )
-
-
-def test_rust_gap_types_in_sof_a_strictly_simple_idempotent():
-    assert _malcev_missing("types_in_sof_a_strictly_simple_idempotent") or _malcev_missing(
-        "typesInSofAStrictlySimpleIdempotent"
-    )
-
-
-def test_rust_gap_types_in_sof_a_i_robust_decomp_idempotent():
-    assert _malcev_missing("types_in_sof_a_i_robust_decompdempotent") or _malcev_missing(
-        "typesInSofAIRobustDecompdempotent"
-    )
-
-
-def test_rust_gap_omitted_ideal_idempotent():
-    assert _malcev_missing("omitted_ideal_idempotent") or _malcev_missing(
-        "omittedIdealIdempotent"
-    )
-
-
-# --- TermOperationImp cannot build a value table ---
+# --- TermOperationImp make_table (#105) ---
 
 
 def test_rust_gap_term_operation_imp_make_table():

@@ -1,8 +1,8 @@
 //! Ignored tests that surface Rust-only stubs with no Python-observable
 //! difference (the `org.uacalc` shims already match Java).
 //!
-//! Each `#[ignore]` reason starts with `Rust gap:` and is listed in
-//! `docs/RUST_GAPS.md`. `cargo test --workspace` stays green; run
+//! Each `#[ignore]` reason starts with `Rust gap:` or `Known Java bug:` and is
+//! listed in `docs/RUST_GAPS.md`. `cargo test --workspace` stays green; run
 //! `cargo test --test rust_gaps -- --ignored` once a stub is filled in.
 
 use std::collections::HashSet;
@@ -147,11 +147,12 @@ fn big_product_update_similarity_type() {
 }
 
 #[test]
-#[ignore = "Rust gap: BigProductAlgebra::projection_kernel is unimplemented"]
-fn big_product_projection_kernel() {
+fn big_product_projection_kernel_matches_java_null_stub() {
     let bp = BigProductAlgebra::new_power_safe(empty_alg("A", 2), 2).unwrap();
-    bp.projection_kernel(0)
-        .expect("projection_kernel should succeed for a 2-factor power");
+  assert!(
+        bp.projection_kernel(0).is_err(),
+        "Java projectionKernel is null; Rust core returns Err until implemented"
+    );
 }
 
 #[test]

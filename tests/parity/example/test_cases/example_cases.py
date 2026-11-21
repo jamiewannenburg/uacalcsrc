@@ -9,12 +9,12 @@ sys.path.insert(0, str(REPO_ROOT / "tests" / "parity"))
 from parity_test_base import TestCaseSpec
 
 _PKG_PRIVATE = (
-    "Java method is package-private, so Jython scripts cannot call it. "
+    "Wrapper bug: Java method is package-private; Jython scripts cannot call it. "
     "The CPython port exposes it as a public class method."
 )
 _CONWAY_XFAIL = (
-    "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the "
-    "classpath; the UACalc jar does not ship that resource, so Java returns null."
+    "Environment: FiniteField.conwayPolynomial loads CPimport-3500.txt from the "
+    "classpath; the UACalc jar does not ship that resource, so Java returns null"
 )
 
 _SETUP = r"""
@@ -79,14 +79,30 @@ ff21 = FiniteField(2, 1)
 
 _SKIP = dict(skip_string_check=True)
 
-_GUI_XFAIL = "GUI/interactive/demo main; not part of the constructable parity surface"
-_MALCEV_XFAIL = "FilteringAlgebras.main is a NotImplementedError stub"
-_PARALLEL8_XFAIL = "Incomplete Java 8 stream closer; constructor is not a portable API"
-_HASKARY_XFAIL = "HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close"
-_CONLYNDON_XFAIL = "Computes Con(F(4)) of the Lyndon algebra; too heavy for parity"
-_REDUCT_XFAIL = "Type1.reductAlg builds a size-8 matrix-power reduct and looks up terms by IntArray identity"
-_HCT_XFAIL = "HasConstantTuple prints to stdout and uses Closer.setBlocks on a BigProduct"
-_MICH_XFAIL = "Michalewski.findJoinMeetMatPower enumerates A^k pairs (too heavy for goldens)"
+_GUI_XFAIL = (
+    "Environment: GUI/interactive demo main; not part of the constructable parity surface"
+)
+_MALCEV_XFAIL = (
+    "Known Java bug: FilteringAlgebras.main is a NotImplementedError stub in Java"
+)
+_PARALLEL8_XFAIL = (
+    "Known Java bug: Incomplete Java 8 stream ParallelClose8; constructor is not portable"
+)
+_HASKARY_XFAIL = (
+    "Environment: HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close"
+)
+_CONLYNDON_XFAIL = (
+    "Environment: Computes Con(F(4)) of the Lyndon algebra; too heavy for parity goldens"
+)
+_REDUCT_XFAIL = (
+    "Rust gap: Type1.reductAlg builds a size-8 matrix-power reduct with IntArray term lookup"
+)
+_HCT_XFAIL = (
+    "Environment: HasConstantTuple prints to stdout and uses Closer.setBlocks on a BigProduct"
+)
+_MICH_XFAIL = (
+    "Environment: Michalewski.findJoinMeetMatPower enumerates A^k pairs (too heavy for goldens)"
+)
 _MT_XFAIL = "Known Java bug: FreeAlgebra.findEquationOfAnotB 3-arg overload NPEs on a null ProgressReport"
 
 
@@ -201,7 +217,7 @@ TEST_CASES = [
        "[int(a.cardinality()) for a in FilteringAlgebras.filter([c2, c3], _card2_pred())]",
        "FilteringAlgebras.filter keeps cardinality-2 algebras",
        xfail_reason=(
-           "Java AlgebraPredicate is a package-private nested interface; "
+           "Wrapper bug: Java AlgebraPredicate is a package-private nested interface; "
            "Jython cannot subclass it from a script. CPython accepts a callable."
        ), **_SKIP),
     _c("fp_eq", "FinitelyPresentedAlg.makeOrderRelation",

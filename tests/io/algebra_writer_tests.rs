@@ -278,9 +278,8 @@ mod comparison_tests {
         let _ = fs::remove_file("test_basic_output.xml");
     }
     
-    // skip
     #[test]
-    #[ignore]
+    #[ignore = "Environment: optional live Java AlgebraWriter comparison (manual)"]
     fn test_write_algebra_test_comparison() {
         let config = TestConfig::default();
         

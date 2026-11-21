@@ -33,7 +33,10 @@ def test_bare_e_int_eval_needs_binding(b2):
 
 
 @pytest.mark.xfail(
-    reason="Java Terms.stringToTerm rejects every nullary op() with IAE empty string; Rust accepts e().",
+    reason=(
+        "Known Java bug: Terms.stringToTerm rejects every nullary op() with "
+        "IAE empty string; Rust accepts e()."
+    ),
     strict=True,
 )
 def test_e_call_parses_like_java():

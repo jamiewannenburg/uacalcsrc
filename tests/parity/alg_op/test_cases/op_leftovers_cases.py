@@ -322,7 +322,10 @@ TEST_CASES = [
         setup=_SETUP,
         call="OperationWithDefaultValue(OperationSymbol('r', 2), 4, -2).getRandomValueTable()",
         description="defaultValue==-2 random table is not deterministic",
-        xfail_reason="Java RandomGenerator (UI) vs Python random; defaultValue==-2 tables are not comparable",
+        xfail_reason=(
+            "Environment: Java RandomGenerator (UI) vs Python random; "
+            "defaultValue==-2 tables are not comparable"
+        ),
         **_LIST
     ),
 ]
