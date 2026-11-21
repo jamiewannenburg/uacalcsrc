@@ -121,6 +121,13 @@ impl DiamondLattice {
     pub fn size(&self) -> usize {
         self.elements.len()
     }
+
+    /// Create a diamond lattice with a custom similarity type (for testing).
+    pub fn with_operation_symbols(operation_symbols: Vec<OperationSymbol>) -> Self {
+        let mut lattice = Self::new();
+        lattice.similarity_type = SimilarityType::new(operation_symbols);
+        lattice
+    }
 }
 
 impl Algebra for DiamondLattice {
@@ -184,9 +191,8 @@ impl Algebra for DiamondLattice {
         // Already set in constructor
     }
     
-    fn is_similar_to(&self, _other: &dyn Algebra<UniverseItem = usize>) -> bool {
-        // Simplified implementation
-        true
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = usize>) -> bool {
+        self.similarity_type() == other.similarity_type()
     }
     
     fn make_operation_tables(&mut self) {
@@ -347,6 +353,13 @@ impl BooleanLattice {
     pub fn size(&self) -> usize {
         self.elements.len()
     }
+
+    /// Create a boolean lattice with a custom similarity type (for testing).
+    pub fn with_operation_symbols(operation_symbols: Vec<OperationSymbol>) -> Self {
+        let mut lattice = Self::new();
+        lattice.similarity_type = SimilarityType::new(operation_symbols);
+        lattice
+    }
 }
 
 impl Algebra for BooleanLattice {
@@ -410,9 +423,8 @@ impl Algebra for BooleanLattice {
         // Already set in constructor
     }
     
-    fn is_similar_to(&self, _other: &dyn Algebra<UniverseItem = usize>) -> bool {
-        // Simplified implementation
-        true
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = usize>) -> bool {
+        self.similarity_type() == other.similarity_type()
     }
     
     fn make_operation_tables(&mut self) {

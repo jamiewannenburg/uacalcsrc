@@ -15,6 +15,8 @@ use uacalc::alg::conlat::Partition;
 use uacalc::alg::sublat::SubalgebraLattice;
 use uacalc::common::MemoryMonitor;
 use uacalc::element::{Element, SubProductElement};
+use uacalc::alg::op::OperationSymbol;
+use uacalc::lat::small_lattice::{BooleanLattice, DiamondLattice};
 use uacalc::lat::Lattice;
 use uacalc::util::int_array::IntArray;
 
@@ -156,11 +158,17 @@ fn big_product_projection_kernel_matches_java_null_stub() {
 }
 
 #[test]
-#[ignore = "Rust gap: DiamondLattice (SmallLattice example) is_similar_to always returns true"]
 fn diamond_lattice_is_similar_to_checks_type() {
-    // src/lat/small_lattice.rs DiamondLattice/BooleanLattice always return true.
-    // When implemented, compare against a non-lattice Algebra<usize>.
-    panic!("is_similar_to still always true");
+    let diamond = DiamondLattice::new();
+    let boolean = BooleanLattice::new();
+    assert!(diamond.is_similar_to(&diamond));
+    assert!(diamond.is_similar_to(&boolean));
+
+    let unary_only = DiamondLattice::with_operation_symbols(vec![OperationSymbol::new(
+        "neg", 1, false,
+    )]);
+    assert!(!diamond.is_similar_to(&unary_only));
+    assert!(!boolean.is_similar_to(&unary_only));
 }
 
 #[test]
