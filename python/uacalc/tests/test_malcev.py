@@ -62,6 +62,23 @@ def find_all_algebras():
     return sorted(algebras)
 
 
+def is_algebra_list_file(algebra_path: str) -> bool:
+    """True when the .ua file encodes multiple algebras in one list document.
+
+    Java's list reader keeps only the last algebra (see tests/parity/KNOWN_DIFFERENCES.md).
+    Skip these in per-file Java/Python Malcev comparisons so both sides use the same algebra.
+    """
+    name = os.path.basename(algebra_path)
+    if name.endswith("_list.ua"):
+        return True
+    try:
+        with open(algebra_path, encoding="utf-8") as fh:
+            text = fh.read()
+    except OSError:
+        return False
+    return text.count("<basicAlgebra>") > 1
+
+
 class TestMalcevPython(unittest.TestCase):
     """Test Malcev functions through Python bindings."""
     
@@ -1542,7 +1559,15 @@ class TestMalcevAllAlgebras(unittest.TestCase):
         for algebra_path in algebras:
             algebra_name = os.path.basename(algebra_path)
             print(f"\nTesting algebra: {algebra_path}")
-            
+
+            if is_algebra_list_file(algebra_path):
+                print(
+                    f"  ⏩ {algebra_name}: multi-algebra list file "
+                    "(Java list reader keeps last algebra only; see KNOWN_DIFFERENCES.md), skipping"
+                )
+                results["skipped"] += 1
+                continue
+
             try:
                 # Load algebra
                 AlgebraReader = uacalc_lib.io.AlgebraReader
