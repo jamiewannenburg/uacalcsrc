@@ -12,14 +12,21 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
+_TOOLS = _REPO_ROOT / "tools"
+if str(_TOOLS) not in sys.path:
+    sys.path.insert(0, str(_TOOLS))
+from strict_testing import pytest_configure as strict_pytest_configure  # noqa: E402
+
 
 def pytest_configure(config):
+    strict_pytest_configure(config)
     config.addinivalue_line("markers", "smoke: import/structure checks")
     config.addinivalue_line("markers", "surface: public API surface checks")
     config.addinivalue_line("markers", "behavioral: exact functional parity with Java")
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
 _PYTHON_DIR = _REPO_ROOT / "python"
 _LIB_DIR = _PYTHON_DIR / "uacalc_lib"
 _python = str(_PYTHON_DIR)

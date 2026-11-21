@@ -165,7 +165,17 @@ def cmd_validate(args: argparse.Namespace) -> int:
         return 1
     import check_xfail_prefixes
 
-    return check_xfail_prefixes.main()
+    rc = check_xfail_prefixes.main()
+    if rc != 0:
+        return rc
+    import inventory_test_skips
+
+    _argv = sys.argv
+    sys.argv = ["inventory_test_skips.py", "--check"]
+    try:
+        return inventory_test_skips.main()
+    finally:
+        sys.argv = _argv
 
 
 def cmd_coverage(args: argparse.Namespace) -> int:

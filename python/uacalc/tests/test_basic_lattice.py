@@ -46,7 +46,7 @@ class TestBasicLattice:
         try:
             import networkx as nx
         except ImportError:
-            pytest.skip("networkx not installed")
+            pytest.skip("optional: networkx not installed (lattice Hasse export)")
         
         # This would require creating a LatticeGraphData instance
         # For now, just verify the method exists
@@ -155,7 +155,7 @@ class TestLatticeGraphDataFormats:
         try:
             import networkx as nx
         except ImportError:
-            pytest.skip("networkx not installed")
+            pytest.skip("optional: networkx not installed (lattice Hasse export)")
         
         import uacalc_lib
         BasicAlgebra = uacalc_lib.alg.BasicAlgebra

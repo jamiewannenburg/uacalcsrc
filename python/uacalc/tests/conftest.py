@@ -7,11 +7,25 @@ in the tests directory and provides algebra loading utilities.
 
 import os
 import sys
-import pytest
-import uacalc_lib
+from pathlib import Path
 from typing import Optional
 
+import pytest
+import uacalc_lib
+
+_TOOLS = Path(__file__).resolve().parents[3] / "tools"
+if str(_TOOLS) not in sys.path:
+    sys.path.insert(0, str(_TOOLS))
+from strict_testing import guard_skip, is_strict, pytest_configure as strict_pytest_configure  # noqa: E402
+
 pytestmark = []
+
+
+def pytest_configure(config):
+    strict_pytest_configure(config)
+    config.addinivalue_line("markers", "slow: long-running or Java comparison tests")
+    _pytest_configure_env_check(config)
+
 
 def pytest_sessionstart(session):
     """Clear thread-local resource limits at session start (leftover from prior runs)."""
@@ -24,8 +38,7 @@ def pytest_sessionstart(session):
         uacalc_lib.clear_cancel()
 
 
-def pytest_configure(config):
-    config.addinivalue_line("markers", "slow: long-running or Java comparison tests")
+def _pytest_configure_env_check(config):
     # Fail fast when java_wrapper / uacalc_lib are missing (skip in CI that sets UACALC_SKIP_ENV_CHECK=1).
     if os.environ.get("UACALC_SKIP_ENV_CHECK") == "1":
         return
@@ -97,7 +110,7 @@ def load_test_algebra(name: str, skip_if_missing: bool = True):
     algebra_path = f"resources/algebras/{name}"
     
     if not os.path.exists(algebra_path):
-        if skip_if_missing:
+        if skip_if_missing and not is_strict():
             import unittest
             raise unittest.SkipTest(f"Algebra file {algebra_path} not found")
         else:
@@ -112,7 +125,7 @@ def load_test_algebra(name: str, skip_if_missing: bool = True):
 def cyclic2_algebra():
     """Fixture providing cyclic2 algebra."""
     if not os.path.exists("resources/algebras/cyclic2.ua"):
-        pytest.skip("cyclic2.ua not found")
+        guard_skip("cyclic2.ua not found")
     
     AlgebraReader = uacalc_lib.io.AlgebraReader
     reader = AlgebraReader.new_from_file("resources/algebras/cyclic2.ua")
@@ -123,7 +136,7 @@ def cyclic2_algebra():
 def cyclic3_algebra():
     """Fixture providing cyclic3 algebra."""
     if not os.path.exists("resources/algebras/cyclic3.ua"):
-        pytest.skip("cyclic3.ua not found")
+        guard_skip("cyclic3.ua not found")
     
     AlgebraReader = uacalc_lib.io.AlgebraReader
     reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
@@ -137,7 +150,7 @@ def test_algebra(request):
     algebra_path = f"resources/algebras/{algebra_name}.ua"
     
     if not os.path.exists(algebra_path):
-        pytest.skip(f"{algebra_name}.ua not found")
+        guard_skip(f"{algebra_name}.ua not found")
     
     AlgebraReader = uacalc_lib.io.AlgebraReader
     reader = AlgebraReader.new_from_file(algebra_path)

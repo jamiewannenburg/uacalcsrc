@@ -499,7 +499,9 @@ class TestSimpleListIntegration:
         flattened = outer.reverse()
         assert flattened.size() == 2
 
-@pytest.mark.skip(reason="Skipping large list creation test due to stack overflow on windows")
+@pytest.mark.skip(
+    reason="platform: large SimpleList creation overflows the stack on Windows"
+)
 class TestSimpleListPerformance:
     """Performance tests for SimpleList operations."""
     
