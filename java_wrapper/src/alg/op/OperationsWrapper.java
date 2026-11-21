@@ -875,13 +875,13 @@ public class OperationsWrapper extends WrapperBase {
      * Handle the makeCompositionOp command.
      */
     private void handleMakeCompositionOp(Map<String, String> options) throws Exception {
-        int n = getIntArg(options, "n", 3);
-        int pow = getIntArg(options, "pow", 2);
+        int n = getIntArg(options, "n", 2);
+        int pow = getIntArg(options, "pow", 4);
         
         Operation op = withSilencedStdout(() -> Operations.makeCompositionOp(n, pow));
         
         Map<String, Object> data = new HashMap<>();
-        data.put("symbolName", "composition");
+        data.put("symbolName", op.symbol().name());
         data.put("arity", op.arity());  // Use actual arity from operation (should be 2)
         data.put("setSize", op.getSetSize());  // Use actual set size from operation (should be pow)
         data.put("n", n);
@@ -989,7 +989,7 @@ public class OperationsWrapper extends WrapperBase {
             "makeBinaryLeftShift --vecSize 3 --rootSize 2",
             "makeMatrixDiagonalOp --vecSize 3 --rootSize 2",
             "makeModuleOperation --modulus 3 --coeffs \"1,2,1\"",
-            "makeCompositionOp --n 3 --pow 2",
+            "makeCompositionOp --n 2 --pow 4",
             
             // Utility methods
             "makeMap --type binary --setSize 3",

@@ -273,6 +273,11 @@ fn with_state<R>(f: impl FnOnce(&mut ThreadState) -> R) -> R {
     TLS.with(|cell| f(&mut cell.borrow_mut()))
 }
 
+/// Memory budget configured for this thread, if any.
+pub fn memory_limit() -> Option<u64> {
+    with_state(|s| s.memory_limit)
+}
+
 pub fn set_memory_limit(limit: Option<u64>) {
     with_state(|s| s.memory_limit = limit);
     sync_limits_configured();

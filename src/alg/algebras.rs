@@ -518,7 +518,9 @@ pub fn ternary_discriminator_algebra(card: i32) -> Result<BasicAlgebra<i32>, Str
 ///
 /// # Returns
 /// * `Ok(BasicAlgebra)` - The transformation semigroup algebra
-/// * `Err(String)` - If n > 9 or there's an error during creation
+/// * `Err(String)` - If n > 9, if `n^n` does not fit in `i32`, or if the
+///   universe (`n^n` elements) is too large to allocate. `n = 8` and `n = 9`
+///   hit that allocation limit; the composition operation itself stays lazy.
 ///
 /// # Examples
 /// ```
@@ -542,10 +544,12 @@ pub fn full_transformation_semigroup(
         return Err("n must be positive".to_string());
     }
     
-    // Compute pow = n^n
-    let mut pow = n;
-    for _i in 1..n {
-        pow = pow * n;
+    // Compute pow = n^n. Checked so a huge n fails with Err instead of panicking.
+    let mut pow: i32 = 1;
+    for _ in 0..n {
+        pow = pow.checked_mul(n).ok_or_else(|| {
+            format!("n^n does not fit in i32 (n={n})")
+        })?;
     }
     
     let mut ops = Vec::new();
@@ -571,8 +575,22 @@ pub fn full_transformation_semigroup(
         ops.push(make_constant_int_operation(pow, idx)?);
     }
     
-    // Create universe set
-    let universe: HashSet<i32> = (0..pow).collect();
+    // 8^8 and 9^9 universes are tens to hundreds of millions of elements.
+    // HashSet::collect can abort the process on allocation failure. Refuse
+    // those sizes; the composition operation itself stays lazy and does not panic.
+    const MAX_EAGER_UNIVERSE: i32 = 1_000_000;
+    if pow > MAX_EAGER_UNIVERSE {
+        return Err(format!(
+            "transformation semigroup universe of {pow} elements is too large to allocate"
+        ));
+    }
+    let mut universe = HashSet::new();
+    universe.try_reserve(pow as usize).map_err(|_| {
+        format!("transformation semigroup universe of {pow} elements does not fit in memory")
+    })?;
+    for i in 0..pow {
+        universe.insert(i);
+    }
     
     // Create name
     let name = format!("Trans{}", n);
@@ -1670,6 +1688,82 @@ mod full_transformation_semigroup_tests {
         // Test with n < 0 (should fail)
         let result = full_transformation_semigroup(-1, false, false);
         assert!(result.is_err());
+    }
+
+    fn identity_code(n: i32) -> i32 {
+        let id: Vec<i32> = (0..n).collect();
+        horner::horner_same_size(&id, n)
+    }
+
+    fn assert_composition_samples(n: i32) {
+        let alg = full_transformation_semigroup(n, false, false).unwrap();
+        let mut pow = 1i32;
+        for _ in 0..n {
+            pow *= n;
+        }
+        assert_eq!(alg.cardinality(), pow);
+        let ops = alg.get_operations_ref();
+        let op = ops[0];
+        assert!(op.get_table().is_none());
+        let e = identity_code(n);
+        for sample in [0, 1, n.min(pow - 1), pow - 1] {
+            assert_eq!(op.int_value_at(&[e, sample]).unwrap(), sample);
+            assert_eq!(op.int_value_at(&[sample, e]).unwrap(), sample);
+        }
+        let mut samples = vec![0, 1, n, pow / 2, pow - 1, 7, 13, 42];
+        let mut state = 0x1234_5678u32;
+        for _ in 0..12 {
+            state = state.wrapping_mul(1664525).wrapping_add(1013904223);
+            samples.push((state % pow as u32) as i32);
+        }
+        for &a in &samples {
+            for &b in &samples {
+                for &c in &samples {
+                    if a >= pow || b >= pow || c >= pow {
+                        continue;
+                    }
+                    let ab = op.int_value_at(&[a, b]).unwrap();
+                    let bc = op.int_value_at(&[b, c]).unwrap();
+                    assert_eq!(
+                        op.int_value_at(&[ab, c]).unwrap(),
+                        op.int_value_at(&[a, bc]).unwrap(),
+                        "n={n} a={a} b={b} c={c}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_n5_and_n6() {
+        assert_composition_samples(5);
+        assert_composition_samples(6);
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_n2_write_old_style() {
+        let alg = full_transformation_semigroup(2, false, false).unwrap();
+        let path = std::env::temp_dir().join(format!(
+            "uacalc-trans2-{}.alg",
+            std::process::id()
+        ));
+        crate::io::algebra_io::write_algebra_file_with_style(Box::new(alg), &path, true).unwrap();
+        let text = std::fs::read_to_string(&path).unwrap();
+        let _ = std::fs::remove_file(&path);
+        let mut lines = text.lines();
+        assert_eq!(lines.next(), Some("4"));
+        assert_eq!(lines.next(), Some("2"));
+        assert_eq!(lines.count(), 16);
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_n9_does_not_panic() {
+        let op = crate::alg::op::operations::make_composition_op(9, 387_420_489).unwrap();
+        assert!(op.get_table().is_none());
+        assert_eq!(op.int_value_at(&[0, 1]).unwrap(), 0);
+        let result = full_transformation_semigroup(9, false, false);
+        let err = result.expect_err("9^9 universe is not materialized");
+        assert!(err.contains("too large"), "{err}");
     }
 }
 

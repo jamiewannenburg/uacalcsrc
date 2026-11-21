@@ -341,22 +341,21 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 - **Status**: Accepted (Known Java bug)
 - **Tests**: `test_unary_terms_monoid_element_index_java_stub`
 
-### org.uacalc.alg.op.Operations.makeCompositionOp makeTable
+### org.uacalc.alg.op.Operations.makeCompositionOp
 
-- **Java behavior**: `makeTable` stores `valueTable[Horner.horner(args, 2)]`
-  (base 2, not base `pow`). `valueTable` is never allocated, so the call throws
-  `NullPointerException` and `getTable()` stays null. The colliding entries are
-  not a returned table. `intValueAt` decodes with base `n` and is correct when
-  `pow == n^n`. `(n, pow) = (3, 2)` is not a legal universe (`3^3 = 27`).
-- **Python behavior**: `pow != n^n` raises `ValueError`. The table is indexed
-  in base `pow`. `intValueAt` / `valueAt` match Java on valid calls.
-- **Status**: Documented (Known Java bug:
-  `Operations.makeCompositionOp.makeTable` indexes with Horner base 2 and
-  `valueTable` is never allocated). No strict xfail: the wrong table is not
-  observable from `getTable()` or the operations wrapper.
-- **Tests**: `test_make_composition_op` (`DumpComposition` asserts `getTable()`
-  is null and `makeTable` throws, and compares `intValueAt` / `valueAt` for
-  `(2, 4)` and a sample of `(3, 27)`).
+- **Java behavior**: accepts `pow != n^n` (for example `(3, 2)`) and
+  `intValueAt` then returns codes outside `0..pow`. `makeTable` is an
+  unfinished stub: `valueTable` is never allocated, the first write throws
+  `NullPointerException`, `getTable()` stays null, and the write index uses
+  Horner base 2. That stub is never invoked by the operations wrapper.
+- **Rust/Python behavior**: `pow != n^n` is rejected (`ValueError` in Python).
+  Valid calls compute `intValueAt` on demand (no eager `pow^2` table). A table
+  is built only for `n <= 4`, or when a memory limit is set and the bytes fit.
+- **Status**: Documented. Java accepts invalid input; Rust and Python reject
+  it. No Known Java bug label and no xfail: the stub table is not a returned
+  result.
+- **Tests**: `test_make_composition_op` rejects `(3, 2)` and compares
+  `intValueAt` / `valueAt` for `(2, 4)` and a sample of `(3, 27)`.
 
 ---
 

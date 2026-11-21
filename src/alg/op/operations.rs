@@ -361,53 +361,225 @@ fn transformation_count(n: i32) -> Result<i32, String> {
     Ok(pow)
 }
 
+/// Compose two self-maps encoded as Horner integers in base `n`.
+fn compose_encoded(n: i32, f_code: i32, g_code: i32) -> Result<i32, String> {
+    use crate::util::horner;
+    let f = horner::horner_inv_same_size(f_code, n, n as usize);
+    let g = horner::horner_inv_same_size(g_code, n, n as usize);
+    let mut image = vec![0i32; n as usize];
+    for i in 0..n as usize {
+        let gi = g[i];
+        if gi < 0 || gi >= n {
+            return Err(format!(
+                "decoded map coordinate {gi} is outside 0..{n}"
+            ));
+        }
+        image[i] = f[gi as usize];
+    }
+    Ok(horner::horner_same_size(&image, n))
+}
+
+/// Binary composition of self-maps, evaluated on demand like Java `intValueAt`.
+///
+/// A value table is filled only by [`Operation::make_table`]. Java builds one
+/// only for `n <= 4` (and its `makeTable` is an unfinished stub). Here `n <= 4`
+/// materializes a correct base-`pow` table; larger `n` materializes only when a
+/// memory limit is set and the table fits in it.
+#[derive(Clone, Debug)]
+struct CompositionOperation {
+    symbol: OperationSymbol,
+    n: i32,
+    pow: i32,
+    table: Option<std::sync::Arc<[i32]>>,
+}
+
+impl CompositionOperation {
+    fn new(n: i32, pow: i32) -> Result<Self, String> {
+        let symbol = OperationSymbol::new_safe("comp", 2, false)?;
+        Ok(Self {
+            symbol,
+            n,
+            pow,
+            table: None,
+        })
+    }
+}
+
+impl std::fmt::Display for CompositionOperation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "CompositionOperation(n={}, pow={}, table={})",
+            self.n,
+            self.pow,
+            self.table.is_some()
+        )
+    }
+}
+
+impl Operation for CompositionOperation {
+    fn arity(&self) -> i32 {
+        2
+    }
+
+    fn get_set_size(&self) -> i32 {
+        self.pow
+    }
+
+    fn symbol(&self) -> &OperationSymbol {
+        &self.symbol
+    }
+
+    fn value_at(&self, args: &[i32]) -> Result<i32, String> {
+        self.int_value_at(args)
+    }
+
+    fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> {
+        if args.is_empty() {
+            return Err("No argument arrays provided".to_string());
+        }
+        let length = args[0].len();
+        let mut result = Vec::with_capacity(length);
+        for i in 0..length {
+            let mut single = Vec::with_capacity(args.len());
+            for arg in args {
+                if arg.len() != length {
+                    return Err("All argument arrays must have the same length".to_string());
+                }
+                single.push(arg[i]);
+            }
+            result.push(self.int_value_at(&single)?);
+        }
+        Ok(result)
+    }
+
+    fn int_value_at(&self, args: &[i32]) -> Result<i32, String> {
+        if args.len() != 2 {
+            return Err(format!("Expected 2 arguments, got {}", args.len()));
+        }
+        for &arg in args {
+            if arg < 0 || arg >= self.pow {
+                return Err(format!(
+                    "Argument {arg} is out of bounds [0, {})",
+                    self.pow
+                ));
+            }
+        }
+        compose_encoded(self.n, args[0], args[1])
+    }
+
+    fn int_value_at_horner(&self, arg: i32) -> Result<i32, String> {
+        if let Some(table) = &self.table {
+            if arg < 0 || arg as usize >= table.len() {
+                return Err(format!(
+                    "Horner index {arg} is out of bounds [0, {})",
+                    table.len()
+                ));
+            }
+            return Ok(table[arg as usize]);
+        }
+        let args = crate::util::horner::horner_inv_same_size(arg, self.pow, 2);
+        self.int_value_at(&args)
+    }
+
+    fn make_table(&mut self) -> Result<(), String> {
+        if self.table.is_some() {
+            return Ok(());
+        }
+        let entries = (self.pow as u64)
+            .checked_mul(self.pow as u64)
+            .ok_or_else(|| "composition table size overflows".to_string())?;
+        let bytes = entries
+            .checked_mul(4)
+            .ok_or_else(|| "composition table size overflows".to_string())?;
+        if self.n > 4 {
+            match crate::resource::memory_limit() {
+                Some(limit) if bytes <= limit => {}
+                Some(limit) => {
+                    return Err(format!(
+                        "composition table of {bytes} bytes exceeds memory limit {limit}"
+                    ));
+                }
+                // Java's makeTable returns immediately for n > 4. With no budget
+                // configured, stay lazy instead of allocating pow^2 entries.
+                None => return Ok(()),
+            }
+        }
+        let mut table = crate::resource::alloc_i32_table(self.pow as usize, 2)
+            .map_err(|e| e.to_string())?;
+        for k in 0..table.len() {
+            let args = crate::util::horner::horner_inv_same_size(k as i32, self.pow, 2);
+            table[k] = compose_encoded(self.n, args[0], args[1])?;
+        }
+        self.table = Some(table.into());
+        Ok(())
+    }
+
+    fn get_table(&self) -> Option<&[i32]> {
+        self.table.as_deref()
+    }
+
+    fn get_table_force(&mut self, make_table: bool) -> Result<&[i32], String> {
+        if make_table {
+            self.make_table()?;
+        }
+        self.table
+            .as_deref()
+            .ok_or_else(|| "composition table is not materialized".to_string())
+    }
+
+    fn is_table_based(&self) -> bool {
+        self.table.is_some()
+    }
+
+    fn is_idempotent(&self) -> Result<bool, String> {
+        // comp(x, x) = x for every self-map only on a 1-element set.
+        Ok(self.pow <= 1)
+    }
+
+    fn is_associative(&self) -> Result<bool, String> {
+        Ok(true)
+    }
+
+    fn is_commutative(&self) -> Result<bool, String> {
+        Ok(self.n <= 1)
+    }
+
+    fn is_totally_symmetric(&self) -> Result<bool, String> {
+        Ok(self.n <= 1)
+    }
+
+    fn is_maltsev(&self) -> Result<bool, String> {
+        Ok(false)
+    }
+
+    fn is_total(&self) -> Result<bool, String> {
+        Ok(true)
+    }
+
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(self.clone())
+    }
+}
+
 /// Make a composition operation for transformation semigroups.
 ///
 /// Composes two self-maps of an `n`-element set. Each map is a length-`n`
 /// tuple encoded as a Horner integer in base `n`, so the universe has `n^n`
 /// elements and `pow` must be that count. `comp(f, g) = f ∘ g`, where
-/// `(f ∘ g)(x) = f(g(x))`.
-///
-/// The value table is indexed in base `pow` (Horner of the argument pair).
-/// Java's `makeTable` indexes with base 2 and never allocates `valueTable`,
-/// so that bug is not a returned table; `intValueAt` on a valid call matches.
+/// `(f ∘ g)(x) = f(g(x))`. Values are computed on demand (no eager table).
 ///
 /// # Arguments
 /// * `n` - The size of the underlying set `{0..n-1}`
 /// * `pow` - Must equal `n^n`
 pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, String> {
-    use crate::util::horner;
-
     let expected = transformation_count(n)?;
     if pow != expected {
         return Err(format!(
             "pow must be n^n (the number of self-maps of an n-element set); got n={n}, pow={pow}, expected {expected}"
         ));
     }
-
-    // Java Operations.makeCompositionOp uses symbol "comp" and evaluates
-    // intValueAt via Horner.hornerInv(args[i], n, n) then Horner.horner(comp, n).
-    let sym = OperationSymbol::new_safe("comp", 2, false)?;
-    let table_size = (pow as usize).pow(2);
-    let mut value_table = Vec::with_capacity(table_size);
-    for k in 0..table_size {
-        let args = horner::horner_inv_same_size(k as i32, pow, 2);
-        let f = horner::horner_inv_same_size(args[0], n, n as usize);
-        let g = horner::horner_inv_same_size(args[1], n, n as usize);
-        let mut comp = vec![0i32; n as usize];
-        for i in 0..n as usize {
-            let gi = g[i];
-            if gi < 0 || gi >= n {
-                return Err(format!(
-                    "decoded map coordinate {gi} is outside 0..{n}"
-                ));
-            }
-            comp[i] = f[gi as usize];
-        }
-        value_table.push(horner::horner_same_size(&comp, n));
-    }
-
-    int_op_string(make_int_operation(sym, pow, value_table))
+    Ok(Box::new(CompositionOperation::new(n, pow)?))
 }
 
 // =============================================================================
@@ -782,18 +954,12 @@ pub fn make_int_operations(ops: Vec<Box<dyn Operation>>) -> Result<Vec<Box<dyn O
             let new_op = make_int_operation(op.symbol().clone(), op.get_set_size(), table.to_vec())?;
             result.push(new_op);
         } else {
-            // Generate the table
-            let arity = op.arity();
-            let set_size = op.get_set_size();
-            let table_size = (set_size as usize).pow(arity as u32);
-            let mut table = Vec::with_capacity(table_size);
-            
-            for i in 0..table_size {
-                let args = horner::horner_inv_same_size(i as i32, set_size, arity as usize);
-                table.push(op.int_value_at(&args)?);
-            }
-            
-            let new_op = make_int_operation(op.symbol().clone(), set_size, table)?;
+            let table = crate::resource::build_i32_table_horner(
+                op.get_set_size(),
+                op.arity() as usize,
+                |args| op.int_value_at(args),
+            )?;
+            let new_op = make_int_operation(op.symbol().clone(), op.get_set_size(), table)?;
             result.push(new_op);
         }
     }
@@ -898,17 +1064,44 @@ mod tests {
 
     #[test]
     fn test_make_composition_op_n3_pow27_sample() {
-        let op = make_composition_op(3, 27).unwrap();
+        let mut op = make_composition_op(3, 27).unwrap();
         assert_eq!(op.get_set_size(), 27);
-        assert_eq!(op.get_table().unwrap().len(), 27 * 27);
+        assert!(op.get_table().is_none());
         // Identity [0,1,2] encodes as 21; constants and a mixed pair.
         assert_eq!(op.int_value_at(&[0, 5]).unwrap(), 0);
         assert_eq!(op.value_at(&[0, 5]).unwrap(), 0);
         assert_eq!(op.int_value_at(&[21, 21]).unwrap(), 21);
         assert_eq!(op.value_at(&[1, 3]).unwrap(), 10);
-        // Table index is Horner base pow, not base 2: index([1, 3]) = 1 + 27*3.
+        op.make_table().unwrap();
         let table = op.get_table().unwrap();
+        assert_eq!(table.len(), 27 * 27);
+        // Table index is Horner base pow, not base 2: index([1, 3]) = 1 + 27*3.
         assert_eq!(table[1 + 27 * 3], 10);
+    }
+
+    #[test]
+    fn test_make_composition_op_large_n_stays_lazy() {
+        let mut op = make_composition_op(6, 46_656).unwrap();
+        assert!(op.get_table().is_none());
+        op.make_table().unwrap();
+        assert!(op.get_table().is_none());
+        assert_eq!(op.int_value_at(&[0, 1]).unwrap(), 0);
+    }
+
+    #[test]
+    fn test_make_composition_op_honors_memory_limit() {
+        struct ClearLimit;
+        impl Drop for ClearLimit {
+            fn drop(&mut self) {
+                crate::resource::set_memory_limit(None);
+            }
+        }
+        let _guard = crate::resource::test_isolation_guard();
+        let _clear = ClearLimit;
+        crate::resource::set_memory_limit(Some(1024));
+        let mut op = make_composition_op(6, 46_656).unwrap();
+        let err = op.make_table().unwrap_err();
+        assert!(err.contains("exceeds"), "{err}");
     }
 
     #[test]
